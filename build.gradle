@@ -42,6 +42,13 @@ subprojects {
             force 'org.eclipse.emf:org.eclipse.emf.ecore:2.15.0'
         }
 	}
+
+    // configure logging within tests (see https://docs.gradle.org/current/dsl/org.gradle.api.tasks.testing.logging.TestLogging.html)
+    // show standard out during test to see logging output
+    test.testLogging.showStandardStreams = true
+    // make sure that assertion failures are reported more verbose!
+    test.testLogging.exceptionFormat = 'full'
+
 }
 
 release {
