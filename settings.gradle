@@ -1,6 +1,6 @@
 include 'org.testeditor.dsl.common'
 include 'org.testeditor.dsl.common.model'
-// include 'org.testeditor.dsl.common.testing'
+include 'org.testeditor.dsl.common.testing'
 include 'org.testeditor.aml.model'
 include 'org.testeditor.aml.dsl'
 include 'org.testeditor.aml.dsl.ide'

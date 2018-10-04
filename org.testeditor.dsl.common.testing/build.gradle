@@ -2,9 +2,13 @@ dependencies {
     compile project(':org.testeditor.dsl.common')
     compile project(':org.testeditor.aml.model')
     compile project(':org.testeditor.aml.dsl')
-    compile 'org.mockito:mockito-core:2.22.0'
+    compile project(':org.testeditor.tcl.model')
+    compile project(':org.testeditor.tcl.dsl')
+    compile project(':org.testeditor.tsl.model')
+    compile project(':org.testeditor.tsl.dsl')
 
-	compile  "junit:junit:4.12"
+	compile "junit:junit:4.12"
+    compile "org.mockito:mockito-core:2.22.+"
 	compile "org.eclipse.xtext:org.eclipse.xtext.testing:${xtextVersion}"
 	compile "org.eclipse.xtext:org.eclipse.xtext.xbase.testing:${xtextVersion}"
 
