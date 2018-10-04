@@ -51,8 +51,21 @@ class ClasspathUtil {
 			return packageForPath(adjustedPath, classpath)
 		} else {
 			val absolutePath = new Path(originPath.toFile.absolutePath).removeLastSegments(1)
-			val classpath = getClasspathEntryFor(absolutePath, false)
-			return packageForPath(absolutePath, classpath)
+			var relativePath = absolutePath
+			val gradleJavaStandardPath = new Path('src/main/java')
+			val gradleTestStandardPath = new Path('src/main/test')
+			while (relativePath.segmentCount > 2 && !(gradleJavaStandardPath.isPrefixOf(relativePath) || gradleTestStandardPath.isPrefixOf(relativePath))) {
+				relativePath = relativePath.removeFirstSegments(1)
+			}
+			if (gradleJavaStandardPath.isPrefixOf(absolutePath) || gradleTestStandardPath.isPrefixOf(absolutePath)) {
+                logger.debug('found standard path for ' + originPath.toString)
+				return relativePath.removeFirstSegments(3).segments.join('.')
+			} else {
+                logger.debug('use default package for ' + originPath.toString)
+                return ''
+			    // val classpath = getClasspathEntryFor(absolutePath, false)
+			    // return packageForPath(absolutePath, classpath)
+            }
 		}
 	}
 	

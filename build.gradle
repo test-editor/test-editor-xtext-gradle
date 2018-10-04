@@ -43,12 +43,17 @@ subprojects {
         }
 	}
 
-    // configure logging within tests (see https://docs.gradle.org/current/dsl/org.gradle.api.tasks.testing.logging.TestLogging.html)
-    // show standard out during test to see logging output
-    test.testLogging.showStandardStreams = true
-    // make sure that assertion failures are reported more verbose!
-    test.testLogging.exceptionFormat = 'full'
+    test {
+        // configure logging within tests (see https://docs.gradle.org/current/dsl/org.gradle.api.tasks.testing.logging.TestLogging.html)
+        // show standard out during test to see logging output
+        testLogging.showStandardStreams = true
+        // make sure that assertion failures are reported more verbose!
+        testLogging.exceptionFormat = 'full'
 
+        afterTest { desc, result ->
+            logger.quiet "Executed test ${desc.name} [${desc.className}] with result: ${result.resultType}"
+        }
+    }
 }
 
 release {
