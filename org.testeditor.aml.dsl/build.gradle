@@ -5,6 +5,7 @@ dependencies {
 	compile "org.eclipse.xtext:org.eclipse.xtext.xbase:${xtextVersion}"
 
     testCompile project(':org.testeditor.dsl.common.testing')
+    testCompile project(':org.testeditor.aml.dsl.testing')
 	testCompile "junit:junit:4.12"
     testCompile "org.mockito:mockito-core:2.22.+"
 	testCompile "org.eclipse.xtext:org.eclipse.xtext.testing:${xtextVersion}"

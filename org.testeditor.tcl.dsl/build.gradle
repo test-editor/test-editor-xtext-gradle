@@ -1,13 +1,17 @@
 dependencies {
     compile project(':org.testeditor.tcl.model')
     compile project(':org.testeditor.aml.dsl')
-	testCompile "junit:junit:4.12"
-	testCompile "org.eclipse.xtext:org.eclipse.xtext.testing:${xtextVersion}"
-	testCompile "org.eclipse.xtext:org.eclipse.xtext.xbase.testing:${xtextVersion}"
 	compile "org.eclipse.xtext:org.eclipse.xtext:${xtextVersion}"
 	compile "org.eclipse.xtext:org.eclipse.xtext.xbase:${xtextVersion}"
 
     // compile "org.eclipse.xtext:org.eclipse.xtext.builder:${xtextVersion}" // 2.9.2, 2.10.0 currently no 2.15.0
+    testCompile project(':org.testeditor.dsl.common.testing')
+    testCompile project(':org.testeditor.aml.dsl.testing')
+    // testCompile "org.testeditor.fixture:core-fixture:4.1.+"
+	testCompile "junit:junit:4.12"
+    testCompile "org.eclipse.xtext:org.eclipse.xtext.builder.standalone:${xtextVersion}"
+	testCompile "org.eclipse.xtext:org.eclipse.xtext.testing:${xtextVersion}"
+	testCompile "org.eclipse.xtext:org.eclipse.xtext.xbase.testing:${xtextVersion}"
 }
 
 configurations {

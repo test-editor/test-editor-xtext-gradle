@@ -1,4 +1,4 @@
-package org.testeditor.aml.dsl.tests.common.tests
+package org.testeditor.aml.dsl.tests.common
 
 import org.junit.Test
 import org.testeditor.dsl.common.testing.DummyFixture
