@@ -1,0 +1,61 @@
+buildscript {
+	repositories {
+		jcenter()
+        mavenCentral()
+		maven {
+		  url "https://plugins.gradle.org/m2/"
+		}
+	}
+	dependencies {
+		classpath 'org.xtext:xtext-gradle-plugin:2.0.1'
+	}
+}
+
+plugins {
+	id 'net.researchgate.release' version '2.4.0'
+}
+
+subprojects {
+	ext.xtextVersion = '2.15.0'
+	repositories {
+		jcenter()
+        maven { url "http://dl.bintray.com/test-editor/maven/" }
+	}
+	
+	apply plugin: 'java'
+	apply plugin: 'org.xtext.xtend'
+	apply from: "${rootDir}/gradle/source-layout.gradle"
+	apply from: "${rootDir}/gradle/maven-deployment.gradle"
+	apply plugin: 'eclipse'
+	
+	group = 'org.testeditor.aml'
+	version = '1.0.0-SNAPSHOT'
+	
+	sourceCompatibility = '1.8'
+	targetCompatibility = '1.8'
+	
+	configurations.all {
+		exclude group: 'asm'
+        resolutionStrategy {
+            force 'org.antlr:antlr-runtime:3.2'
+            force 'org.eclipse.emf:org.eclipse.emf.ecore:2.15.0'
+        }
+	}
+}
+
+release {
+    preTagCommitMessage = '[release]'
+    tagCommitMessage = '[release]'
+    newVersionCommitMessage = '[release] new version'
+    tagTemplate = 'v${version}'
+    buildTasks = []
+}
+
+def String getBranchName() {
+    def branch = ""
+    def proc = "git rev-parse --abbrev-ref HEAD".execute()
+    proc.in.eachLine { line -> branch = line }
+    proc.err.eachLine { line -> println line }
+    proc.waitFor()
+    return branch
+}

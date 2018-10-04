@@ -1,0 +1,10 @@
+.gradle/
+bin/
+build/
+xtend-gen/
+xtext-gen/
+java-gen/
+.settings/
+.classpath
+.project
+.launch/
