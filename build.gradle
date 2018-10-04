@@ -19,6 +19,7 @@ subprojects {
 	ext.xtextVersion = '2.15.0'
 	repositories {
 		jcenter()
+        mavenCentral()
         maven { url "http://dl.bintray.com/test-editor/maven/" }
 	}
 	
