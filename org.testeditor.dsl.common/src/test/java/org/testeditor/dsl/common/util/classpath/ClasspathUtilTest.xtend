@@ -22,6 +22,7 @@ import java.util.List
 import org.eclipse.core.runtime.IPath
 import org.eclipse.core.runtime.IProgressMonitor
 import org.eclipse.core.runtime.Path
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
@@ -67,6 +68,7 @@ class ClasspathUtilTest extends AbstractTest {
 		}
 	}
 
+        @Ignore
 	@Test
 	def void intTestGetBuildToolClasspathEntryWithGradle() {
 		assumeTrue(new GradleServerConnectUtil().canConnect)

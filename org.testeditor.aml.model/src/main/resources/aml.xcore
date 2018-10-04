@@ -32,11 +32,7 @@ import org.eclipse.xtext.xtype.XImportSection
 import org.eclipse.xtext.common.types.JvmParameterizedTypeReference
 import org.eclipse.xtext.common.types.JvmOperation
 import org.eclipse.xtext.common.types.JvmEnumerationLiteral
-import org.testeditor.dsl.common.NamedElement // TODO: make this work, currently dsl common is compiled but somehow not usable herein
-
-// abstract class NamedElement {
-//     String name
-// }
+import org.testeditor.dsl.common.NamedElement
 
 class AmlModel {
 	String ^package
