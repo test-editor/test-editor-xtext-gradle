@@ -26,7 +26,7 @@ import org.slf4j.LoggerFactory
  */
 class GradleHelper {
 	
-	static val GRADLE_VERSION = "3.4.1"
+	static val GRADLE_VERSION = "4.9.0"
 
 	static val logger = LoggerFactory.getLogger(GradleHelper)
 
@@ -42,8 +42,9 @@ class GradleHelper {
 	}
 
 	def void run(File projectFolder, ResultHandler<? super Void> resultHandler, Consumer<BuildLauncher> configClosure) {
-		val connector = GradleConnector.newConnector.useGradleVersion(GRADLE_VERSION).
-			forProjectDirectory(projectFolder).connect
+		val connector = GradleConnector.newConnector.useGradleVersion(GRADLE_VERSION)
+            // .useInstallation(new File('~/.gradle/wrapper/dists/gradle-4.9-bin/e9cinqnqvph59rr7g70qubb4t/gradle-4.9/'))
+			.forProjectDirectory(projectFolder).connect
 		try {
 			val build = connector.newBuild
 			build.addProgressListener([ event |
