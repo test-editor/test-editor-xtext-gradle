@@ -21,7 +21,7 @@ jobs:
   include:
     - stage: compileFeature
       script:
-      - ./gradlew clean install
+      - ./gradlew install
 after_success:
   - bash <(curl -s https://codecov.io/bash)
   - ./.travis-publishOnRelease.sh # publishes only if tagged with v.*
