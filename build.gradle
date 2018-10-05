@@ -63,6 +63,12 @@ subprojects {
     }
 }
 
+configure(subprojects.findAll {!it.name.endsWith('.testing')}) {
+    dependencies {
+        testCompile project(':org.testeditor.dsl.common.testing')
+    }
+}
+
 configure(subprojects.findAll {it.name.endsWith('.web')}) {
     dependencies {
 	compile "org.eclipse.xtext:org.eclipse.xtext.xbase.web:${xtextVersion}"

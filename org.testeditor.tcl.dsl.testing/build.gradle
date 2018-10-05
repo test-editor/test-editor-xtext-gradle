@@ -1,0 +1,14 @@
+dependencies {
+    compile project(':org.testeditor.dsl.common.testing')
+    compile project(':org.testeditor.aml.dsl.testing')
+    compile project(':org.testeditor.tcl.model')
+    compile project(':org.testeditor.tcl.dsl')
+
+    compile "junit:junit:4.12"
+    compile "org.mockito:mockito-core:2.22.+"
+    compile "org.eclipse.xtext:org.eclipse.xtext.testing:${xtextVersion}"
+    compile "org.eclipse.xtext:org.eclipse.xtext.xbase.testing:${xtextVersion}"
+
+    compile "org.eclipse.xtext:org.eclipse.xtext:${xtextVersion}"
+    compile "org.eclipse.xtext:org.eclipse.xtext.xbase:${xtextVersion}"
+}
