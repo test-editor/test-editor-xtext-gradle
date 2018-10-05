@@ -56,8 +56,10 @@ subprojects {
         testLogging.exceptionFormat = 'full'
 
         afterTest { desc, result ->
-            logger.quiet "Executed test ${desc.name} [${desc.className}] with result: ${result.resultType}"
+            logger.quiet "${result.resultType}: ${desc.name} [${desc.className}]"
         }
+
+        maxParallelForks = Runtime.runtime.availableProcessors()
     }
 }
 
