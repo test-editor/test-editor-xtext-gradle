@@ -4,8 +4,8 @@ dependencies {
     compile project(':org.testeditor.tcl.model')
     compile project(':org.testeditor.tcl.dsl')
 
-    compile "junit:junit:4.12"
-    compile "org.mockito:mockito-core:2.22.+"
+    compile "junit:junit:${junitVersion}"
+    compile "org.mockito:mockito-core:${mockitoCoreVersion}"
     compile "org.eclipse.xtext:org.eclipse.xtext.testing:${xtextVersion}"
     compile "org.eclipse.xtext:org.eclipse.xtext.xbase.testing:${xtextVersion}"
 

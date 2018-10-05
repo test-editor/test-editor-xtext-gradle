@@ -8,15 +8,18 @@ buildscript {
     }
     dependencies {
 	classpath 'org.xtext:xtext-gradle-plugin:2.0.1'
+        classpath 'net.researchgate:gradle-release:2.6.0'
     }
 }
 
-plugins {
-    id 'net.researchgate.release' version '2.4.0'
-}
 
 subprojects {
-    ext.xtextVersion = '2.15.0'
+    ext {
+        xtextVersion = '2.15.0'
+        junitVersion = '4.12'
+        mockitoCoreVersion = '2.22.+'
+    }
+
     repositories {
 	jcenter()
         mavenCentral()
@@ -29,16 +32,10 @@ subprojects {
     apply from: "${rootDir}/gradle/maven-deployment.gradle"
     apply plugin: 'eclipse'
 
-    group = 'org.testeditor.'
-    version = '2.0.0-SNAPSHOT'
+    group = 'org.testeditor'
 
     sourceCompatibility = '1.8'
     targetCompatibility = '1.8'
-
-    dependencies {
-        testCompile 'junit:junit:4.12'
-        testCompile "org.mockito:mockito-core:2.22.+"
-    }
 
     configurations.all {
 	exclude group: 'asm'
@@ -63,8 +60,29 @@ subprojects {
     }
 }
 
+// all projects are released, except those ending on '.testing' or '.web'!
+configure(subprojects.findAll {!it.name.endsWith('.testing') && !it.name.endsWith('.web')}) {
+    apply plugin: 'net.researchgate.release'
+
+    release {
+        preTagCommitMessage = '[release]'
+        tagCommitMessage = '[release]'
+        newVersionCommitMessage = '[release] new version'
+        tagTemplate = 'v${version}'
+        buildTasks = []
+    }
+}
+
+configure(subprojects.findAll {!it.name.endsWith('.logging')}) {
+    dependencies {
+        compile project(':org.testeditor.logging')
+    }
+}
+
 configure(subprojects.findAll {!it.name.endsWith('.testing')}) {
     dependencies {
+        testCompile "junit:junit:${junitVersion}"
+        testCompile "org.mockito:mockito-core:${mockitoCoreVersion}"
         testCompile project(':org.testeditor.dsl.common.testing')
     }
 }
@@ -77,12 +95,6 @@ configure(subprojects.findAll {it.name.endsWith('.web')}) {
 	compile "org.webjars:requirejs:2.3.2"
 	compile "org.webjars:jquery:2.2.+"
 	compile "org.webjars:ace:1.2.3"
-    }
-}
-
-configure(subprojects.findAll {!it.name.endsWith('.logging')}) {
-    dependencies {
-        compile project(':org.testeditor.logging')
     }
 }
 
@@ -166,14 +178,6 @@ configure(subprojects.findAll {it.name.endsWith('.model')}) {
             }
         }
     }
-}
-
-release {
-    preTagCommitMessage = '[release]'
-    tagCommitMessage = '[release]'
-    newVersionCommitMessage = '[release] new version'
-    tagTemplate = 'v${version}'
-    buildTasks = []
 }
 
 def String getBranchName() {
