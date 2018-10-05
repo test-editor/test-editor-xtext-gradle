@@ -8,3 +8,4 @@ java-gen/
 .classpath
 .project
 .launch/
+testeditor.log

@@ -3,55 +3,5 @@ dependencies {
     compile project(':org.testeditor.aml.model')
     compile project(':org.testeditor.tsl.model')
     compile project(':org.testeditor.dsl.common')
-    compile "org.eclipse.xtext:org.eclipse.xtext:${xtextVersion}"
-    compile "org.eclipse.xtext:org.eclipse.xtext.xbase:${xtextVersion}"
-    compile 'org.eclipse.emf:org.eclipse.emf.ecore.xcore.lib:+'
     compile "org.testeditor.fixture:core-fixture:4.1.+"
-
-    xtextLanguages "org.eclipse.emf:org.eclipse.emf.common:${xtextVersion}"
-    xtextLanguages "org.eclipse.emf:org.eclipse.emf.ecore:${xtextVersion}"
-    xtextLanguages 'org.eclipse.emf:org.eclipse.emf.ecore.xcore:+'
-    xtextLanguages 'org.eclipse.emf:org.eclipse.emf.ecore.xcore.lib:+'
-    xtextLanguages 'org.eclipse.emf:org.eclipse.emf.codegen:2.14.0'
-    xtextLanguages 'org.eclipse.emf:org.eclipse.emf.codegen.ecore:${xtextVersion}'
-    xtextLanguages 'org.eclipse.emf:org.eclipse.emf.codegen.ecore.xtext:+'
-    xtextLanguages "org.eclipse.xtext:org.eclipse.xtext.ecore:${xtextVersion}"
-    xtextLanguages 'org.eclipse.emf:org.eclipse.emf.mwe2.runtime:+'
-
-    testCompile group: 'junit', name: 'junit', version: '4.12'
-}
-
-sourceSets {
-    main {
-        resources {
-            exclude '**/*.xcore'
-        }
-        java {
-            srcDir 'build/xcore/main'
-        }
-    }
-}
-
-jar {
-    into('model') {
-        from('src/main/resources') {
-            include '**/*.xcore'
-        }
-    }
-}
-
-xtext {
-    version = "${xtextVersion}"
-    languages {
-        ecore {
-            setup = 'org.eclipse.xtext.ecore.EcoreSupport'
-        }
-        codegen {
-            setup = 'org.eclipse.emf.codegen.ecore.xtext.GenModelSupport'
-        }
-        xcore {
-            setup = 'org.eclipse.emf.ecore.xcore.XcoreStandaloneSetup'
-            generator.outlet.producesJava = true
-        }
-    }
 }
