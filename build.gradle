@@ -1,16 +1,21 @@
-buildscript {
-    repositories {
-	    jcenter()
-        mavenCentral()
-	    maven { url "https://plugins.gradle.org/m2/" }
-    }
-    dependencies {
-	    classpath 'org.xtext:xtext-gradle-plugin:2.0.1'
-        classpath 'net.researchgate:gradle-release:2.6.0'
-    }
+plugins {
+    id 'maven'
+    id 'java'
+    id 'org.xtext.xtend' version '2.0.1'
+    id 'eclipse'
+    id 'com.jfrog.bintray' version '1.8.4'
+    id 'net.researchgate.release' version '2.7.0'
 }
 
 subprojects {
+    apply plugin: 'maven'
+    apply plugin: 'java'
+    apply plugin: 'org.xtext.xtend'
+    apply plugin: 'eclipse'
+
+    apply from: "${rootDir}/gradle/source-layout.gradle"
+    // apply from: "${rootDir}/gradle/maven-deployment.gradle"
+
     ext {
         xtextVersion = '2.15.0'
 
@@ -48,12 +53,6 @@ subprojects {
         maven { url "http://dl.bintray.com/test-editor/maven/" }
     }
 
-    apply plugin: 'java'
-    apply plugin: 'org.xtext.xtend'
-    apply from: "${rootDir}/gradle/source-layout.gradle"
-    apply from: "${rootDir}/gradle/maven-deployment.gradle"
-    apply plugin: 'eclipse'
-
     group = 'org.testeditor'
 
     sourceCompatibility = '1.8'
@@ -83,17 +82,59 @@ subprojects {
     }
 }
 
-// all projects are released, except those ending on '.testing' or '.web'!
-configure(subprojects.findAll {!it.name.endsWith('.testing') && !it.name.endsWith('.web')}) {
+// all projects are released, except those ending on '.testing'
+configure(subprojects.findAll {!it.name.endsWith('.testing')}) {
     apply plugin: 'net.researchgate.release'
+    apply plugin: 'com.jfrog.bintray'
+
+    jar {
+        manifest {
+            attributes 'Implementation-Title': "${project.group}.${project.name}",
+            'Implementation-Version': project.version
+        }
+    }
+
+    task sourcesJar(type: Jar, dependsOn: classes) {
+        classifier 'sources'
+        from sourceSets.main.allSource
+    }
+
+    artifacts {
+        archives sourcesJar
+    }
+
+    install {
+        repositories.mavenInstaller {
+            pom.packaging = 'jar'
+        }
+    }
 
     release {
         preTagCommitMessage = '[release]'
         tagCommitMessage = '[release]'
         newVersionCommitMessage = '[release] new version'
         tagTemplate = 'v${version}'
-        buildTasks = []
     }
+
+    bintray {
+        user = System.getenv('BINTRAY_USER')
+        key = System.getenv('BINTRAY_KEY')
+        configurations = ['archives']
+        publish = true
+        pkg {
+            repo = 'test-editor-xtext-gradle'
+            name = project.name
+            userOrg = 'test-editor'
+            licenses = ['EPL-1.0']
+            vcsUrl = "https://github.com/test-editor/test-editor-xtext-gradle.git"
+            version {
+                name = project.version
+                vcsTag = "v$project.version"
+            }
+            websiteUrl = 'http://testeditor.org'
+        }
+    }
+
 }
 
 // all projects depend on org.testeditor.loggong, except those ending on loggin!
