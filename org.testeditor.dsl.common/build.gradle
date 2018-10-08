@@ -1,10 +1,8 @@
 dependencies {
-    compile "org.testeditor.fixture:core-fixture:4.1.+"
-    compile 'com.google.code.gson:gson:2.8.5'
-    compile 'org.eclipse.jdt:org.eclipse.jdt.core:3.12.2' // 3.15.0
-    compile "org.gradle:gradle-tooling-api:4.3"
+    compile "org.testeditor.fixture:core-fixture:${coreFixtureVersion}"
+    compile "com.google.code.gson:gson:${gsonVersion}"
+    compile "org.eclipse.jdt:org.eclipse.jdt.core:${jdtCoreVersion}"
+    compile "org.gradle:gradle-tooling-api:${gradleToolingApi}"
 	compile "org.eclipse.xtext:org.eclipse.xtext:${xtextVersion}"
 	compile "org.eclipse.xtext:org.eclipse.xtext.xbase:${xtextVersion}"
-
-	testCompile "junit:junit:4.12"
 }

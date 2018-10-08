@@ -5,6 +5,5 @@
 dependencies {
     compile project(':org.testeditor.tsl.dsl')
     compile project(':org.testeditor.tsl.dsl.ide')
-    compile "org.eclipse.jetty:jetty-annotations:9.4.9.v20180320"
-    // providedCompile "org.slf4j:slf4j-simple:1.7.21"
+    compile "org.eclipse.jetty:jetty-annotations:${jettyAnnotations}"
 }
