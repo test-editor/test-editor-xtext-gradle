@@ -7,6 +7,7 @@ buildscript {
     dependencies {
 	    classpath 'org.xtext:xtext-gradle-plugin:2.0.1'
         classpath 'net.researchgate:gradle-release:2.6.0'
+        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.+'
     }
 }
 
@@ -53,11 +54,62 @@ subprojects {
     apply from: "${rootDir}/gradle/source-layout.gradle"
     apply from: "${rootDir}/gradle/maven-deployment.gradle"
     apply plugin: 'eclipse'
+    apply plugin: 'com.jfrog.bintray'
+    apply plugin: 'net.researchgate.release'
 
     group = 'org.testeditor'
 
     sourceCompatibility = '1.8'
     targetCompatibility = '1.8'
+
+    jar {
+        manifest {
+            attributes 'Implementation-Title': "${project.group}.${project.name}",
+            'Implementation-Version': project.version
+        }
+    }
+
+    task sourcesJar(type: Jar, dependsOn: classes) {
+        classifier 'sources'
+        from sourceSets.main.allSource
+    }
+
+    artifacts {
+        archives sourcesJar
+    }
+
+    install {
+        repositories.mavenInstaller {
+            pom.packaging = 'jar'
+        }
+    }
+
+    release {
+        preTagCommitMessage = '[release]'
+        tagCommitMessage = '[release]'
+        newVersionCommitMessage = '[release] new version'
+        tagTemplate = 'v${version}'
+    }
+
+    bintray {
+        user = System.getenv('BINTRAY_USER')
+        key = System.getenv('BINTRAY_KEY')
+        configurations = ['archives']
+        publish = true
+        pkg {
+            repo = 'test-editor-xtext-gradle'
+            name = project.name
+            userOrg = 'test-editor'
+            licenses = ['EPL-2.0']
+            vcsUrl = "https://github.com/test-editor/test-editor-xtext-gradle.git"
+            version {
+                name = project.version
+                vcsTag = "v$project.version"
+            }
+            websiteUrl = 'http://testeditor.org'
+        }
+    }
+
 
     configurations.all {
 	    exclude group: 'asm'
