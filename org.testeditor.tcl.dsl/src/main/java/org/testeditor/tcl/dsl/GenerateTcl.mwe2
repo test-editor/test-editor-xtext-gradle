@@ -25,14 +25,30 @@ var fileHeader =
 
 Workflow {
 	
-	// component = DirectoryCleaner {
-	// 	directory = "${runtimeProject}/src-gen"
-	// }
+	component = DirectoryCleaner {
+		directory = "${runtimeProject}/src/main/java/xtext-gen"
+	}
 
-	// component = DirectoryCleaner {
-	// 	directory = "${runtimeProject}.ide/src-gen"
-	// }
-	
+	component = DirectoryCleaner {
+		directory = "${runtimeProject}/src/main/java/xtend-gen"
+	}
+
+	component = DirectoryCleaner {
+		directory = "${runtimeProject}/src/test/java/xtend-gen"
+	}
+
+	component = DirectoryCleaner {
+		directory = "${runtimeProject}.ide/src/main/java/xtext-gen"
+	}
+
+	component = DirectoryCleaner {
+		directory = "${runtimeProject}.ide/src/main/java/xtend-gen"
+	}
+
+	component = DirectoryCleaner {
+		directory = "${runtimeProject}.ide/src/test/java/xtend-gen"
+	}
+
 	component = XtextGenerator {
 		configuration = {
 			project = StandardProjectConfig {

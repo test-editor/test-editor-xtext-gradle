@@ -31,7 +31,7 @@ import org.testeditor.dsl.common.util.JvmTypeReferenceUtil
  */
 class TclCoercionComputer {
 	
-	private val logger = LoggerFactory.getLogger(TclCoercionComputer)
+	val logger = LoggerFactory.getLogger(TclCoercionComputer)
 	
 	@Inject extension JvmTypeReferenceUtil typeReferenceUtil
 	@Inject extension TclJsonUtil

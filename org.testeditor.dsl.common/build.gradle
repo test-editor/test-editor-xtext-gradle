@@ -7,5 +7,4 @@ dependencies {
 	compile "org.eclipse.xtext:org.eclipse.xtext.xbase:${xtextVersion}"
 
 	testCompile "junit:junit:4.12"
-    testCompile project(':org.testeditor.dsl.common.testing')
 }

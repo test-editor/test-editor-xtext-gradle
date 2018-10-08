@@ -4,8 +4,14 @@ build/
 xtend-gen/
 xtext-gen/
 java-gen/
+src-gen/
+src-gen/
 .settings/
 .classpath
 .project
+build.properties
+plugin.*
 .launch/
 testeditor.log
+META-INF/
+hs_err*.log

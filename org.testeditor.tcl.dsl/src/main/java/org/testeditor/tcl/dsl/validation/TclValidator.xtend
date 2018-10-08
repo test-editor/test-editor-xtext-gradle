@@ -98,7 +98,7 @@ class TclValidator extends AbstractTclValidator {
 	@Inject TclCoercionComputer coercionComputer
 	@Inject TclJsonUtil jsonUtil
 
-	private static val ERROR_MESSAGE_FOR_INVALID_VAR_REFERENCE = "Dereferenced variable must be a required environment variable or a previously assigned variable"
+	static val ERROR_MESSAGE_FOR_INVALID_VAR_REFERENCE = "Dereferenced variable must be a required environment variable or a previously assigned variable"
 	
 	@Check
 	def void referencesComponentElement(StepContentElement contentElement) {
@@ -138,7 +138,7 @@ class TclValidator extends AbstractTclValidator {
 	def checkFixtureMethodForExistence(TestStep testStep) {
 		if (!(testStep instanceof AssertionTestStep) && testStep.hasComponentContext) {
 			val method = testStep.interaction?.defaultMethod
-			if ((method == null ) || (method.operation == null) || (method.typeReference?.type == null)) {
+			if ((method === null ) || (method.operation === null) || (method.typeReference?.type === null)) {
 				info("test step could not resolve fixture", TclPackage.Literals.TEST_STEP__CONTENTS, MISSING_FIXTURE)
 			} else if (!method.operation.exceptions.map[qualifiedName].exists[equals(org.testeditor.fixture.core.FixtureException.name)]) {
 				info("Fixture does not provide additional information on failures (FixtureException)", TclPackage.Literals.TEST_STEP__CONTENTS, FIXTURE_MISSING_EXCEPTION)
@@ -231,7 +231,7 @@ class TclValidator extends AbstractTclValidator {
 	@Check
 	def void checkSpec(TestCase testCase) {
 		val specification = testCase.specification
-		if (specification != null) {
+		if (specification !== null) {
 			if (!specification.steps.matches(testCase.steps)) {
 				val message = '''Test case does not implement its specification '«specification.name»'.'''
 				warning(message, TclPackage.Literals.TEST_CASE__SPECIFICATION, NO_VALID_IMPLEMENTATION)

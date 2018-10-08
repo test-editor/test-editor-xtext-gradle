@@ -12,7 +12,7 @@ import org.testeditor.fixture.core.TestRunReporter.Status
 import org.testeditor.tcl.dsl.tests.AbstractTclTest
 import org.testeditor.tcl.dsl.tests.TclModelGenerator
 
-import static org.mockito.Matchers.*
+import static org.mockito.ArgumentMatchers.*
 import static org.mockito.Mockito.*
 
 class TestRunReporterGeneratorTest extends AbstractTclTest {

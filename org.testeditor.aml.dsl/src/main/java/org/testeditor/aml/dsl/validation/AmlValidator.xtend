@@ -50,10 +50,10 @@ class AmlValidator extends AbstractAmlValidator {
 	public static val INVALID_CHAR_IN_TEMPLATE = 'template.string.invalidChar'
 
 	@Inject
-	private extension ModelUtil
+	extension ModelUtil
 	
 	@Inject
-	private extension CollectionUtils
+	extension CollectionUtils
 
 	/**
 	 * Checks that a {@link Component} does not have a cycle in its parents hierarchy.
@@ -176,9 +176,9 @@ class AmlValidator extends AbstractAmlValidator {
 	 */
 	@Check
 	def void checkComponentElementLocatorStrategy(ComponentElement componentElement) {
-		val elementHasNoStrategy = componentElement.locatorStrategy == null
+		val elementHasNoStrategy = componentElement.locatorStrategy === null
 		val interactionsExpectingButWithoutStrategy = componentElement.componentElementInteractionTypes.filter [
-			defaultMethod !== null && !defaultMethod.locatorStrategyParameters.empty && locatorStrategy == null
+			defaultMethod !== null && !defaultMethod.locatorStrategyParameters.empty && locatorStrategy === null
 		]
 		if (elementHasNoStrategy && !interactionsExpectingButWithoutStrategy.empty) {
 			val message = '''Element has interactions ('«interactionsExpectingButWithoutStrategy.map[name].join(', ')»') that require a locator strategy, but none is given.'''

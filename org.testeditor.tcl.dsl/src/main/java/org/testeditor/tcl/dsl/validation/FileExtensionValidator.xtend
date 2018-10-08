@@ -60,7 +60,7 @@ class FileExtensionValidator extends AbstractDeclarativeValidator {
 	}
 
 	private def void verifyNoMacroCollection(TclModel model) {
-		if (model.macroCollection != null) {
+		if (model.macroCollection !== null) {
 			error("This file type may not contain macro collections.", model, TCL_MODEL__MACRO_COLLECTION)
 		}
 	}
@@ -72,7 +72,7 @@ class FileExtensionValidator extends AbstractDeclarativeValidator {
 	}
 
 	private def void verifyNoTestCase(TclModel model) {
-		if (model.test != null) {
+		if (model.test !== null) {
 			error("This file type may not contain test cases.", model, TCL_MODEL__TEST)
 		}
 	}

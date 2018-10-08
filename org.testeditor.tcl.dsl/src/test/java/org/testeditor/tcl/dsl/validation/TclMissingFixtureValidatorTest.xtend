@@ -23,8 +23,6 @@ import org.testeditor.aml.InteractionType
 import org.testeditor.tcl.ComponentTestStepContext
 import org.testeditor.tcl.TestStep
 
-import static org.mockito.Matchers.*
-
 import static extension org.mockito.Mockito.*
 
 class TclMissingFixtureValidatorTest extends AbstractMockedTclValidatorTest {
@@ -36,8 +34,8 @@ class TclMissingFixtureValidatorTest extends AbstractMockedTclValidatorTest {
 	def void initMocks() {
 		val jvmTypeMock = JvmType.mock
 
-		when(tclModelUtil.getInteraction(anyObject)).thenReturn(interactionTypeMock)
-		when(tclModelUtil.hasComponentContext(anyObject)).thenReturn(true)
+		when(tclModelUtil.getInteraction(any)).thenReturn(interactionTypeMock)
+		when(tclModelUtil.hasComponentContext(any)).thenReturn(true)
 		when(interactionTypeMock.defaultMethod.typeReference).thenReturn(typeReferenceMock)
 		when(typeReferenceMock.type).thenReturn(jvmTypeMock) // default is != null => fixture exists 
 		val state = tclValidator.setMessageAcceptor(messageAcceptor)
@@ -64,7 +62,7 @@ class TclMissingFixtureValidatorTest extends AbstractMockedTclValidatorTest {
 		tclValidator.checkFixtureMethodForExistence(testStepThatMaps)
 
 		// then
-		messageAcceptor.verify(never).acceptInfo(anyString, anyObject, anyObject, anyInt, anyString)
+		messageAcceptor.verify(never).acceptInfo(anyString, any, any, anyInt, anyString)
 	}
 
 	@Test
@@ -84,7 +82,7 @@ class TclMissingFixtureValidatorTest extends AbstractMockedTclValidatorTest {
 		tclValidator.checkFixtureMethodForExistence(testStepThatMaps)
 
 		// then
-		messageAcceptor.verify.acceptInfo(message.capture, anyObject, anyObject, anyInt, anyString)
+		messageAcceptor.verify.acceptInfo(message.capture, any, any, anyInt, anyString)
 		assertMatches(message.value, ".*does not provide additional information on failures.*")
 		assertMatches(message.value, ".*FixtureException.*") 
 	}
@@ -107,7 +105,7 @@ class TclMissingFixtureValidatorTest extends AbstractMockedTclValidatorTest {
 		tclValidator.checkFixtureMethodForExistence(testStepThatDoesNotMap)
 
 		// then
-		messageAcceptor.verify.acceptInfo(message.capture, anyObject, anyObject, anyInt, anyString)
+		messageAcceptor.verify.acceptInfo(message.capture, any, any, anyInt, anyString)
 		assertMatches(message.value, ".*could not resolve fixture")
 	}
 

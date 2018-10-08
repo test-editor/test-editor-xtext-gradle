@@ -13,15 +13,13 @@
 package org.testeditor.aml.dsl.jvmmodel
 
 import javax.inject.Inject
+import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtext.common.types.JvmDeclaredType
 import org.eclipse.xtext.naming.IQualifiedNameProvider
 import org.eclipse.xtext.xbase.jvmmodel.AbstractModelInferrer
 import org.eclipse.xtext.xbase.jvmmodel.IJvmDeclaredTypeAcceptor
 import org.eclipse.xtext.xbase.jvmmodel.JvmTypesBuilder
 import org.testeditor.aml.AmlModel
-import org.eclipse.emf.ecore.EObject
-import org.testeditor.aml.ModelElement
-
 // TODO this is not used, yet - instead we generate the old XML files for now
 class AmlJvmModelInferrer extends AbstractModelInferrer {
 

@@ -31,7 +31,7 @@ class GradleHelper {
 	static val logger = LoggerFactory.getLogger(GradleHelper)
 
 	def void runTasks(File projectFolder, String... tasks) {
-		logger.info("Running gradle build with tasks='{}'.", tasks)
+		logger.info("Running gradle build with tasks='{}'.", tasks.toArray)
 		run(projectFolder) [
 			forTasks(tasks)
 		]

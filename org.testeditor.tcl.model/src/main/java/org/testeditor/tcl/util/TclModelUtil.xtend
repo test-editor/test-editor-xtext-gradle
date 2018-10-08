@@ -197,7 +197,7 @@ class TclModelUtil extends TslModelUtil {
 	}
 
 	def boolean hasComponentContext(TestStep step) {
-		return step.componentContext != null
+		return step.componentContext !== null
 	}
 	
 	def TestStepContext getTestStepContext(EObject eObject) {
@@ -213,7 +213,7 @@ class TclModelUtil extends TslModelUtil {
 	}
 
 	def boolean hasMacroContext(TestStep step) {
-		return step.macroContext != null
+		return step.macroContext !== null
 	}
 
 	def MacroTestStepContext getMacroContext(TestStep step) {
@@ -246,10 +246,10 @@ class TclModelUtil extends TslModelUtil {
 	def Iterable<SpecificationStep> getMissingTestSteps(TestCase testCase) {
 		val specSteps = testCase.specification?.steps
 		val steps = testCase.steps
-		if (specSteps == null) {
+		if (specSteps === null) {
 			return emptyList
 		}
-		if (steps == null) {
+		if (steps === null) {
 			return specSteps.toList
 		}
 		return specSteps.filter [
@@ -260,7 +260,7 @@ class TclModelUtil extends TslModelUtil {
 
 	def Iterable<EnvironmentVariable> getEnvParams(EObject object) {
 		val root = EcoreUtil2.getContainerOfType(object, TclModel)
-		if (root !== null && root.environmentVariables != null) {
+		if (root !== null && root.environmentVariables !== null) {
 			return root.environmentVariables
 		}
 		return #{}

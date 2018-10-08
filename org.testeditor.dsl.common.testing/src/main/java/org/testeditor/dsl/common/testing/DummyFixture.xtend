@@ -18,7 +18,7 @@ import org.testeditor.fixture.core.FixtureException
 import org.testeditor.fixture.core.MaskingString
 import org.testeditor.fixture.core.interaction.FixtureMethod
 
-public class DummyFixture {
+class DummyFixture {
 
 	@FixtureMethod
 	def void someFixtureMethod() throws FixtureException {

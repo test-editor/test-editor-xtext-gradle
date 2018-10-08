@@ -22,7 +22,7 @@ import org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider
 import org.testeditor.dsl.common.util.classpath.ClasspathUtil
 import org.testeditor.tcl.TclModel
 
-public class TclDelegateScopeProvider extends XImportSectionNamespaceScopeProvider {
+class TclDelegateScopeProvider extends XImportSectionNamespaceScopeProvider {
 
 	@Inject ClasspathUtil classpathUtil
 

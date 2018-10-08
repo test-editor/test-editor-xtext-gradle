@@ -29,7 +29,6 @@ import org.testeditor.tcl.dsl.tests.AbstractTclTest
 import org.testeditor.tcl.dsl.tests.TclModelGenerator
 import org.testeditor.tcl.util.TclModelUtil
 
-import static org.mockito.Matchers.*
 import static org.mockito.Mockito.*
 
 class TclAssertCallBuilderTest extends AbstractTclTest {

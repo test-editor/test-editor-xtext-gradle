@@ -7,8 +7,6 @@ import org.mockito.Mock
 import org.mockito.MockitoAnnotations
 import org.slf4j.Logger
 
-import static org.mockito.Matchers.*
-
 import static extension org.mockito.Mockito.*
 
 class LoggerStreamTest {

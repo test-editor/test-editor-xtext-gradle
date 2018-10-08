@@ -76,7 +76,7 @@ class TclAssertCallBuilder {
 	
 	def String build(Expression expression, String messagePrefix) {
 		val assertionMethod = assertionMethod(expression)
-		if (assertionMethod == null) {
+		if (assertionMethod === null) {
 			return '''// TODO no assertion method implementation for expression with type "«expression.class»"'''
 		} else {
 			val expressionBuilt = switch (expression) {
@@ -114,7 +114,7 @@ class TclAssertCallBuilder {
 	}
 
 	private def AssertMethod assertionMethod(Comparator comparator) {
-		if (comparator == null) {
+		if (comparator === null) {
 			return AssertMethod.assertNotNull
 		}
 		return switch (comparator) {
@@ -131,7 +131,7 @@ class TclAssertCallBuilder {
 	 * return a string that is directly usable within an assertion command
 	 */
 	private def String buildComparison(Comparison comparison) {
-		if (comparison.comparator == null) {
+		if (comparison.comparator === null) {
 			return expressionBuilder.buildReadExpression(comparison.left)
 		}
 		val wantedType = expressionTypeComputer.coercedTypeOfComparison(comparison, Optional.empty)

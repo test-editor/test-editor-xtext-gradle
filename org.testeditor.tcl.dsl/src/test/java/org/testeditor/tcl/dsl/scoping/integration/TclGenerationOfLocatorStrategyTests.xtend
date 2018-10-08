@@ -17,7 +17,7 @@ import org.testeditor.tcl.dsl.jvmmodel.AbstractTclGeneratorIntegrationTest
 import org.testeditor.tcl.dsl.jvmmodel.TclJvmModelInferrer
 import org.testeditor.tcl.dsl.tests.TclModelGenerator
 
-import static org.mockito.Matchers.*
+import static org.mockito.ArgumentMatchers.*
 import static org.mockito.Mockito.*
 
 class TclGenerationOfLocatorStrategyTests extends AbstractTclGeneratorIntegrationTest {

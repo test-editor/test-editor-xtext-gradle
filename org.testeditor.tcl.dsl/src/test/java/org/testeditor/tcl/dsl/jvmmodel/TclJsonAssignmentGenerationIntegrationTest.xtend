@@ -7,19 +7,15 @@ import org.eclipse.xtext.xbase.compiler.output.ITreeAppendable
 import org.junit.Before
 import org.junit.Test
 import org.mockito.Mock
-import org.testeditor.aml.AmlModel
 import org.testeditor.dsl.common.testing.DummyFixture
 import org.testeditor.tcl.TclModel
 
-import static org.mockito.Matchers.*
 import static org.mockito.Mockito.*
 
 class TclJsonAssignmentGenerationIntegrationTest extends AbstractTclGeneratorIntegrationTest {
 
 	@Inject TclJvmModelInferrer jvmModelInferrer // class under test
 	@Mock ITreeAppendable outputStub
-
-	var AmlModel amlModel
 
 	@Before
 	def void initMocks() {
@@ -31,7 +27,7 @@ class TclJsonAssignmentGenerationIntegrationTest extends AbstractTclGeneratorInt
 
 	@Before
 	def void parseDummyAmlModel() {
-		amlModel = DummyFixture.amlModel.parseAml
+		DummyFixture.amlModel.parseAml
 	}
 
 	@Before

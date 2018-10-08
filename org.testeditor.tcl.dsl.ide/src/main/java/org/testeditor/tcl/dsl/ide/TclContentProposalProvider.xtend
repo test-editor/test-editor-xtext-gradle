@@ -86,7 +86,7 @@ class TclContentProposalProvider extends IdeContentProposalProvider {
 	/**
 	 * filter all proposals for cross references such that TemplateVariables may not be used in VariableReferencePath location!
 	 */
-	override protected def Predicate<IEObjectDescription> getCrossrefFilter(CrossReference reference, ContentAssistContext context) {
+	override protected Predicate<IEObjectDescription> getCrossrefFilter(CrossReference reference, ContentAssistContext context) {
 		val type = currentTypeFinder.findCurrentTypeAfter(reference)
 		if (type.instanceClass == VariableReferencePathAccess) {
 			return [ eObjectDescription |

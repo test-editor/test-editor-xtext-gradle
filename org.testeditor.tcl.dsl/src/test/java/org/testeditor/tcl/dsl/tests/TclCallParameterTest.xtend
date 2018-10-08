@@ -11,7 +11,7 @@ import org.testeditor.aml.dsl.tests.common.AmlTestModels
 import org.testeditor.tcl.dsl.jvmmodel.AbstractTclGeneratorIntegrationTest
 import org.testeditor.tcl.dsl.jvmmodel.TclJvmModelInferrer
 
-import static org.mockito.Matchers.*
+import static org.mockito.ArgumentMatchers.*
 import static org.mockito.Mockito.*
 
 class TclCallParameterTest extends AbstractTclGeneratorIntegrationTest {

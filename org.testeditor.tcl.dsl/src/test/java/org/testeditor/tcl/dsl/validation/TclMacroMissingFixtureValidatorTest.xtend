@@ -12,8 +12,10 @@
  *******************************************************************************/
 package org.testeditor.tcl.dsl.validation
 
+import org.eclipse.emf.common.util.BasicEList
 import org.eclipse.xtext.common.types.JvmParameterizedTypeReference
 import org.eclipse.xtext.common.types.JvmType
+import org.eclipse.xtext.common.types.JvmTypeReference
 import org.junit.Before
 import org.junit.Test
 import org.mockito.Mock
@@ -21,11 +23,9 @@ import org.testeditor.aml.InteractionType
 import org.testeditor.tcl.ComponentTestStepContext
 import org.testeditor.tcl.TestStep
 
-import static org.mockito.Matchers.*
+import static org.mockito.ArgumentMatchers.*
 
 import static extension org.mockito.Mockito.*
-import org.eclipse.emf.common.util.BasicEList
-import org.eclipse.xtext.common.types.JvmTypeReference
 
 class TclMacroMissingFixtureValidatorTest extends AbstractMockedTclValidatorTest {
 
@@ -36,8 +36,8 @@ class TclMacroMissingFixtureValidatorTest extends AbstractMockedTclValidatorTest
 		val jvmTypeMock = JvmType.mock
 		val interactionTypeMock = InteractionType.mock(RETURNS_DEEP_STUBS)
 
-		when(tclModelUtil.getInteraction(anyObject)).thenReturn(interactionTypeMock)
-		when(tclModelUtil.hasComponentContext(anyObject)).thenReturn(true)
+		when(tclModelUtil.getInteraction(any)).thenReturn(interactionTypeMock)
+		when(tclModelUtil.hasComponentContext(any)).thenReturn(true)
 		when(interactionTypeMock.defaultMethod.typeReference).thenReturn(typeReferenceMock)
 		when(typeReferenceMock.type).thenReturn(jvmTypeMock) // default is != null => fixture exists
 	}
@@ -67,7 +67,7 @@ class TclMacroMissingFixtureValidatorTest extends AbstractMockedTclValidatorTest
 		tclValidator.checkFixtureMethodForExistence(testStepThatMaps)
 
 		// then
-		messageAcceptor.verify(never).acceptInfo(anyString, anyObject, anyObject, anyInt, anyString)
+		messageAcceptor.verify(never).acceptInfo(anyString, any, any, anyInt, anyString)
 	}
 
 	@Test
@@ -90,7 +90,7 @@ class TclMacroMissingFixtureValidatorTest extends AbstractMockedTclValidatorTest
 		tclValidator.checkFixtureMethodForExistence(testStepThatDoesNotMap)
 
 		// then
-		messageAcceptor.verify.acceptInfo(message.capture, anyObject, anyObject, anyInt, anyString)
+		messageAcceptor.verify.acceptInfo(message.capture, any, any, anyInt, anyString)
 		assertMatches(message.value, ".*could not resolve fixture")
 	}
 

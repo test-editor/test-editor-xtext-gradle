@@ -33,7 +33,7 @@ class AmlModelGenerator {
 	}
 
 	def AmlModel withTypeImport(AmlModel me, ResourceSet resourceSet, String typeName) {
-		if (me.importSection == null) {
+		if (me.importSection === null) {
 			me.importSection = xtypeFactory.createXImportSection
 		}
 		me.importSection.importDeclarations += xtypeFactory.createXImportDeclaration => [
@@ -45,7 +45,7 @@ class AmlModelGenerator {
 	}
 
 	def AmlModel withNamespaceImport(AmlModel me, String namespace) {
-		if (me.importSection == null) {
+		if (me.importSection === null) {
 			me.importSection = xtypeFactory.createXImportSection
 		}
 		me.importSection.importDeclarations += xtypeFactory.createXImportDeclaration => [

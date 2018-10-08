@@ -137,7 +137,7 @@ class JvmTypeReferenceUtil {
 	}
 
 	def boolean isAssignableFrom(JvmTypeReference target, JvmTypeReference source) {
-		return isAssignableFrom(target, source, new TypeConformanceComputationArgument)
+		return isAssignableFrom(target, source, TypeConformanceComputationArgument.DEFAULT)
 	}
 		
 	def boolean isBigDecimal(JvmTypeReference reference) {

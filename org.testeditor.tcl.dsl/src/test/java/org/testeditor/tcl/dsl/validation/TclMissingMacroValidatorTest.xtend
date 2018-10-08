@@ -21,7 +21,7 @@ import org.testeditor.aml.Template
 import org.testeditor.tcl.MacroTestStepContext
 import org.testeditor.tcl.TestStep
 
-import static org.mockito.Matchers.*
+import static org.mockito.ArgumentMatchers.*
 
 import static extension org.mockito.Mockito.*
 
@@ -33,9 +33,9 @@ class TclMissingMacroValidatorTest extends AbstractMockedTclValidatorTest {
 
 	@Before
 	def void initMocks() {
-		when(tclModelUtil.getMacroContext(anyObject)).thenReturn(macroTestStepContextMock)
-		when(tclModelUtil.hasComponentContext(anyObject)).thenReturn(false)
-		when(tclModelUtil.hasMacroContext(anyObject)).thenReturn(true)
+		when(tclModelUtil.getMacroContext(any)).thenReturn(macroTestStepContextMock)
+		when(tclModelUtil.hasComponentContext(any)).thenReturn(false)
+		when(tclModelUtil.hasMacroContext(any)).thenReturn(true)
 		when(tclModelUtil.normalize(any(TestStep))).thenReturn("abc")
 		when(modelUtil.normalize(any(Template))).thenReturn("abc")
 	}
@@ -60,7 +60,7 @@ class TclMissingMacroValidatorTest extends AbstractMockedTclValidatorTest {
 		tclValidator.checkMacroCall(testStepThatMaps)
 
 		// then
-		messageAcceptor.verify(never).acceptInfo(anyString, anyObject, anyObject, anyInt, anyString)
+		messageAcceptor.verify(never).acceptInfo(anyString, any, any, anyInt, anyString)
 	}
 
 	@Test
@@ -84,7 +84,7 @@ class TclMissingMacroValidatorTest extends AbstractMockedTclValidatorTest {
 		tclValidator.checkMacroCall(testStepThatDoesNotMap)
 
 		// then
-		messageAcceptor.verify.acceptWarning(message.capture, anyObject, anyObject, anyInt, anyString)
+		messageAcceptor.verify.acceptWarning(message.capture, any, any, anyInt, anyString)
 		assertMatches(message.value, ".*could not resolve macro.*")
 	}
 

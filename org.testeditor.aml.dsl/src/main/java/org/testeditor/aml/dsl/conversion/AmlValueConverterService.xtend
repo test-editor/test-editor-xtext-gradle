@@ -20,10 +20,10 @@ import org.eclipse.xtext.conversion.ValueConverter
 class AmlValueConverterService extends Ecore2XtextTerminalConverters {
 
 	@Inject
-	private TemplateVariableDefValueConverter templateVariableValueConverter
+	TemplateVariableDefValueConverter templateVariableValueConverter
 
 	@ValueConverter(rule="TEMPLATE_VARIABLE_DEF")
-	public def IValueConverter<String> TEMPLATE_VARIABLE_DEF() {
+	def IValueConverter<String> TEMPLATE_VARIABLE_DEF() {
 		return templateVariableValueConverter
 	}
 

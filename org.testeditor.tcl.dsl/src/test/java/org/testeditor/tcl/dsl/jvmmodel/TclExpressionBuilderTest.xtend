@@ -25,7 +25,6 @@ import org.testeditor.tcl.KeyPathElement
 import org.testeditor.tcl.dsl.tests.AbstractTclTest
 import org.testeditor.tcl.dsl.tests.TclModelGenerator
 
-import static org.mockito.Matchers.*
 import static org.mockito.Mockito.*
 
 class TclExpressionBuilderTest extends AbstractTclTest {

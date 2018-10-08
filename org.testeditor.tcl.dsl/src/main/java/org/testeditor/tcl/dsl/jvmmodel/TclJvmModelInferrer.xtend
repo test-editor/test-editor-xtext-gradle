@@ -596,7 +596,7 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 			} else {
 				output.append('''// TODO interaction type '«interaction.name»' does not have a proper method reference''')
 			}
-		} else if (step.componentContext != null) {
+		} else if (step.componentContext !== null) {
 			logger.debug("interaction not found within context of component '{}' for test step='{}'.", step.componentContext.component.name, stepLog)
 			output.newLine.
 				append('''org.junit.Assert.fail("Template '«stepLog.escapeJava»' cannot be resolved with any known macro/fixture. Please check your «step.locationInfo»");''')

@@ -17,7 +17,7 @@ import org.eclipse.xtext.ide.editor.contentassist.IdeContentProposalProvider
 /**
  * Use this class to register ide components.
  */
-public class TclIdeModule extends AbstractTclIdeModule {
+class TclIdeModule extends AbstractTclIdeModule {
 
 	override Class<? extends IdeContentProposalProvider> bindIdeContentProposalProvider() {
 		TclContentProposalProvider

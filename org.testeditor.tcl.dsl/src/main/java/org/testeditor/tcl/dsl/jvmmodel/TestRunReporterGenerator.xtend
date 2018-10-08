@@ -22,7 +22,7 @@ class TestRunReporterGenerator {
 
 	static val logger = LoggerFactory.getLogger(TestRunReporterGenerator)
 
-	public def List<Object> buildReporterCall(JvmType type, SemanticUnit unit, Action action, String message, String id, Status status,
+	def List<Object> buildReporterCall(JvmType type, SemanticUnit unit, Action action, String message, String id, Status status,
 		String reporterInstanceVariableName, List<VariableReference> variables, JvmTypeReference stringTypeReference) {
 		val variablesValuesList = if (variables !== null) {
 				try {
@@ -65,7 +65,7 @@ class TestRunReporterGenerator {
 
 	private def String generateCommentPrefix() {
 		val prefix = generatorConfig.reporterCallCommentPrefixChar
-		if (prefix != null) {
+		if (prefix !== null) {
 			return '''/*«StringUtils.repeat(prefix, generatorConfig.reporterCallCommentPrefixCount)»*/ '''
 		} else {
 			return ''
