@@ -122,11 +122,11 @@ configure(subprojects.findAll {!it.name.endsWith('.testing')}) {
         configurations = ['archives']
         publish = true
         pkg {
-            repo = 'Fixtures'
+            repo = 'test-editor-xtext-gradle'
             name = project.name
             userOrg = 'test-editor'
             licenses = ['EPL-1.0']
-            vcsUrl = "https://github.com/test-editor/${project.name}.git"
+            vcsUrl = "https://github.com/test-editor/test-editor-xtext-gradle.git"
             version {
                 name = project.version
                 vcsTag = "v$project.version"
