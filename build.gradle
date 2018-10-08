@@ -1,17 +1,21 @@
-buildscript {
-    repositories {
-	    jcenter()
-        mavenCentral()
-	    maven { url "https://plugins.gradle.org/m2/" }
-    }
-    dependencies {
-	    classpath 'org.xtext:xtext-gradle-plugin:2.0.1'
-        classpath 'net.researchgate:gradle-release:2.6.0'
-        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.+'
-    }
+plugins {
+    id 'maven'
+    id 'java'
+    id 'org.xtext.xtend' version '2.0.1'
+    id 'eclipse'
+    id 'com.jfrog.bintray' version '1.8.4'
+    id 'net.researchgate.release' version '2.7.0'
 }
 
 subprojects {
+    apply plugin: 'maven'
+    apply plugin: 'java'
+    apply plugin: 'org.xtext.xtend'
+    apply plugin: 'eclipse'
+
+    apply from: "${rootDir}/gradle/source-layout.gradle"
+    // apply from: "${rootDir}/gradle/maven-deployment.gradle"
+
     ext {
         xtextVersion = '2.15.0'
 
@@ -49,18 +53,39 @@ subprojects {
         maven { url "http://dl.bintray.com/test-editor/maven/" }
     }
 
-    apply plugin: 'java'
-    apply plugin: 'org.xtext.xtend'
-    apply from: "${rootDir}/gradle/source-layout.gradle"
-    apply from: "${rootDir}/gradle/maven-deployment.gradle"
-    apply plugin: 'eclipse'
-    apply plugin: 'com.jfrog.bintray'
-    apply plugin: 'net.researchgate.release'
-
     group = 'org.testeditor'
 
     sourceCompatibility = '1.8'
     targetCompatibility = '1.8'
+
+    configurations.all {
+	    exclude group: 'asm'
+        resolutionStrategy {
+            force "org.antlr:antlr-runtime:${antlrRuntime}"
+            force "org.eclipse.emf:org.eclipse.emf.ecore:${xtextVersion}"
+        }
+    }
+
+    test {
+        // configure logging within tests (see https://docs.gradle.org/current/dsl/org.gradle.api.tasks.testing.logging.TestLogging.html)
+        // show standard out during test to see logging output
+        testLogging.showStandardStreams = true
+        // make sure that assertion failures are reported more verbose!
+        testLogging.exceptionFormat = 'full'
+
+        // report finished test with status
+        afterTest { desc, result ->
+            logger.quiet "${result.resultType}: ${desc.name} [${desc.className}]"
+        }
+
+        maxParallelForks = Runtime.runtime.availableProcessors()
+    }
+}
+
+// all projects are released, except those ending on '.testing'
+configure(subprojects.findAll {!it.name.endsWith('.testing')}) {
+    apply plugin: 'net.researchgate.release'
+    apply plugin: 'com.jfrog.bintray'
 
     jar {
         manifest {
@@ -97,11 +122,11 @@ subprojects {
         configurations = ['archives']
         publish = true
         pkg {
-            repo = 'test-editor-xtext-gradle'
+            repo = 'Fixtures'
             name = project.name
             userOrg = 'test-editor'
-            licenses = ['EPL-2.0']
-            vcsUrl = "https://github.com/test-editor/test-editor-xtext-gradle.git"
+            licenses = ['EPL-1.0']
+            vcsUrl = "https://github.com/test-editor/${project.name}.git"
             version {
                 name = project.version
                 vcsTag = "v$project.version"
@@ -110,42 +135,6 @@ subprojects {
         }
     }
 
-
-    configurations.all {
-	    exclude group: 'asm'
-        resolutionStrategy {
-            force "org.antlr:antlr-runtime:${antlrRuntime}"
-            force "org.eclipse.emf:org.eclipse.emf.ecore:${xtextVersion}"
-        }
-    }
-
-    test {
-        // configure logging within tests (see https://docs.gradle.org/current/dsl/org.gradle.api.tasks.testing.logging.TestLogging.html)
-        // show standard out during test to see logging output
-        testLogging.showStandardStreams = true
-        // make sure that assertion failures are reported more verbose!
-        testLogging.exceptionFormat = 'full'
-
-        // report finished test with status
-        afterTest { desc, result ->
-            logger.quiet "${result.resultType}: ${desc.name} [${desc.className}]"
-        }
-
-        maxParallelForks = Runtime.runtime.availableProcessors()
-    }
-}
-
-// all projects are released, except those ending on '.testing' or '.web'!
-configure(subprojects.findAll {!it.name.endsWith('.testing') && !it.name.endsWith('.web')}) {
-    apply plugin: 'net.researchgate.release'
-
-    release {
-        preTagCommitMessage = '[release]'
-        tagCommitMessage = '[release]'
-        newVersionCommitMessage = '[release] new version'
-        tagTemplate = 'v${version}'
-        buildTasks = []
-    }
 }
 
 // all projects depend on org.testeditor.loggong, except those ending on loggin!
