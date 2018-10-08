@@ -1,0 +1,45 @@
+/*******************************************************************************
+ * Copyright (c) 2012 - 2018 Signal Iduna Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ * Signal Iduna Corporation - initial API and implementation
+ * akquinet AG
+ * itemis AG
+ *******************************************************************************/
+@Ecore(nsURI="http://www.testeditor.org/tsl")
+@GenModel(
+	modelDirectory="org.testeditor.tsl.model/src-gen", 
+	complianceLevel="7.0"
+)
+
+package org.testeditor.tsl
+
+import org.testeditor.dsl.common.NamedElement
+
+class TslModel {
+	String ^package
+	contains TestSpecification specification 
+}
+
+class TestSpecification extends NamedElement {
+	String description
+	contains SpecificationStep[0..*] steps
+}
+
+class SpecificationStep {
+	contains StepContent[0..*] contents
+}
+
+abstract class StepContent {
+}
+
+abstract class StepContentValue extends StepContent {
+	String value
+}
+
+class StepContentText extends StepContentValue {}
+class StepContentVariable extends StepContentValue {}

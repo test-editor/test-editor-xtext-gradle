@@ -1,0 +1,8 @@
+dependencies {
+    compile project(':org.testeditor.tcl.dsl')
+    compile "org.eclipse.xtext:org.eclipse.xtext.ide:${xtextVersion}"
+    compile "org.eclipse.xtext:org.eclipse.xtext.xbase.ide:${xtextVersion}"
+
+    testCompile project(':org.testeditor.tcl.model')
+    testCompile project(':org.testeditor.tcl.dsl.testing')
+}

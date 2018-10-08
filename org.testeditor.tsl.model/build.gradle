@@ -1,0 +1,3 @@
+dependencies {
+    compile project(':org.testeditor.dsl.common.model')
+}

@@ -1,0 +1,7 @@
+dependencies {
+    compile project(':org.testeditor.dsl.common.model')
+    compile project(':org.testeditor.aml.model')
+    compile project(':org.testeditor.tsl.model')
+    compile project(':org.testeditor.dsl.common')
+    compile "org.testeditor.fixture:core-fixture:4.1.+"
+}

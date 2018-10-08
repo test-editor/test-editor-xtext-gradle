@@ -1,0 +1,21 @@
+dependencies {
+    compile project(':org.testeditor.aml.model')
+    compile project(':org.testeditor.dsl.common')
+
+    testCompile project(':org.testeditor.aml.dsl.testing')
+}
+
+task generateXtextLanguage(type: JavaExec) {
+    main = 'org.eclipse.emf.mwe2.launch.runtime.Mwe2Launcher'
+    classpath = configurations.mwe2
+    inputs.file "src/main/java/org/testeditor/aml/dsl/GenerateAml.mwe2"
+    inputs.file "src/main/java/org/testeditor/aml/dsl/Aml.xtext"
+    outputs.dir "src/main/xtext-gen"
+    args += "src/main/java/org/testeditor/aml/dsl/GenerateAml.mwe2"
+    args += "-p"
+    args += "rootPath=/${projectDir}/.."
+}
+
+generateXtext.dependsOn(generateXtextLanguage)
+clean.dependsOn(cleanGenerateXtextLanguage)
+eclipse.classpath.plusConfigurations += [configurations.mwe2]
