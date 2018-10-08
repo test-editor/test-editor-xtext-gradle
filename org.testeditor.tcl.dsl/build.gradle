@@ -5,7 +5,6 @@ dependencies {
     // compile "org.eclipse.xtext:org.eclipse.xtext.builder:${xtextVersion}" // 2.9.2, 2.10.0 currently no 2.15.0
     testCompile project(':org.testeditor.aml.dsl.testing')
     testCompile project(':org.testeditor.tcl.dsl.testing')
-    // testCompile "org.testeditor.fixture:core-fixture:4.1.+"
 }
 
 task generateXtextLanguage(type: JavaExec) {

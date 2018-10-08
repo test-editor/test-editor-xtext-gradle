@@ -1,17 +1,24 @@
+# gradle
 .gradle/
-bin/
 build/
+
+# mwe2
 xtend-gen/
 xtext-gen/
 java-gen/
 src-gen/
 src-gen/
+
+# eclipse
+bin/
 .settings/
 .classpath
 .project
 build.properties
 plugin.*
 .launch/
-testeditor.log
 META-INF/
 hs_err*.log
+
+# testeditor itself
+testeditor.log
