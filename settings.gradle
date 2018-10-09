@@ -1,3 +1,5 @@
+rootProject.name = 'test-editor'
+
 include 'org.testeditor.aml.dsl'
 include 'org.testeditor.aml.dsl.ide'
 include 'org.testeditor.aml.dsl.testing'

@@ -1,6 +1,5 @@
 plugins {
     id 'maven'
-    id 'maven-publish'
     id 'java'
     id 'org.xtext.xtend' version '2.0.1'
     id 'eclipse'
@@ -15,9 +14,12 @@ release {
     tagTemplate = 'v${version}'
 }
 
+task build {
+    dependsOn = subprojects.collect{it.tasks['build']}
+}
+
 subprojects {
     apply plugin: 'maven'
-    apply plugin: 'maven-publish'
     apply plugin: 'java'
     apply plugin: 'org.xtext.xtend'
     apply plugin: 'eclipse'
@@ -99,62 +101,7 @@ subprojects {
 
 // all projects are released, except those ending on '.testing'
 configure(subprojects.findAll {!it.name.endsWith('.testing')}) {
-    apply plugin: 'net.researchgate.release'
-    apply plugin: 'com.jfrog.bintray'
-
-    jar {
-        manifest {
-            attributes 'Implementation-Title': "${project.group}.${project.name}",
-            'Implementation-Version': project.version
-        }
-    }
-
-    task sourcesJar(type: Jar, dependsOn: classes) {
-        classifier 'sources'
-        from sourceSets.main.allSource
-    }
-
-    artifacts {
-        archives sourcesJar
-    }
-
-    install {
-        repositories.mavenInstaller {
-            pom.packaging = 'jar'
-        }
-    }
-
-    publishing {
-        publications {
-            MyPublication(MavenPublication) {
-                from components.java
-                artifact sourcesJar
-                groupId 'org.testedito5r'
-                artifactId project.name
-                version project.version
-            }
-        }
-    }
-
-    bintray {
-        user = System.getenv('BINTRAY_USER')
-        key = System.getenv('BINTRAY_KEY')
-        configurations = ['archives']
-        publish = true
-        pkg {
-            repo = 'maven'
-            name = project.name
-            userOrg = 'test-editor'
-            licenses = ['EPL-1.0']
-            labels = ['test-editor', 'testeditor', 'xtend', 'xtext']
-            vcsUrl = "https://github.com/test-editor/test-editor-xtext-gradle.git"
-            version {
-                name = project.version
-                vcsTag = "v$project.version"
-            }
-            websiteUrl = 'http://testeditor.org'
-        }
-    }
+    apply from: "$rootDir/gradle/publishing.gradle"
 }
 
 // all projects depend on org.testeditor.loggong, except those ending on loggin!
