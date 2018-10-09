@@ -4,6 +4,7 @@ stdenv.mkDerivation {
     name = "test-editor-xtext-gradle";
     buildInputs = [
         jdk8
+        travis
     ];
     shellHook = ''
         # do some gradle "finetuning"

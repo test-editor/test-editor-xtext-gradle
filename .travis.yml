@@ -1,11 +1,16 @@
 language: java
 sudo: false
 jdk:
-  - oraclejdk8
+- oraclejdk8
 cache:
   directories:
-  - $HOME/.gradle/caches/
-  - $HOME/.gradle/wrapper/
+  - "$HOME/.gradle/caches/"
+  - "$HOME/.gradle/wrapper/"
 after_success:
-  - bash <(curl -s https://codecov.io/bash)
-  - ./.travis-publishOnRelease.sh # publishes only if tagged with v.*
+- bash <(curl -s https://codecov.io/bash)
+- "./.travis-publishOnRelease.sh"  # publishes only if tagged with v.*
+env:
+  global:
+  # added via 'travis encrypt ENV_VAR=ENV_VALUE --add env.global'
+  - secure: dWih1dPK7c1vw6I756JdlPb2zPsM1dzt950bIDmV3x+ZJ4TSnAWFkX2p0wL1vyunMbsA2Rg6JtF3MODW6s0i3wKD311kgeXNxwJAHveGLlXhn5IJiijkXgTzrudwpLOj20rxxISwGVDYPKAyjETGNiEZfvETjWUgCXnMgZSCHNWY6C8i+Bti0QkFv/PozdAEXbYRGbJYLeyRjk2laMCpnvYr1wHaBpR4K8tlTuulTRbtOjR2JkE7Ss4uo0n9UCWQzaD28wisOwocux6FIDQitAR3iXHTl22UJeI8nKpku3R69rH4vhNZ0qXr6g0fi8htaPwT0UoJDlf3xKE1MSvCvBHhg3QnHM7NRA2ewbA2f36L7B0Plm1/5WQwZ7Rs7CXBCgEd2rJ8L3j0SH8EE07V1Ip3ZPImK/kCaEnTsnqM1YrV4Zaiu5xoZ5nQXhZ0IwQxA71Y2LuVvw71hIcmTeAAviM7h2TdeSECG+utuQQOeeb2UCWNb2Um9lpMiYwdfSGRyLgJTKM3kTt84n+YI5VEm4xkfLt4lO4AKpK3M18MIBFtZdsRV0GIGdUH2UNGk57iislsZPNvwra+vyg5cwaYKr7JYgYUnimVH1rD6g23bDq+fcAjEKmy5F8KaWLxlL0F2wDWkDCIQ10emLqFTYDI+JkjcZa7ZkRUBYaiCVbNCCU=
+  - secure: mJ88wxoTMPvstJZ1UuBmrOEYDgIVFN2cbr1RzDftm80rL3FMPNwUSfIY2ablTmY9y83ON2H22RineKhYmu/bF6xnKc1a5N3LaROuoVrE7ROi2ru56F2JFSffIBp0YDtXSJ4KkWyphFtJG8INis0wwv9n3DWdLF4Q2dIFx47l9vuZcvT8+vcDuWwzDb9YP5M59lkrXJQAtcYs8UBTcO5AnjBLcULSHnUgLFghtP1KEtJjqk/zqJTbqbK7zDvd1v1G6MTevvW5+ONDY6RjeZM2aBQp0lmEfp9qEs+FtaskW+/HVcfq1zeWZiLyCGTqJGPyvVlTPSCIHvjninUFeYHJe22OJT32YRlXG2gMsQAZLFm2hdw4jO/wHihjb3n9/eu7OuhRhqQO3n6WiudL98RYL+uiPY490e6MiMeny7D9ZKx2E5b+ehgVeohMHtj+KlHf1AVlO3J6ngYbyGHN+NMJptWkhm4npwwA4SbkKdUiCWHp8rCnGOJDa6bfrm0ziOZEDu5ny1xFpfzigE4dydzRmPPnOeeXXA4ldIw5uD10l3O1FEVlUYJoo7/ojPWzf5nLffpOaNfU/cUfNYGEsj6fvxsiT1nFSgmDlo2A5HbtDlSHgpkxplLPT4Ui+KRw5yVX9ZMf6XFs8DvQaEfOYXcAktSCq2cFPwUvhC5gXbP3cdU=
