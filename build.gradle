@@ -40,8 +40,9 @@ subprojects {
         jdtCoreVersion = '3.12.2'
 
         // for (some) web projects
-        jettyAnnotations = '9.4.9.v20180320'
-        slf4jSimple = '1.7.21'
+        jettyAnnotations = '9.4.12.v20180830'
+        slf4jApi = '1.7.25'
+        log4jApi = '2.5'
         requirejsVersion = '2.3.2'
         jqueryVersion = '2.2.+'
         aceEditorVersion = '1.2.3'
@@ -80,6 +81,11 @@ subprojects {
 
         maxParallelForks = Runtime.runtime.availableProcessors()
     }
+
+    tasks.withType(JavaCompile) {
+        // options.compilerArgs << '-Xlint:unchecked'
+    }
+
 }
 
 // all projects are released, except those ending on '.testing'
@@ -134,7 +140,6 @@ configure(subprojects.findAll {!it.name.endsWith('.testing')}) {
             websiteUrl = 'http://testeditor.org'
         }
     }
-
 }
 
 // all projects depend on org.testeditor.loggong, except those ending on loggin!

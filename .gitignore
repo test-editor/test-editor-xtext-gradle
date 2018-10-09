@@ -9,6 +9,9 @@ java-gen/
 src-gen/
 src-gen/
 
+# antlr
+.antlr-generator-*.jar
+
 # eclipse
 bin/
 .settings/

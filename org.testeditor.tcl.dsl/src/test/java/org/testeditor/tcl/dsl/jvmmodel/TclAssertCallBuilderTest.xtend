@@ -37,7 +37,6 @@ class TclAssertCallBuilderTest extends AbstractTclTest {
 	
 	@Mock protected TclModelUtil tclModelUtil // injected into class under test
 	@Mock TclExpressionBuilder expressionBuilder // injected into class under test
-	@Mock SimpleTypeComputer simpleTypeComputer // injected into class under test
 	@Mock VariableCollector variableCollector // injected into class under test	
 	@Mock TclExpressionTypeComputer tclExpressionTypeComputer // injected into class under test
 	@Mock JvmTypeReferenceUtil tclJvmTypeReferenceUtil // injected into class under test
@@ -50,6 +49,14 @@ class TclAssertCallBuilderTest extends AbstractTclTest {
 	
 	static val VARIABLE_NAME = 'variable'
 	static val STRING_FOR_COMPARISON = 'test'
+	
+	@Before
+	def void makeDummyUseForRequiredMocks() {
+		// they definitely are used to return mocked responses when injected into assertCallBuilder
+		// since these will otherwise be marked as unused
+		tclExpressionTypeComputer.hashCode
+		elementStringifier.hashCode
+	}
 	
 	@Before
 	def void setupExpressionBuilder() {
