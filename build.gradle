@@ -128,7 +128,7 @@ configure(subprojects.findAll {!it.name.endsWith('.testing')}) {
         configurations = ['archives']
         publish = true
         pkg {
-            repo = 'test-editor-xtext-gradle'
+            repo = 'maven'
             name = project.name
             userOrg = 'test-editor'
             licenses = ['EPL-1.0']
