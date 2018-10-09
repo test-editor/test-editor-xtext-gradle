@@ -43,7 +43,7 @@ If the build process stops with failures generating the Xtext languages, it usua
 
 In order to create a release switch to the `master` branch and execute
 
-    ./gradlew release
+    ./gradlew :release
 
 and enter the new version. After the commit and tag is pushed Travis will automatically build and deploy the tagged version to Bintray.
 
