@@ -14,10 +14,6 @@ release {
     tagTemplate = 'v${version}'
 }
 
-task build {
-    dependsOn = subprojects.collect{it.tasks['build']}
-}
-
 subprojects {
     apply plugin: 'maven'
     apply plugin: 'java'
