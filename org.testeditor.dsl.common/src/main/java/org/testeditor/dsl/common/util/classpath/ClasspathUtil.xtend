@@ -31,7 +31,6 @@ class ClasspathUtil {
 
 	static val logger = LoggerFactory.getLogger(ClasspathUtil)
 
-	@Inject MavenClasspathUtil mavenClasspathUtil
 	@Inject GradleClasspathUtil gradleClasspathUtil
 	
 	// called by AmlDelegateScopeProvider (for example) to derive package name
@@ -97,19 +96,11 @@ class ClasspathUtil {
 		return baseDir.toFile.list.contains("build.gradle")
 	}
 	
-	def boolean isMavenProjectBaseDir(IPath baseDir) {
-		return baseDir.toFile.list.contains("pom.xml")
-	}
-
 	def IPath getBuildToolClasspathEntry(IPath path) {
 		logger.info("Searching classpath for {}.", path)
 		val baseDir = path.getBuildProjectBaseDir
 		if (baseDir !== null) {
 			switch (baseDir) {
-				case baseDir.isMavenProjectBaseDir: return mavenClasspathUtil.getMavenClasspathEntries(baseDir).findFirst[
-					logger.debug("Checking maven classpath='{}'.", it.toOSString)
-					it.isPrefixOf(path)
-				]
 				case baseDir.isGradleProjectBaseDir: return gradleClasspathUtil.getGradleSourceSetPaths(baseDir).findFirst[
 					logger.debug("Checking gradle classpath='{}'.", it.toOSString)
 					it.isPrefixOf(path)

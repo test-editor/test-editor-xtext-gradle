@@ -6,5 +6,5 @@ dependencies {
     compile project(':org.testeditor.aml.dsl')
     compile project(':org.testeditor.aml.dsl.ide')
     providedCompile "org.eclipse.jetty:jetty-annotations:${jettyAnnotations}"
-    providedCompile "org.slf4j:slf4j-simple:${slf4jSimple}"
+    providedCompile "org.slf4j:slf4j-simple:${slf4jApi}"
 }
