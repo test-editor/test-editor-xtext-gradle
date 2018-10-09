@@ -53,40 +53,43 @@ You may notice a certain symmetry of the xtext language projects tsl, tcl and am
 
 - [aml.dsl](org.testeditor.aml.dsl/README.md)
   Xtext language definition for the application mapping language (aml)
-- aml.dsl.ide
+- [aml.dsl.ide](org.testeditor.aml.dsl.ide/README.md)
   Additional functionality for editors for the aml
-- aml.dsl.testing
+- [aml.dsl.testing](org.testeditor.aml.dsl.testing/README.md)
   Testing code that can be reused by other projects
-- aml.dsl.web
+- [aml.dsl.web](org.testeditor.aml.dsl.web/README.md)
   Project for web-editor specific code (purely generated from aml.dsl)
-- aml.model
+- [aml.model](org.testeditor.aml.model/README.md)
   Xcore model for the AST of parsed aml artifacts
   
-- dsl.common
+- [dsl.common](org.testeditor.dsl.common/README.md)
   Reusable functionality for all test-editor languages (tsl, tcl, aml)
-- dsl.common.model
+- [dsl.common.model](org.testeditor.dsl.common.model/README.md)
   Reusable functionality for all test-editor language AST models
-- dsl.common.testing
+- [dsl.common.testing](org.testeditor.dsl.common.testing/README.md)
   Reusable functionality for testing all test-editor languages
   
-- tcl.dsl
+- [logging](org.testeditor.logging/README.md)
+  Common logging definitions
+  
+- [tcl.dsl](org.testeditor.tcl.dsl/README.md)
   Xtext language definition for the test case language (tcl)
-- tcl.dsl.ide
+- [tcl.dsl.ide](org.testeditor.tcl.dsl.ide/README.md)
   Additional functionality for editors for the tcl
-- tcl.dsl.testing
+- [tcl.dsl.testing](org.testeditor.tcl.dsl.testing/README.md)
   Testing code that can be reused
-- tcl.dsl.web
+- [tcl.dsl.web](org.testeditor.tcl.dsl.web/README.md)
   Project for web-editor specific code (purely generated from tcl.dsl)
-- tcl.model
+- [tcl.model](org.testeditor.tcl.model/README.md)
   Xcore model for the AST of parsed tcl artifacts
   
-- tsl.dsl
+- [tsl.dsl](org.testeditor.tsl.dsl/README.md)
   Xtext language definition for the test specification language (tsl)
-- tsl.dsl.ide
+- [tsl.dsl.ide](org.testeditor.tsl.dsl.ide/README.md)
   Additional functionality for editors for the tsl
-- tsl.dsl.web
+- [tsl.dsl.web](org.testeditor.tsl.dsl.web/README.md)
   Project for web-editor specific code (mostly generated from tsl.dsl)
-- tsl.model
+- [tsl.model](org.testeditor.tsl.model/README.md)
   Xcore model for the AST of parsed tsl artifacts
 
 ### Project dependencies

@@ -1,0 +1,4 @@
+# Logging
+
+Common logging definitions
+

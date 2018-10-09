@@ -4,5 +4,5 @@
 if [[ -n "$TRAVIS_TAG" && "$TRAVIS_TAG" == v* ]]; then
     version="${TRAVIS_TAG//v}"
     echo "Publishing version: $version"
-    ./gradlew bintrayUpload
+    ./gradlew bintrayUpload --stack-trace
 fi
