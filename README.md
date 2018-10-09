@@ -46,3 +46,52 @@ In order to create a release switch to the `master` branch and execute
     ./gradlew release
 
 and enter the new version. After the commit and tag is pushed Travis will automatically build and deploy the tagged version to Bintray.
+
+### Project overview
+
+You may notice a certain symmetry of the xtext language projects tsl, tcl and aml. To get a more detailed description of the subprojects, please look at their respective README.md.
+
+- [aml.dsl](org.testeditor.aml.dsl/README.md)
+  Xtext language definition for the application mapping language (aml)
+- aml.dsl.ide
+  Additional functionality for editors for the aml
+- aml.dsl.testing
+  Testing code that can be reused by other projects
+- aml.dsl.web
+  Project for web-editor specific code (purely generated from aml.dsl)
+- aml.model
+  Xcore model for the AST of parsed aml artifacts
+  
+- dsl.common
+  Reusable functionality for all test-editor languages (tsl, tcl, aml)
+- dsl.common.model
+  Reusable functionality for all test-editor language AST models
+- dsl.common.testing
+  Reusable functionality for testing all test-editor languages
+  
+- tcl.dsl
+  Xtext language definition for the test case language (tcl)
+- tcl.dsl.ide
+  Additional functionality for editors for the tcl
+- tcl.dsl.testing
+  Testing code that can be reused
+- tcl.dsl.web
+  Project for web-editor specific code (purely generated from tcl.dsl)
+- tcl.model
+  Xcore model for the AST of parsed tcl artifacts
+  
+- tsl.dsl
+  Xtext language definition for the test specification language (tsl)
+- tsl.dsl.ide
+  Additional functionality for editors for the tsl
+- tsl.dsl.web
+  Project for web-editor specific code (mostly generated from tsl.dsl)
+- tsl.model
+  Xcore model for the AST of parsed tsl artifacts
+
+### Project dependencies
+
+Given the number of subprojects within this project, the following graphics may shed some light into what dependencies currently exist.
+![Project dependencies](testeditor-project-dependencies.png)
+`Compile` dependencies are regular arrows, `testCompile` dependencies are dashed arrows
+

@@ -1,0 +1,69 @@
+object aml_dsl
+object aml_dsl_ide
+object aml_dsl_testing
+object aml_dsl_web
+object aml_model
+object dsl_common
+object dsl_common_model
+object dsl_common_testing
+object tcl_dsl
+object tcl_dsl_ide
+object tcl_dsl_testing
+object tcl_dsl_web
+object tcl_model
+object tsl_dsl
+object tsl_dsl_ide
+object tsl_dsl_web
+object tsl_model
+
+aml_dsl --|> aml_model
+aml_dsl --|> dsl_common
+aml_dsl ..|> aml_dsl_testing
+
+aml_dsl_ide --|> aml_dsl
+
+aml_dsl_testing --|> dsl_common_testing
+aml_dsl_testing --|> aml_model
+
+aml_dsl_web --|> aml_dsl
+aml_dsl_web --|> aml_dsl_ide
+
+aml_model --|> dsl_common_model
+
+dsl_common_testing --|> dsl_common
+dsl_common_testing --|> aml_model
+dsl_common_testing --|> aml_dsl
+dsl_common_testing --|> tsl_model
+dsl_common_testing --|> tsl_dsl
+dsl_common_testing --|> tcl_model
+dsl_common_testing --|> tcl_dsl
+
+tcl_dsl --|> tcl_model
+tcl_dsl --|> aml_dsl
+
+tcl_dsl ..|> aml_dsl_testing
+tcl_dsl ..|> tcl_dsl_testing
+
+tcl_dsl_ide --|> tcl_dsl
+tcl_dsl_ide ..|> tcl_model
+tcl_dsl_ide ..|> tcl_dsl_testing
+
+tcl_dsl_testing --|> dsl_common_testing
+tcl_dsl_testing --|> aml_dsl_testing
+tcl_dsl_testing --|> tcl_model
+tcl_dsl_testing --|> tcl_dsl
+
+tcl_model --|> dsl_common_model
+tcl_model --|> aml_model
+tcl_model --|> tsl_model
+tcl_model --|> dsl_common
+
+tsl_dsl --|> tsl_model
+tsl_dsl --|> dsl_common
+
+tsl_dsl_ide --|> tsl_dsl
+
+tsl_dsl_web --|> tsl_dsl
+tsl_dsl_web --|> tsl_dsl_ide
+
+tsl_model --|> dsl_common_model
