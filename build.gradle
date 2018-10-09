@@ -7,6 +7,13 @@ plugins {
     id 'net.researchgate.release' version '2.7.0'
 }
 
+release {
+    preTagCommitMessage = '[release]'
+    tagCommitMessage = '[release]'
+    newVersionCommitMessage = '[release] new version'
+    tagTemplate = 'v${version}'
+}
+
 subprojects {
     apply plugin: 'maven'
     apply plugin: 'java'
@@ -113,13 +120,6 @@ configure(subprojects.findAll {!it.name.endsWith('.testing')}) {
         repositories.mavenInstaller {
             pom.packaging = 'jar'
         }
-    }
-
-    release {
-        preTagCommitMessage = '[release]'
-        tagCommitMessage = '[release]'
-        newVersionCommitMessage = '[release] new version'
-        tagTemplate = 'v${version}'
     }
 
     bintray {
