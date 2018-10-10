@@ -17,7 +17,7 @@ release {
 }
 
 subprojects {
-    apply plugin: 'maven' // necessary for publish a maven artifact
+    apply plugin: 'maven' // necessary to publish maven artifacts
     apply plugin: 'java'
     apply plugin: 'org.xtext.xtend'
 
