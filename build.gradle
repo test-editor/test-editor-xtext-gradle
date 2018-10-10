@@ -1,7 +1,12 @@
 plugins {
+    // provides all necessary tasks (assemble, check, install) even though not necessary for the root project that are passed on to the subprojects
     id 'org.xtext.xtend' version '2.0.1'
-    id 'com.jfrog.bintray' version '1.8.4'
+    // no need to upload the root project itself, thus apply = false
+    id 'com.jfrog.bintray' version '1.8.4' apply false
+    // necessary to configure the release (tags)
     id 'net.researchgate.release' version '2.7.0'
+    // allow eclipse project meta data generation
+    id 'eclipse'
 }
 
 release {
@@ -12,13 +17,11 @@ release {
 }
 
 subprojects {
-    apply plugin: 'maven'
+    apply plugin: 'maven' // necessary for publish a maven artifact
     apply plugin: 'java'
     apply plugin: 'org.xtext.xtend'
-    apply plugin: 'eclipse'
 
     apply from: "${rootDir}/gradle/source-layout.gradle"
-    // apply from: "${rootDir}/gradle/maven-deployment.gradle"
 
     ext {
         xtextVersion = '2.15.0'
@@ -92,26 +95,26 @@ subprojects {
 
 }
 
-// all projects are released, except those ending on '.testing'
+// all sub projects are released, except those ending on '.testing'
 configure(subprojects.findAll {!it.name.endsWith('.testing')}) {
     apply from: "$rootDir/gradle/publishing.gradle"
 }
 
-// all projects depend on org.testeditor.loggong, except those ending on loggin!
+// all sub projects depend on org.testeditor.loggong, except those ending on loggin!
 configure(subprojects.findAll {!it.name.endsWith('.logging')}) {
     dependencies {
         compile project(':org.testeditor.logging')
     }
 }
 
-// all projects depend on common.testing, except those project, ending on testing!
+// all sub projects depend on common.testing, except those project, ending on testing!
 configure(subprojects.findAll {!it.name.endsWith('.testing')}) {
     dependencies {
         testCompile project(':org.testeditor.dsl.common.testing')
     }
 }
 
-// all web projects depend on these libraries
+// all web sub projects depend on these libraries
 configure(subprojects.findAll {it.name.endsWith('.web')}) {
     dependencies {
 	    compile "org.eclipse.xtext:org.eclipse.xtext.xbase.web:${xtextVersion}"
@@ -123,7 +126,7 @@ configure(subprojects.findAll {it.name.endsWith('.web')}) {
     }
 }
 
-// all language generating projects depend on these libraries and run mwe2 tasks
+// all language generating sub projects depend on these libraries and run mwe2 tasks
 configure(subprojects.findAll {it.name.endsWith('.dsl')}) {
     dependencies {
         compile "org.eclipse.xtext:org.eclipse.xtext:${xtextVersion}"
@@ -152,7 +155,7 @@ configure(subprojects.findAll {it.name.endsWith('.dsl')}) {
     }
 }
 
-// all xcore model projects have these dependencies, include the model source into the jar,
+// all xcore model sub projects have these dependencies, include the model source into the jar,
 // and configure xtext to know about ecore, codegen and xcore!
 configure(subprojects.findAll {it.name.endsWith('.model')}) {
     dependencies {
@@ -206,13 +209,4 @@ configure(subprojects.findAll {it.name.endsWith('.model')}) {
             }
         }
     }
-}
-
-def String getBranchName() {
-    def branch = ''
-    def proc = 'git rev-parse --abbrev-ref HEAD'.execute()
-    proc.in.eachLine { line -> branch = line }
-    proc.err.eachLine { line -> println line }
-    proc.waitFor()
-    return branch
 }
