@@ -50,9 +50,6 @@ subprojects {
         jettyAnnotations = '9.4.12.v20180830'
         slf4jApi = '1.7.25'
         log4jApi = '2.5'
-        requirejsVersion = '2.3.2'
-        jqueryVersion = '2.2.+'
-        aceEditorVersion = '1.2.3'
     }
 
     repositories {
@@ -63,8 +60,8 @@ subprojects {
 
     group = 'org.testeditor'
 
-    sourceCompatibility = '1.8'
-    targetCompatibility = '1.8'
+    sourceCompatibility = '1.10'
+    targetCompatibility = '1.10'
 
     configurations.all {
 	    exclude group: 'asm'
@@ -120,9 +117,11 @@ configure(subprojects.findAll {it.name.endsWith('.web')}) {
 	    compile "org.eclipse.xtext:org.eclipse.xtext.xbase.web:${xtextVersion}"
 	    compile "org.eclipse.xtext:org.eclipse.xtext.web.servlet:${xtextVersion}"
 	    compile "org.eclipse.xtend:org.eclipse.xtend.lib:${xtextVersion}"
-	    compile "org.webjars:requirejs:${requirejsVersion}"
-	    compile "org.webjars:jquery:${jqueryVersion}"
-	    compile "org.webjars:ace:${aceEditorVersion}"
+
+        // the compile references below are only necessary if a standalone web demo app should be functional, which is not necessary
+	    // compile "org.webjars:requirejs:2.3.2"
+	    // compile "org.webjars:jquery:2.2.+"
+	    // compile "org.webjars:ace:1.2.3"
     }
 }
 
