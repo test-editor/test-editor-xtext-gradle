@@ -15,7 +15,7 @@ before_cache:
 script: nix-shell --command "./gradlew assemble check install"
 after_success:
 - bash <(curl -s https://codecov.io/bash)
-- "./.travis-publishOnRelease.sh"  # publishes only if tagged with v.*
+- nix-shell --command "./.travis-publishOnRelease.sh"  # publishes only if tagged with v.*
 env:
   global:
   # added via 'travis encrypt ENV_VAR=ENV_VALUE --add env.global'
