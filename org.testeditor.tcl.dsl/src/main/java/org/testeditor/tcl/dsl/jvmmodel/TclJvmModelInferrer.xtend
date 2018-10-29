@@ -494,10 +494,10 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 		logger.debug('''generating code line for assertion test step at «locationString».''')
 		val variables = EcoreUtil2.getAllContentsOfType(step.assertExpression, VariableReference)
 		val id = generateNewIDVar
-		output.appendReporterCall(SemanticUnit.STEP, Action.ENTER, '''assert «assertionText(step.assertExpression)»''', id, Status.STARTED, variables)
+		output.appendReporterCall(SemanticUnit.STEP, Action.ENTER, '''assert «assertionText(step.assertExpression)»''', id, Status.STARTED, variables, null)
 		output.newLine
 		output.append(assertCallBuilder.build(step.assertExpression, locationString))
-		output.appendReporterCall(SemanticUnit.STEP, Action.LEAVE, '''assert «assertionText(step.assertExpression)»''', id, Status.OK, variables)
+		output.appendReporterCall(SemanticUnit.STEP, Action.LEAVE, '''assert «assertionText(step.assertExpression)»''', id, Status.OK, variables, null)
 	}
 
 	private def String toReportableString(ILocationData locationData) {
@@ -576,8 +576,9 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 			val operation = interaction.defaultMethod?.operation
 			if (fixtureField !== null && operation !== null) {
 				val variables = EcoreUtil2.getAllContentsOfType(step, VariableReference)
+				val amlElements = EcoreUtil2.getAllContentsOfType(step, StepContentElement)
 				val id = generateNewIDVar
-				output.appendReporterCall(SemanticUnit.STEP, Action.ENTER, stepLog, id, Status.STARTED, variables)
+				output.appendReporterCall(SemanticUnit.STEP, Action.ENTER, stepLog, id, Status.STARTED, variables, amlElements)
 
 				output.addCoercionChecksWhereApplicable(step, interaction)
 				output.newLine
@@ -592,7 +593,7 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 					val codeLine = '''«fixtureField».«operation.simpleName»(«generateCallParameters(step, interaction)»);'''
 					output.append(codeLine) // please call with string, since tests checks against expected string which fails for passing ''' directly
 				]
-				output.appendReporterCall(SemanticUnit.STEP, Action.LEAVE, stepLog, id, Status.OK, variables)
+				output.appendReporterCall(SemanticUnit.STEP, Action.LEAVE, stepLog, id, Status.OK, variables, amlElements)
 			} else {
 				output.append('''// TODO interaction type '«interaction.name»' does not have a proper method reference''')
 			}
@@ -641,7 +642,7 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 
 		val id = generateNewIDVar
 		val macro = step.findMacroDefinition(context)
-		output.appendReporterCall(SemanticUnit.STEP, Action.ENTER, stepLog, id, Status.STARTED, null)
+		output.appendReporterCall(SemanticUnit.STEP, Action.ENTER, stepLog, id, Status.STARTED, null, null)
 		output.newLine
 		if (macro !== null) {
 			step.contents.filter(VariableReference).forEach [
@@ -659,7 +660,7 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 		} else {
 			output.append('''org.junit.Assert.fail("Could not resolve '«context.macroCollection.name»'. Please check your «step.locationInfo»");''')
 		}
-		output.appendReporterCall(SemanticUnit.STEP, Action.LEAVE, stepLog, id, Status.OK, null)
+		output.appendReporterCall(SemanticUnit.STEP, Action.LEAVE, stepLog, id, Status.OK, null, null)
 	}
 
 	private def String generateCallParameters(TestStep step, TemplateContainer templateContainer) {
@@ -755,8 +756,8 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 	}
 
 	private def void appendReporterCall(ITreeAppendable output, SemanticUnit unit, Action action, String message, String id, Status status,
-		List<VariableReference> variables) {
-		testRunReporterGenerator.buildReporterCall(_typeReferenceBuilder?.typeRef(SemanticUnit)?.type, unit, action, message, id, status, reporterFieldName, variables,
+		List<VariableReference> variables, List<StepContentElement> amlElements) {
+		testRunReporterGenerator.buildReporterCall(_typeReferenceBuilder?.typeRef(SemanticUnit)?.type, unit, action, message, id, status, reporterFieldName, variables, amlElements,
 			typeReferenceUtil.stringJvmTypeReference).forEach [
 			switch (it) {
 				JvmType: output.append(it)
@@ -767,11 +768,11 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 	}
 
 	private def void appendReporterEnterCall(ITreeAppendable output, SemanticUnit unit, String message, String id, Status status) {
-		appendReporterCall(output, unit, Action.ENTER, message, id, status, null)
+		appendReporterCall(output, unit, Action.ENTER, message, id, status, null, null)
 	}
 
 	private def void appendReporterLeaveCall(ITreeAppendable output, SemanticUnit unit, String message, String id, Status status) {
-		appendReporterCall(output, unit, Action.LEAVE, message, id, status, null)
+		appendReporterCall(output, unit, Action.LEAVE, message, id, status, null, null)
 	}
 
 }

@@ -150,7 +150,7 @@ class MacroGeneratorIntegrationTest extends org.testeditor.tcl.dsl.jvmmodel.Abst
 			    try {
 			      String IDvar=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.MACRO, "ReadMacro", IDvar, TestRunReporter.Status.STARTED, variables());
 			      String IDvar=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.COMPONENT, "GreetingApplication", IDvar, TestRunReporter.Status.STARTED, variables());
-			      String IDvar=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "value = Read value from <bar> [java.lang.String]", IDvar, TestRunReporter.Status.STARTED, variables());
+			      String IDvar=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "value = Read value from <bar> [java.lang.String]", IDvar, TestRunReporter.Status.STARTED, variables("<bar>", "Locator: label.greet in __synthetic0.aml:123"));
 			      java.lang.String value = dummyFixture.getValue("label.greet");
 			'''.indent(1))
 		]
@@ -251,9 +251,9 @@ class MacroGeneratorIntegrationTest extends org.testeditor.tcl.dsl.jvmmodel.Abst
 				  try {
 				    String IDvar=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.MACRO, "SetValueAndWait", IDvar, TestRunReporter.Status.STARTED, variables());
 				    String IDvar=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.COMPONENT, "GreetingApplication", IDvar, TestRunReporter.Status.STARTED, variables());
-				    String IDvar=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "value = Read value from <bar> [java.lang.String]", IDvar, TestRunReporter.Status.STARTED, variables());
+				    String IDvar=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "value = Read value from <bar> [java.lang.String]", IDvar, TestRunReporter.Status.STARTED, variables("<bar>", "Locator: label.greet in __synthetic0.aml:123"));
 				    java.lang.String value = dummyFixture.getValue("label.greet");
-				    reporter.leave(TestRunReporter.SemanticUnit.STEP, "value = Read value from <bar> [java.lang.String]", IDvar, TestRunReporter.Status.OK, variables());
+				    reporter.leave(TestRunReporter.SemanticUnit.STEP, "value = Read value from <bar> [java.lang.String]", IDvar, TestRunReporter.Status.OK, variables("<bar>", "Locator: label.greet in __synthetic0.aml:123"));
 				    reporter.leave(TestRunReporter.SemanticUnit.COMPONENT, "GreetingApplication", IDvar, TestRunReporter.Status.OK, variables());
 				    String IDvar=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.MACRO_LIB, "MyMacroCollection", IDvar, TestRunReporter.Status.STARTED, variables());
 				    String IDvar=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "Set input to @value", IDvar, TestRunReporter.Status.STARTED, variables());
