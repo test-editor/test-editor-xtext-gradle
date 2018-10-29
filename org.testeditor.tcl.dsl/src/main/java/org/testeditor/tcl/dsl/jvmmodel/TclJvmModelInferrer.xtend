@@ -4,7 +4,7 @@
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- * 
+ *
  * Contributors:
  * Signal Iduna Corporation - initial API and implementation
  * akquinet AG
@@ -209,7 +209,7 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 			result.superTypes += typeRef(AbstractTestCase)
 		}
 		if (element instanceof TestCase) {
-			// Inherit from configuration, if set - need to be done before 
+			// Inherit from configuration, if set - need to be done before
 			if (element.config !== null) {
 				result.superTypes += typeRef(element.config.toClass(false))
 			} else {
@@ -273,9 +273,9 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 		]
 	}
 
-	/** 
+	/**
 	 * Creates variables for all used fixtures minus the ones already inherited
-	 * from the super class. 
+	 * from the super class.
 	 */
 	private def Iterable<JvmField> createFixtureVariables(JvmGenericType type, SetupAndCleanupProvider element) {
 		val typesToInstantiate = getAllTypesToInstantiate(element, type)
@@ -344,7 +344,7 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 	}
 
 	private def String generateNewIDVar() {
-		// TODO should we use output.declareVariable here!		
+		// TODO should we use output.declareVariable here!
 		return '''IDvar«variableIdRunningNumber++»'''
 	}
 
@@ -372,13 +372,13 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 			  «reporterFieldName».assertionExit(e);
 			  finishedTestWith(''').appendTestRunReporterType.append('''.Status.ERROR);
   org.junit.Assert.fail(e.getMessage());''')
-			
+
 			output.increaseIndentation
 		]
 	}
-	
+
 	private def appendTestRunReporterType(ITreeAppendable output) {
-		output.append(typeReferenceUtil.buildFrom(TestRunReporter).type) 
+		output.append(typeReferenceUtil.buildFrom(TestRunReporter).type)
 	}
 
 	/**

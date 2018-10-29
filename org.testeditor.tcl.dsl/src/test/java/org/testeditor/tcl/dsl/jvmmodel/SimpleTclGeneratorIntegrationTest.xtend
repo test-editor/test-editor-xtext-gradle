@@ -4,7 +4,7 @@
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- * 
+ *
  * Contributors:
  * Signal Iduna Corporation - initial API and implementation
  * akquinet AG
@@ -17,7 +17,7 @@ import org.junit.Test
 import org.testeditor.dsl.common.testing.DummyFixture
 
 class SimpleTclGeneratorIntegrationTest extends AbstractTclGeneratorIntegrationTest {
-	
+
 	@Before
 	def void parseMacroModel() {
 		parseTcl(DummyFixture.getMacroModel("GreetingApplicationMacro"))
@@ -40,11 +40,11 @@ class SimpleTclGeneratorIntegrationTest extends AbstractTclGeneratorIntegrationT
 		// then
 		generatedCode.assertEquals('''
 			package com.example;
-			
+
 			import org.junit.Test;
 			import org.testeditor.fixture.core.AbstractTestCase;
 			import org.testeditor.fixture.core.TestRunReporter;
-			
+
 			/**
 			 * Generated from SimpleTest.tcl
 			 */
@@ -78,7 +78,7 @@ class SimpleTclGeneratorIntegrationTest extends AbstractTclGeneratorIntegrationT
 				- baz = Read value from <bar>
 				- book = Read bool from <bar>
 				- mak = Read jsonObject from <bar>
-				- assert foo                                  // null check 
+				- assert foo                                  // null check
 				- assert baz = "fix"                          // assertEquals for String
 				- assert book                                 // checked to be true (not (only) null check)
 				- assert mak."key with spaces" = "fox"        // assertEquals with map dereferenced
@@ -197,7 +197,7 @@ class SimpleTclGeneratorIntegrationTest extends AbstractTclGeneratorIntegrationT
 			  }
 		'''.indent(1))
 	}
-	
+
 	@Test
 	def void testCoercionAndChecks() {
 		// given
@@ -210,14 +210,14 @@ class SimpleTclGeneratorIntegrationTest extends AbstractTclGeneratorIntegrationT
 				- stringvar = Read value from <bar>
 				- boolvar = Read bool from <bar>
 				- enumvar = Read enum from <bar>
-				
+
 				// usage of several types in map assignment
 				- jsonvar.key = jsonvar."some value"
 				- jsonvar."other key" = "value"
 				- jsonvar.key2 = stringvar // NO conversion, parsing is done
-				- jsonvar.key3 = longvar // NO conversion, parsing is done 
+				- jsonvar.key3 = longvar // NO conversion, parsing is done
 				- jsonvar.key4 = boolvar // NO conversion, parsing is done
-				
+
 				// usage of several types in method calls
 				- Type boolean @stringvar into <Input> // conversion && check from String to boolean
 				- TypeLong @stringvar into <Input> // converion && check from String to long
@@ -226,7 +226,7 @@ class SimpleTclGeneratorIntegrationTest extends AbstractTclGeneratorIntegrationT
 				- Set enum of <Input> to @enumvar
 				- Set enum of <Input> to @stringvar
 				- Set enum of <Input> to "enum_a"
-			
+
 				Macro: GreetingApplicationMacro
 				// usage of several types in macro calls
 				- TypeBoolean @jsonvar.key into input field // conversion && check
@@ -324,7 +324,7 @@ class SimpleTclGeneratorIntegrationTest extends AbstractTclGeneratorIntegrationT
 				- Start application "org.testeditor.swing.exammple.Greetings"
 				- foo = Read list from <bar>
 				- Stop application
-			
+
 			* Do something different
 		'''
 
@@ -434,6 +434,6 @@ class SimpleTclGeneratorIntegrationTest extends AbstractTclGeneratorIntegrationT
 			String IDvar2=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "Set value \"theValue\" to <Input>", IDvar2, TestRunReporter.Status.STARTED, variables("<Input>", "Locator: text.input, Strategy: org.testeditor.dsl.common.testing.DummyLocatorStrategy.ID in __synthetic0.aml:127"));
 			dummyFixture.setValue("text.input", "theValue");
 		'''.indent(3))
-	}	
+	}
 
 }

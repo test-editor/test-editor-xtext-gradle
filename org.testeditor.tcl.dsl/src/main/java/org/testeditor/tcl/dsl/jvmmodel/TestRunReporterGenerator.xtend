@@ -54,10 +54,10 @@ class TestRunReporterGenerator {
 					variables.filterNull.map [
 						val varType = typeComputer.determineType(variable, Optional.empty)?.qualifiedName
 						val maskingType = MaskingString.name
-						
-						'''"«if (it instanceof VariableReferencePathAccess) { 
+
+						'''"«if (it instanceof VariableReferencePathAccess) {
 							StringEscapeUtils.escapeJava(restoreString)
-						}else{ 
+						}else{
 							variable.name
 						}»", «if (maskingType.equals(varType)) {
 							'"*****"'
@@ -82,7 +82,7 @@ class TestRunReporterGenerator {
 			'''.toString]
 		} else {
 			return #['''
-			
+
 			«generateCommentPrefix»«initIdVar(action, id)»«reporterInstanceVariableName».«action.toString.toLowerCase»('''.toString, type,
 				'''.«unit.name», "«escapedMessage»", «id», TestRunReporter.Status.«status.name», variables(«#[variablesValuesList,amlElementsList].filter[length>0].join(', ')»));'''.toString.replaceAll('" *\\+ *"',
 					'')];

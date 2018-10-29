@@ -11,35 +11,35 @@ class MacroGeneratorIntegrationTest extends org.testeditor.tcl.dsl.jvmmodel.Abst
 		parseAml(DummyFixture.amlModel)
 		parseTcl('''
 			package com.example
-			
+
 			# MyMacroCollection
-			
+
 			## EmptyMacro
 				template = "Do nothing"
-			
+
 			## EmptyNestedMacro
 				template = "Do nothing nested"
 				Macro: MyMacroCollection
 				- Do nothing
-			
+
 			## EmptyMacroWithUnusedParameter
 				template = "Do nothing with" ${unused}
-			
+
 			## ReadMacro
 				template = "Read some values"
 				Component: GreetingApplication
 				- value = Read value from <bar>
-			
+
 			## WriteMacro
 				template = "Set input to" ${value}
 				Component: GreetingApplication
 				- Set value of <Input> to @value
-			
+
 			## SleepMacro
 				template = "Sleep for" ${x} "seconds"
 				Component: GreetingApplication
 				- Wait for @x seconds
-			
+
 			## SetValueAndWait
 				template = "Read and write value and wait" ${seconds} "seconds"
 				Component: GreetingApplication
@@ -48,7 +48,7 @@ class MacroGeneratorIntegrationTest extends org.testeditor.tcl.dsl.jvmmodel.Abst
 				- Set input to @value
 				Macro: MyMacroCollection
 				- Sleep for @seconds seconds
-			
+
 			## MacroWithNotExistingFixture
 				template = "stop this"
 				Component: GreetingApplication
@@ -155,10 +155,10 @@ class MacroGeneratorIntegrationTest extends org.testeditor.tcl.dsl.jvmmodel.Abst
 			'''.indent(1))
 		]
 	}
-	
+
 	def private String replaceIDVarNumbering(String codeblock) {
 		return codeblock.replaceAll('IDvar[0-9]*', 'IDvar')
-	} 
+	}
 
 	@Test
 	def void macroWithParameter() {
@@ -290,9 +290,9 @@ class MacroGeneratorIntegrationTest extends org.testeditor.tcl.dsl.jvmmodel.Abst
 		// given
 		val tcl = '''
 			package com.example
-			
+
 			require public myEnvVar
-			
+
 			# SimpleTest
 			* step1
 				Macro: MyMacroCollection
@@ -314,7 +314,7 @@ class MacroGeneratorIntegrationTest extends org.testeditor.tcl.dsl.jvmmodel.Abst
 
 	override protected getTestHeader() '''
 		«super.testHeader»
-		
+
 		* step1
 	'''
 
