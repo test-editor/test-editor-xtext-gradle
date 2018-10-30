@@ -37,7 +37,7 @@ class TestRunReporterGeneratorTest extends AbstractTclTest {
 
 		// when
 		val resultingList = testRunReporterGenerator.buildReporterCall(someJvmType, SemanticUnit.COMPONENT, Action.ENTER,
-			"message", "IDvar0", Status.STARTED, "reporter", #[], jvmTypeReference); 
+			"message", "IDvar0", Status.STARTED, "reporter", #[], #[], jvmTypeReference);
 
 		// then
 		resultingList => [
@@ -63,7 +63,7 @@ class TestRunReporterGeneratorTest extends AbstractTclTest {
 
 		// when
 		val resultingList = testRunReporterGenerator.buildReporterCall(someJvmType, SemanticUnit.COMPONENT, Action.ENTER,
-			"message", "IDvar0", Status.STARTED, "reporter", #[foo, bar], jvmTypeReference); 
+			"message", "IDvar0", Status.STARTED, "reporter", #[foo, bar], #[], jvmTypeReference);
 			
 
 		// then

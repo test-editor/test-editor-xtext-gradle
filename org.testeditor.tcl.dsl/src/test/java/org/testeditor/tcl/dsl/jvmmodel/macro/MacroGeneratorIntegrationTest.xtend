@@ -150,7 +150,7 @@ class MacroGeneratorIntegrationTest extends org.testeditor.tcl.dsl.jvmmodel.Abst
 			    try {
 			      String IDvar=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.MACRO, "ReadMacro", IDvar, TestRunReporter.Status.STARTED, variables());
 			      String IDvar=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.COMPONENT, "GreetingApplication", IDvar, TestRunReporter.Status.STARTED, variables());
-			      String IDvar=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "value = Read value from <bar> [java.lang.String]", IDvar, TestRunReporter.Status.STARTED, variables());
+			      String IDvar=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "value = Read value from <bar> [java.lang.String]", IDvar, TestRunReporter.Status.STARTED, variables("<bar>", "Locator: label.greet in __synthetic0.aml:123"));
 			      java.lang.String value = dummyFixture.getValue("label.greet");
 			'''.indent(1))
 		]
@@ -251,19 +251,19 @@ class MacroGeneratorIntegrationTest extends org.testeditor.tcl.dsl.jvmmodel.Abst
 				  try {
 				    String IDvar=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.MACRO, "SetValueAndWait", IDvar, TestRunReporter.Status.STARTED, variables());
 				    String IDvar=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.COMPONENT, "GreetingApplication", IDvar, TestRunReporter.Status.STARTED, variables());
-				    String IDvar=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "value = Read value from <bar> [java.lang.String]", IDvar, TestRunReporter.Status.STARTED, variables());
+				    String IDvar=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "value = Read value from <bar> [java.lang.String]", IDvar, TestRunReporter.Status.STARTED, variables("<bar>", "Locator: label.greet in __synthetic0.aml:123"));
 				    java.lang.String value = dummyFixture.getValue("label.greet");
-				    reporter.leave(TestRunReporter.SemanticUnit.STEP, "value = Read value from <bar> [java.lang.String]", IDvar, TestRunReporter.Status.OK, variables());
+				    reporter.leave(TestRunReporter.SemanticUnit.STEP, "value = Read value from <bar> [java.lang.String]", IDvar, TestRunReporter.Status.OK, variables("value", value, "<bar>", "Locator: label.greet in __synthetic0.aml:123"));
 				    reporter.leave(TestRunReporter.SemanticUnit.COMPONENT, "GreetingApplication", IDvar, TestRunReporter.Status.OK, variables());
 				    String IDvar=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.MACRO_LIB, "MyMacroCollection", IDvar, TestRunReporter.Status.STARTED, variables());
-				    String IDvar=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "Set input to @value", IDvar, TestRunReporter.Status.STARTED, variables());
+				    String IDvar=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "Set input to @value", IDvar, TestRunReporter.Status.STARTED, variables("value", value));
 				    macro_MyMacroCollection_WriteMacro(value);
-				    reporter.leave(TestRunReporter.SemanticUnit.STEP, "Set input to @value", IDvar, TestRunReporter.Status.OK, variables());
+				    reporter.leave(TestRunReporter.SemanticUnit.STEP, "Set input to @value", IDvar, TestRunReporter.Status.OK, variables("value", value));
 				    reporter.leave(TestRunReporter.SemanticUnit.MACRO_LIB, "MyMacroCollection", IDvar, TestRunReporter.Status.OK, variables());
 				    String IDvar=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.MACRO_LIB, "MyMacroCollection", IDvar, TestRunReporter.Status.STARTED, variables());
-				    String IDvar=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "Sleep for @seconds seconds", IDvar, TestRunReporter.Status.STARTED, variables());
+				    String IDvar=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "Sleep for @seconds seconds", IDvar, TestRunReporter.Status.STARTED, variables("seconds", Long.toString(seconds)));
 				    macro_MyMacroCollection_SleepMacro(seconds);
-				    reporter.leave(TestRunReporter.SemanticUnit.STEP, "Sleep for @seconds seconds", IDvar, TestRunReporter.Status.OK, variables());
+				    reporter.leave(TestRunReporter.SemanticUnit.STEP, "Sleep for @seconds seconds", IDvar, TestRunReporter.Status.OK, variables("seconds", Long.toString(seconds)));
 				    reporter.leave(TestRunReporter.SemanticUnit.MACRO_LIB, "MyMacroCollection", IDvar, TestRunReporter.Status.OK, variables());
 				    reporter.leave(TestRunReporter.SemanticUnit.MACRO, "SetValueAndWait", IDvar, TestRunReporter.Status.OK, variables());
 				  } catch (AssertionError e) {

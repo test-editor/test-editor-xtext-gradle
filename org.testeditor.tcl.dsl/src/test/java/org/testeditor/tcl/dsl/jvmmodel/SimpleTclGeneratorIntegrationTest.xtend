@@ -109,18 +109,18 @@ class SimpleTclGeneratorIntegrationTest extends AbstractTclGeneratorIntegrationT
 			    try {
 			      String IDvar0=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.SPECIFICATION_STEP, "Test assertions in the famous greeting application", IDvar0, TestRunReporter.Status.STARTED, variables());
 			      String IDvar1=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.COMPONENT, "GreetingApplication", IDvar1, TestRunReporter.Status.STARTED, variables());
-			      String IDvar2=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "foo = Read list from <bar> [java.util.List<? extends java.lang.Object>]", IDvar2, TestRunReporter.Status.STARTED, variables());
+			      String IDvar2=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "foo = Read list from <bar> [java.util.List<? extends java.lang.Object>]", IDvar2, TestRunReporter.Status.STARTED, variables("<bar>", "Locator: label.greet in __synthetic0.aml:123"));
 			      java.util.List<? extends java.lang.Object> foo = dummyFixture.getList("label.greet");
-			      reporter.leave(TestRunReporter.SemanticUnit.STEP, "foo = Read list from <bar> [java.util.List<? extends java.lang.Object>]", IDvar2, TestRunReporter.Status.OK, variables());
-			      String IDvar3=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "baz = Read value from <bar> [java.lang.String]", IDvar3, TestRunReporter.Status.STARTED, variables());
+			      reporter.leave(TestRunReporter.SemanticUnit.STEP, "foo = Read list from <bar> [java.util.List<? extends java.lang.Object>]", IDvar2, TestRunReporter.Status.OK, variables("foo", foo.toString(), "<bar>", "Locator: label.greet in __synthetic0.aml:123"));
+			      String IDvar3=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "baz = Read value from <bar> [java.lang.String]", IDvar3, TestRunReporter.Status.STARTED, variables("<bar>", "Locator: label.greet in __synthetic0.aml:123"));
 			      java.lang.String baz = dummyFixture.getValue("label.greet");
-			      reporter.leave(TestRunReporter.SemanticUnit.STEP, "baz = Read value from <bar> [java.lang.String]", IDvar3, TestRunReporter.Status.OK, variables());
-			      String IDvar4=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "book = Read bool from <bar> [boolean]", IDvar4, TestRunReporter.Status.STARTED, variables());
+			      reporter.leave(TestRunReporter.SemanticUnit.STEP, "baz = Read value from <bar> [java.lang.String]", IDvar3, TestRunReporter.Status.OK, variables("baz", baz, "<bar>", "Locator: label.greet in __synthetic0.aml:123"));
+			      String IDvar4=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "book = Read bool from <bar> [boolean]", IDvar4, TestRunReporter.Status.STARTED, variables("<bar>", "Locator: label.greet in __synthetic0.aml:123"));
 			      boolean book = dummyFixture.getBool("label.greet");
-			      reporter.leave(TestRunReporter.SemanticUnit.STEP, "book = Read bool from <bar> [boolean]", IDvar4, TestRunReporter.Status.OK, variables());
-			      String IDvar5=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "mak = Read jsonObject from <bar> [com.google.gson.JsonObject]", IDvar5, TestRunReporter.Status.STARTED, variables());
+			      reporter.leave(TestRunReporter.SemanticUnit.STEP, "book = Read bool from <bar> [boolean]", IDvar4, TestRunReporter.Status.OK, variables("book", Boolean.toString(book), "<bar>", "Locator: label.greet in __synthetic0.aml:123"));
+			      String IDvar5=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "mak = Read jsonObject from <bar> [com.google.gson.JsonObject]", IDvar5, TestRunReporter.Status.STARTED, variables("<bar>", "Locator: label.greet in __synthetic0.aml:123"));
 			      com.google.gson.JsonObject mak = dummyFixture.getJsonObject("label.greet");
-			      reporter.leave(TestRunReporter.SemanticUnit.STEP, "mak = Read jsonObject from <bar> [com.google.gson.JsonObject]", IDvar5, TestRunReporter.Status.OK, variables());
+			      reporter.leave(TestRunReporter.SemanticUnit.STEP, "mak = Read jsonObject from <bar> [com.google.gson.JsonObject]", IDvar5, TestRunReporter.Status.OK, variables("mak", mak.getAsJsonPrimitive().getAsString(), "<bar>", "Locator: label.greet in __synthetic0.aml:123"));
 			      String IDvar6=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "assert foo", IDvar6, TestRunReporter.Status.STARTED, variables("foo", foo.toString()));
 			      org.junit.Assert.assertNotNull("SimpleTest.tcl:11: foo", foo);
 			      reporter.leave(TestRunReporter.SemanticUnit.STEP, "assert foo", IDvar6, TestRunReporter.Status.OK, variables("foo", foo.toString()));
@@ -154,9 +154,9 @@ class SimpleTclGeneratorIntegrationTest extends AbstractTclGeneratorIntegrationT
 			      String IDvar16=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "assert baz = mak.otherkey", IDvar16, TestRunReporter.Status.STARTED, variables("baz", baz, "mak.\"otherkey\"", mak.getAsJsonObject().get("otherkey").getAsJsonPrimitive().getAsString()));
 			      org.junit.Assert.assertEquals("SimpleTest.tcl:21: baz = mak.otherkey", mak.getAsJsonObject().get("otherkey").getAsJsonPrimitive().getAsString(), baz);
 			      reporter.leave(TestRunReporter.SemanticUnit.STEP, "assert baz = mak.otherkey", IDvar16, TestRunReporter.Status.OK, variables("baz", baz, "mak.\"otherkey\"", mak.getAsJsonObject().get("otherkey").getAsJsonPrimitive().getAsString()));
-			      String IDvar17=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "log = Read long from <bar> [long]", IDvar17, TestRunReporter.Status.STARTED, variables());
+			      String IDvar17=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "log = Read long from <bar> [long]", IDvar17, TestRunReporter.Status.STARTED, variables("<bar>", "Locator: label.greet in __synthetic0.aml:123"));
 			      long log = dummyFixture.getLong("label.greet");
-			      reporter.leave(TestRunReporter.SemanticUnit.STEP, "log = Read long from <bar> [long]", IDvar17, TestRunReporter.Status.OK, variables());
+			      reporter.leave(TestRunReporter.SemanticUnit.STEP, "log = Read long from <bar> [long]", IDvar17, TestRunReporter.Status.OK, variables("log", Long.toString(log), "<bar>", "Locator: label.greet in __synthetic0.aml:123"));
 			      String IDvar18=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "assert log < 42", IDvar18, TestRunReporter.Status.STARTED, variables("log", Long.toString(log)));
 			      org.junit.Assert.assertTrue("SimpleTest.tcl:23: log < 42", log < 42);
 			      reporter.leave(TestRunReporter.SemanticUnit.STEP, "assert log < 42", IDvar18, TestRunReporter.Status.OK, variables("log", Long.toString(log)));
@@ -240,21 +240,20 @@ class SimpleTclGeneratorIntegrationTest extends AbstractTclGeneratorIntegrationT
 
 		// then
 		generatedCode.assertContains('''
-			String IDvar2=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "jsonvar = Read jsonObject from <bar> [com.google.gson.JsonObject]", IDvar2, TestRunReporter.Status.STARTED, variables());
 			com.google.gson.JsonObject jsonvar = dummyFixture.getJsonObject("label.greet");
-			reporter.leave(TestRunReporter.SemanticUnit.STEP, "jsonvar = Read jsonObject from <bar> [com.google.gson.JsonObject]", IDvar2, TestRunReporter.Status.OK, variables());
-			String IDvar3=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "longvar = Read long from <bar> [long]", IDvar3, TestRunReporter.Status.STARTED, variables());
+			reporter.leave(TestRunReporter.SemanticUnit.STEP, "jsonvar = Read jsonObject from <bar> [com.google.gson.JsonObject]", IDvar2, TestRunReporter.Status.OK, variables("jsonvar", jsonvar.getAsJsonPrimitive().getAsString(), "<bar>", "Locator: label.greet in __synthetic0.aml:123"));
+			String IDvar3=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "longvar = Read long from <bar> [long]", IDvar3, TestRunReporter.Status.STARTED, variables("<bar>", "Locator: label.greet in __synthetic0.aml:123"));
 			long longvar = dummyFixture.getLong("label.greet");
-			reporter.leave(TestRunReporter.SemanticUnit.STEP, "longvar = Read long from <bar> [long]", IDvar3, TestRunReporter.Status.OK, variables());
-			String IDvar4=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "stringvar = Read value from <bar> [java.lang.String]", IDvar4, TestRunReporter.Status.STARTED, variables());
+			reporter.leave(TestRunReporter.SemanticUnit.STEP, "longvar = Read long from <bar> [long]", IDvar3, TestRunReporter.Status.OK, variables("longvar", Long.toString(longvar), "<bar>", "Locator: label.greet in __synthetic0.aml:123"));
+			String IDvar4=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "stringvar = Read value from <bar> [java.lang.String]", IDvar4, TestRunReporter.Status.STARTED, variables("<bar>", "Locator: label.greet in __synthetic0.aml:123"));
 			java.lang.String stringvar = dummyFixture.getValue("label.greet");
-			reporter.leave(TestRunReporter.SemanticUnit.STEP, "stringvar = Read value from <bar> [java.lang.String]", IDvar4, TestRunReporter.Status.OK, variables());
-			String IDvar5=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "boolvar = Read bool from <bar> [boolean]", IDvar5, TestRunReporter.Status.STARTED, variables());
+			reporter.leave(TestRunReporter.SemanticUnit.STEP, "stringvar = Read value from <bar> [java.lang.String]", IDvar4, TestRunReporter.Status.OK, variables("stringvar", stringvar, "<bar>", "Locator: label.greet in __synthetic0.aml:123"));
+			String IDvar5=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "boolvar = Read bool from <bar> [boolean]", IDvar5, TestRunReporter.Status.STARTED, variables("<bar>", "Locator: label.greet in __synthetic0.aml:123"));
 			boolean boolvar = dummyFixture.getBool("label.greet");
-			reporter.leave(TestRunReporter.SemanticUnit.STEP, "boolvar = Read bool from <bar> [boolean]", IDvar5, TestRunReporter.Status.OK, variables());
-			String IDvar6=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "enumvar = Read enum from <bar> [org.testeditor.dsl.common.testing.DummyEnum]", IDvar6, TestRunReporter.Status.STARTED, variables());
+			reporter.leave(TestRunReporter.SemanticUnit.STEP, "boolvar = Read bool from <bar> [boolean]", IDvar5, TestRunReporter.Status.OK, variables("boolvar", Boolean.toString(boolvar), "<bar>", "Locator: label.greet in __synthetic0.aml:123"));
+			String IDvar6=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "enumvar = Read enum from <bar> [org.testeditor.dsl.common.testing.DummyEnum]", IDvar6, TestRunReporter.Status.STARTED, variables("<bar>", "Locator: label.greet in __synthetic0.aml:123"));
 			org.testeditor.dsl.common.testing.DummyEnum enumvar = dummyFixture.getEnum("label.greet");
-			reporter.leave(TestRunReporter.SemanticUnit.STEP, "enumvar = Read enum from <bar> [org.testeditor.dsl.common.testing.DummyEnum]", IDvar6, TestRunReporter.Status.OK, variables());
+			reporter.leave(TestRunReporter.SemanticUnit.STEP, "enumvar = Read enum from <bar> [org.testeditor.dsl.common.testing.DummyEnum]", IDvar6, TestRunReporter.Status.OK, variables("enumvar", enumvar.toString(), "<bar>", "Locator: label.greet in __synthetic0.aml:123"));
 			String IDvar7=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "jsonvar.\"key\" = jsonvar.\"some value\"", IDvar7, TestRunReporter.Status.STARTED, variables());
 			jsonvar.getAsJsonObject().add("key", jsonvar.getAsJsonObject().get("some value"));
 			reporter.leave(TestRunReporter.SemanticUnit.STEP, "jsonvar.\"key\" = jsonvar.\"some value\"", IDvar7, TestRunReporter.Status.OK, variables());
@@ -270,47 +269,47 @@ class SimpleTclGeneratorIntegrationTest extends AbstractTclGeneratorIntegrationT
 			String IDvar11=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "jsonvar.\"key4\" = boolvar", IDvar11, TestRunReporter.Status.STARTED, variables());
 			jsonvar.getAsJsonObject().add("key4", new com.google.gson.JsonParser().parse(Boolean.toString(boolvar)));
 			reporter.leave(TestRunReporter.SemanticUnit.STEP, "jsonvar.\"key4\" = boolvar", IDvar11, TestRunReporter.Status.OK, variables());
-			String IDvar12=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "Type boolean @stringvar into <Input>", IDvar12, TestRunReporter.Status.STARTED, variables("stringvar", stringvar));
+			String IDvar12=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "Type boolean @stringvar into <Input>", IDvar12, TestRunReporter.Status.STARTED, variables("stringvar", stringvar, "<Input>", "Locator: text.input, Strategy: org.testeditor.dsl.common.testing.DummyLocatorStrategy.ID in __synthetic0.aml:127"));
 			org.junit.Assert.assertTrue("Parameter is expected to be of type = 'boolean' but a non coercible value = '"+stringvar.toString()+"' was passed through variable reference = 'stringvar'.", Boolean.TRUE.toString().equals(stringvar) || Boolean.FALSE.toString().equals(stringvar));
 			dummyFixture.typeBoolInto("text.input", Boolean.valueOf(stringvar));
-			reporter.leave(TestRunReporter.SemanticUnit.STEP, "Type boolean @stringvar into <Input>", IDvar12, TestRunReporter.Status.OK, variables("stringvar", stringvar));
-			String IDvar13=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "TypeLong @stringvar into <Input>", IDvar13, TestRunReporter.Status.STARTED, variables("stringvar", stringvar));
+			reporter.leave(TestRunReporter.SemanticUnit.STEP, "Type boolean @stringvar into <Input>", IDvar12, TestRunReporter.Status.OK, variables("stringvar", stringvar, "<Input>", "Locator: text.input, Strategy: org.testeditor.dsl.common.testing.DummyLocatorStrategy.ID in __synthetic0.aml:127"));
+			String IDvar13=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "TypeLong @stringvar into <Input>", IDvar13, TestRunReporter.Status.STARTED, variables("stringvar", stringvar, "<Input>", "Locator: text.input, Strategy: org.testeditor.dsl.common.testing.DummyLocatorStrategy.ID in __synthetic0.aml:127"));
 			try { Long.parseLong(stringvar); } catch (NumberFormatException nfe) { org.junit.Assert.fail("Parameter is expected to be of type = 'long' but a non coercible value = '"+stringvar.toString()+"' was passed through variable reference = 'stringvar'."); }
 			dummyFixture.typeLongInto("text.input", org.testeditor.dsl.common.testing.DummyLocatorStrategy.ID, Long.parseLong(stringvar));
-			reporter.leave(TestRunReporter.SemanticUnit.STEP, "TypeLong @stringvar into <Input>", IDvar13, TestRunReporter.Status.OK, variables("stringvar", stringvar));
-			String IDvar14=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "Type boolean @jsonvar.\"key5\" into <Input>", IDvar14, TestRunReporter.Status.STARTED, variables("jsonvar.\"key5\"", jsonvar.getAsJsonObject().get("key5").getAsJsonPrimitive().getAsString()));
+			reporter.leave(TestRunReporter.SemanticUnit.STEP, "TypeLong @stringvar into <Input>", IDvar13, TestRunReporter.Status.OK, variables("stringvar", stringvar, "<Input>", "Locator: text.input, Strategy: org.testeditor.dsl.common.testing.DummyLocatorStrategy.ID in __synthetic0.aml:127"));
+			String IDvar14=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "Type boolean @jsonvar.\"key5\" into <Input>", IDvar14, TestRunReporter.Status.STARTED, variables("jsonvar.\"key5\"", jsonvar.getAsJsonObject().get("key5").getAsJsonPrimitive().getAsString(), "<Input>", "Locator: text.input, Strategy: org.testeditor.dsl.common.testing.DummyLocatorStrategy.ID in __synthetic0.aml:127"));
 			org.junit.Assert.assertTrue("Parameter is expected to be of type = 'boolean' but a non coercible value = '"+jsonvar.getAsJsonObject().get("key5").toString()+"' was passed through variable reference = 'jsonvar'.", jsonvar.getAsJsonObject().get("key5").getAsJsonPrimitive().isBoolean());
 			dummyFixture.typeBoolInto("text.input", jsonvar.getAsJsonObject().get("key5").getAsJsonPrimitive().getAsBoolean());
-			reporter.leave(TestRunReporter.SemanticUnit.STEP, "Type boolean @jsonvar.\"key5\" into <Input>", IDvar14, TestRunReporter.Status.OK, variables("jsonvar.\"key5\"", jsonvar.getAsJsonObject().get("key5").getAsJsonPrimitive().getAsString()));
-			String IDvar15=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "TypeLong @jsonvar.\"key6\" into <Input>", IDvar15, TestRunReporter.Status.STARTED, variables("jsonvar.\"key6\"", jsonvar.getAsJsonObject().get("key6").getAsJsonPrimitive().getAsString()));
+			reporter.leave(TestRunReporter.SemanticUnit.STEP, "Type boolean @jsonvar.\"key5\" into <Input>", IDvar14, TestRunReporter.Status.OK, variables("jsonvar.\"key5\"", jsonvar.getAsJsonObject().get("key5").getAsJsonPrimitive().getAsString(), "<Input>", "Locator: text.input, Strategy: org.testeditor.dsl.common.testing.DummyLocatorStrategy.ID in __synthetic0.aml:127"));
+			String IDvar15=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "TypeLong @jsonvar.\"key6\" into <Input>", IDvar15, TestRunReporter.Status.STARTED, variables("jsonvar.\"key6\"", jsonvar.getAsJsonObject().get("key6").getAsJsonPrimitive().getAsString(), "<Input>", "Locator: text.input, Strategy: org.testeditor.dsl.common.testing.DummyLocatorStrategy.ID in __synthetic0.aml:127"));
 			org.junit.Assert.assertTrue("Parameter is expected to be of type = 'long' but a non coercible value = '"+jsonvar.getAsJsonObject().get("key6").toString()+"' was passed through variable reference = 'jsonvar'.", jsonvar.getAsJsonObject().get("key6").getAsJsonPrimitive().isNumber());
 			dummyFixture.typeLongInto("text.input", org.testeditor.dsl.common.testing.DummyLocatorStrategy.ID, jsonvar.getAsJsonObject().get("key6").getAsJsonPrimitive().getAsLong());
-			reporter.leave(TestRunReporter.SemanticUnit.STEP, "TypeLong @jsonvar.\"key6\" into <Input>", IDvar15, TestRunReporter.Status.OK, variables("jsonvar.\"key6\"", jsonvar.getAsJsonObject().get("key6").getAsJsonPrimitive().getAsString()));
-			String IDvar16=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "Set enum of <Input> to @enumvar", IDvar16, TestRunReporter.Status.STARTED, variables("enumvar", enumvar.toString()));
+			reporter.leave(TestRunReporter.SemanticUnit.STEP, "TypeLong @jsonvar.\"key6\" into <Input>", IDvar15, TestRunReporter.Status.OK, variables("jsonvar.\"key6\"", jsonvar.getAsJsonObject().get("key6").getAsJsonPrimitive().getAsString(), "<Input>", "Locator: text.input, Strategy: org.testeditor.dsl.common.testing.DummyLocatorStrategy.ID in __synthetic0.aml:127"));
+			String IDvar16=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "Set enum of <Input> to @enumvar", IDvar16, TestRunReporter.Status.STARTED, variables("enumvar", enumvar.toString(), "<Input>", "Locator: text.input, Strategy: org.testeditor.dsl.common.testing.DummyLocatorStrategy.ID in __synthetic0.aml:127"));
 			dummyFixture.setEnum("text.input", enumvar);
-			reporter.leave(TestRunReporter.SemanticUnit.STEP, "Set enum of <Input> to @enumvar", IDvar16, TestRunReporter.Status.OK, variables("enumvar", enumvar.toString()));
-			String IDvar17=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "Set enum of <Input> to @stringvar", IDvar17, TestRunReporter.Status.STARTED, variables("stringvar", stringvar));
+			reporter.leave(TestRunReporter.SemanticUnit.STEP, "Set enum of <Input> to @enumvar", IDvar16, TestRunReporter.Status.OK, variables("enumvar", enumvar.toString(), "<Input>", "Locator: text.input, Strategy: org.testeditor.dsl.common.testing.DummyLocatorStrategy.ID in __synthetic0.aml:127"));
+			String IDvar17=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "Set enum of <Input> to @stringvar", IDvar17, TestRunReporter.Status.STARTED, variables("stringvar", stringvar, "<Input>", "Locator: text.input, Strategy: org.testeditor.dsl.common.testing.DummyLocatorStrategy.ID in __synthetic0.aml:127"));
 			try { org.testeditor.dsl.common.testing.DummyEnum.valueOf(stringvar); } catch (IllegalArgumentException ia) { org.junit.Assert.fail("Parameter is expected to be of type = 'org.testeditor.dsl.common.testing.DummyEnum' but a non coercible value = '"+stringvar.toString()+"' was passed through variable reference = 'stringvar'."); }
 			dummyFixture.setEnum("text.input", org.testeditor.dsl.common.testing.DummyEnum.valueOf(stringvar));
-			reporter.leave(TestRunReporter.SemanticUnit.STEP, "Set enum of <Input> to @stringvar", IDvar17, TestRunReporter.Status.OK, variables("stringvar", stringvar));
-			String IDvar18=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "Set enum of <Input> to \"enum_a\"", IDvar18, TestRunReporter.Status.STARTED, variables());
+			reporter.leave(TestRunReporter.SemanticUnit.STEP, "Set enum of <Input> to @stringvar", IDvar17, TestRunReporter.Status.OK, variables("stringvar", stringvar, "<Input>", "Locator: text.input, Strategy: org.testeditor.dsl.common.testing.DummyLocatorStrategy.ID in __synthetic0.aml:127"));
+			String IDvar18=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "Set enum of <Input> to \"enum_a\"", IDvar18, TestRunReporter.Status.STARTED, variables("<Input>", "Locator: text.input, Strategy: org.testeditor.dsl.common.testing.DummyLocatorStrategy.ID in __synthetic0.aml:127"));
 			dummyFixture.setEnum("text.input", org.testeditor.dsl.common.testing.DummyEnum.valueOf("enum_a"));
-			reporter.leave(TestRunReporter.SemanticUnit.STEP, "Set enum of <Input> to \"enum_a\"", IDvar18, TestRunReporter.Status.OK, variables());
+			reporter.leave(TestRunReporter.SemanticUnit.STEP, "Set enum of <Input> to \"enum_a\"", IDvar18, TestRunReporter.Status.OK, variables("<Input>", "Locator: text.input, Strategy: org.testeditor.dsl.common.testing.DummyLocatorStrategy.ID in __synthetic0.aml:127"));
 			reporter.leave(TestRunReporter.SemanticUnit.COMPONENT, "GreetingApplication", IDvar1, TestRunReporter.Status.OK, variables());
 			String IDvar19=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.MACRO_LIB, "GreetingApplicationMacro", IDvar19, TestRunReporter.Status.STARTED, variables());
-			String IDvar20=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "TypeBoolean @jsonvar.\"key\" into input field", IDvar20, TestRunReporter.Status.STARTED, variables());
+			String IDvar20=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "TypeBoolean @jsonvar.\"key\" into input field", IDvar20, TestRunReporter.Status.STARTED, variables("jsonvar.\"key\"", jsonvar.getAsJsonObject().get("key").getAsJsonPrimitive().getAsString()));
 			org.junit.Assert.assertTrue("Parameter is expected to be of type = 'boolean' but a non coercible value = '"+jsonvar.getAsJsonObject().get("key").toString()+"' was passed through variable reference = 'jsonvar'.", jsonvar.getAsJsonObject().get("key").getAsJsonPrimitive().isBoolean());
 			macro_GreetingApplicationMacro_TypeBoolIntoInputField(jsonvar.getAsJsonObject().get("key").getAsJsonPrimitive().getAsBoolean());
-			reporter.leave(TestRunReporter.SemanticUnit.STEP, "TypeBoolean @jsonvar.\"key\" into input field", IDvar20, TestRunReporter.Status.OK, variables());
-			String IDvar21=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "TypeLong @jsonvar.\"key\" into input field", IDvar21, TestRunReporter.Status.STARTED, variables());
+			reporter.leave(TestRunReporter.SemanticUnit.STEP, "TypeBoolean @jsonvar.\"key\" into input field", IDvar20, TestRunReporter.Status.OK, variables("jsonvar.\"key\"", jsonvar.getAsJsonObject().get("key").getAsJsonPrimitive().getAsString()));
+			String IDvar21=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "TypeLong @jsonvar.\"key\" into input field", IDvar21, TestRunReporter.Status.STARTED, variables("jsonvar.\"key\"", jsonvar.getAsJsonObject().get("key").getAsJsonPrimitive().getAsString()));
 			org.junit.Assert.assertTrue("Parameter is expected to be of type = 'long' but a non coercible value = '"+jsonvar.getAsJsonObject().get("key").toString()+"' was passed through variable reference = 'jsonvar'.", jsonvar.getAsJsonObject().get("key").getAsJsonPrimitive().isNumber());
 			macro_GreetingApplicationMacro_TypeLongIntoInputField(jsonvar.getAsJsonObject().get("key").getAsJsonPrimitive().getAsLong());
-			reporter.leave(TestRunReporter.SemanticUnit.STEP, "TypeLong @jsonvar.\"key\" into input field", IDvar21, TestRunReporter.Status.OK, variables());
-			String IDvar22=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "TypeBoolean @stringvar into input field", IDvar22, TestRunReporter.Status.STARTED, variables());
+			reporter.leave(TestRunReporter.SemanticUnit.STEP, "TypeLong @jsonvar.\"key\" into input field", IDvar21, TestRunReporter.Status.OK, variables("jsonvar.\"key\"", jsonvar.getAsJsonObject().get("key").getAsJsonPrimitive().getAsString()));
+			String IDvar22=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "TypeBoolean @stringvar into input field", IDvar22, TestRunReporter.Status.STARTED, variables("stringvar", stringvar));
 			org.junit.Assert.assertTrue("Parameter is expected to be of type = 'boolean' but a non coercible value = '"+stringvar.toString()+"' was passed through variable reference = 'stringvar'.", Boolean.TRUE.toString().equals(stringvar) || Boolean.FALSE.toString().equals(stringvar));
 			macro_GreetingApplicationMacro_TypeBoolIntoInputField(Boolean.valueOf(stringvar));
-			reporter.leave(TestRunReporter.SemanticUnit.STEP, "TypeBoolean @stringvar into input field", IDvar22, TestRunReporter.Status.OK, variables());
-			String IDvar23=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "TypeLong @stringvar into input field", IDvar23, TestRunReporter.Status.STARTED, variables());
+			reporter.leave(TestRunReporter.SemanticUnit.STEP, "TypeBoolean @stringvar into input field", IDvar22, TestRunReporter.Status.OK, variables("stringvar", stringvar));
+			String IDvar23=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "TypeLong @stringvar into input field", IDvar23, TestRunReporter.Status.STARTED, variables("stringvar", stringvar));
 			try { Long.parseLong(stringvar); } catch (NumberFormatException nfe) { org.junit.Assert.fail("Parameter is expected to be of type = 'long' but a non coercible value = '"+stringvar.toString()+"' was passed through variable reference = 'stringvar'."); }
 			macro_GreetingApplicationMacro_TypeLongIntoInputField(Long.parseLong(stringvar));
 		'''.indent(3))
@@ -342,9 +341,9 @@ class SimpleTclGeneratorIntegrationTest extends AbstractTclGeneratorIntegrationT
 			    String IDvar2=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "Start application \"org.testeditor.swing.exammple.Greetings\"", IDvar2, TestRunReporter.Status.STARTED, variables());
 			    dummyFixture.startApplication("org.testeditor.swing.exammple.Greetings");
 			    reporter.leave(TestRunReporter.SemanticUnit.STEP, "Start application \"org.testeditor.swing.exammple.Greetings\"", IDvar2, TestRunReporter.Status.OK, variables());
-			    String IDvar3=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "foo = Read list from <bar> [java.util.List<? extends java.lang.Object>]", IDvar3, TestRunReporter.Status.STARTED, variables());
+			    String IDvar3=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "foo = Read list from <bar> [java.util.List<? extends java.lang.Object>]", IDvar3, TestRunReporter.Status.STARTED, variables("<bar>", "Locator: label.greet in __synthetic0.aml:123"));
 			    java.util.List<? extends java.lang.Object> foo = dummyFixture.getList("label.greet");
-			    reporter.leave(TestRunReporter.SemanticUnit.STEP, "foo = Read list from <bar> [java.util.List<? extends java.lang.Object>]", IDvar3, TestRunReporter.Status.OK, variables());
+			    reporter.leave(TestRunReporter.SemanticUnit.STEP, "foo = Read list from <bar> [java.util.List<? extends java.lang.Object>]", IDvar3, TestRunReporter.Status.OK, variables("foo", foo.toString(), "<bar>", "Locator: label.greet in __synthetic0.aml:123"));
 			    String IDvar4=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "Stop application", IDvar4, TestRunReporter.Status.STARTED, variables());
 			    dummyFixture.stopApplication();
 			    reporter.leave(TestRunReporter.SemanticUnit.STEP, "Stop application", IDvar4, TestRunReporter.Status.OK, variables());
@@ -384,7 +383,7 @@ class SimpleTclGeneratorIntegrationTest extends AbstractTclGeneratorIntegrationT
 
 		// then
 		generatedCode.assertContains('''
-			String IDvar2=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "Is <bar> visible ?", IDvar2, TestRunReporter.Status.STARTED, variables());
+			String IDvar2=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "Is <bar> visible ?", IDvar2, TestRunReporter.Status.STARTED, variables("<bar>", "Locator: label.greet in __synthetic0.aml:123"));
 			dummyFixture.isVisible("label.greet");
 		'''.indent(3))
 	}
@@ -403,7 +402,7 @@ class SimpleTclGeneratorIntegrationTest extends AbstractTclGeneratorIntegrationT
 
 		// then
 		generatedCode.assertContains('''
-			String IDvar2=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "Set value of <Input> to \"theValue\"", IDvar2, TestRunReporter.Status.STARTED, variables());
+			String IDvar2=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "Set value of <Input> to \"theValue\"", IDvar2, TestRunReporter.Status.STARTED, variables("<Input>", "Locator: text.input, Strategy: org.testeditor.dsl.common.testing.DummyLocatorStrategy.ID in __synthetic0.aml:127"));
 			dummyFixture.setValue("text.input", "theValue");
 		'''.indent(3))
 	}
@@ -432,7 +431,7 @@ class SimpleTclGeneratorIntegrationTest extends AbstractTclGeneratorIntegrationT
 
 		// then
 		generatedCode.assertContains('''
-			String IDvar2=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "Set value \"theValue\" to <Input>", IDvar2, TestRunReporter.Status.STARTED, variables());
+			String IDvar2=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "Set value \"theValue\" to <Input>", IDvar2, TestRunReporter.Status.STARTED, variables("<Input>", "Locator: text.input, Strategy: org.testeditor.dsl.common.testing.DummyLocatorStrategy.ID in __synthetic0.aml:127"));
 			dummyFixture.setValue("text.input", "theValue");
 		'''.indent(3))
 	}	
