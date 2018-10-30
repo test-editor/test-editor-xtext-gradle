@@ -32,7 +32,7 @@ class TestRunReporterGenerator {
 	private def String getLocationInfo(StepContentElement stepElement) {
 		val element = stepElement.componentElement
 		val nodeModel = NodeModelUtils.findActualNodeFor(element)
-		return '''«element.eResource.URI»:«nodeModel?.startLine»'''
+		return '''«element.eResource.URI»«if (nodeModel !== null) ':' + nodeModel.startLine»''' // node model may be absent in some test
 	}
 
 
@@ -44,7 +44,6 @@ class TestRunReporterGenerator {
 				val locator = element.locator.escapeJava
 				val locatorStrategy = element.locatorStrategy?.qualifiedName?.escapeJava
 				val locationInfo = getLocationInfo.escapeJava
-				// ''' («element.name» Locator: «locator»«if (locatorStrategy !== null)', Strategy: '+locatorStrategy» in «locationInfo»)'''
 				'''"<«element.name»>", "Locator: «locator»«if (locatorStrategy !== null)', Strategy: '+locatorStrategy» in «locationInfo»"'''
 			].join(', ')
 		} else {
