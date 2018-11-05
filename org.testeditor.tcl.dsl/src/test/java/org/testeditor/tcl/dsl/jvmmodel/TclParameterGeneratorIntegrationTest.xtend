@@ -4,7 +4,7 @@
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- * 
+ *
  * Contributors:
  * Signal Iduna Corporation - initial API and implementation
  * akquinet AG
@@ -41,14 +41,14 @@ class TclParameterGeneratorIntegrationTest extends AbstractTclGeneratorIntegrati
 		try {
 		val tclModel = parseTcl('''
 			package com.example
-			
+
 			require        confEnvVar,
 			        public nonConfEnvVar
-			
+
 			# MyTest
-			
+
 			* test something
-			
+
 			Component: dummyComponent
 			- myJsonObject = Read jsonObject from <dummyElement>
 			- myVal = Read value from <dummyElement>
@@ -58,20 +58,20 @@ class TclParameterGeneratorIntegrationTest extends AbstractTclGeneratorIntegrati
 			- Type @nonConfEnvVar into <Input>
 		''')
 		tclModel.addToResourceSet
-		
+
 
 		val tclModelCode = tclModel.generate
 
 		tclModelCode.assertEquals('''
 			package com.example;
-			
+
 			import org.junit.Before;
 			import org.junit.Test;
 			import org.testeditor.dsl.common.testing.DummyFixture;
 			import org.testeditor.fixture.core.AbstractTestCase;
 			import org.testeditor.fixture.core.MaskingString;
 			import org.testeditor.fixture.core.TestRunReporter;
-			
+
 			/**
 			 * Generated from MyTest.tcl
 			 */
@@ -93,29 +93,29 @@ class TclParameterGeneratorIntegrationTest extends AbstractTclGeneratorIntegrati
 			  @Test
 			  public void execute() throws Exception {
 			    try {
-			      String IDvar0=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.SPECIFICATION_STEP, "test something", IDvar0, TestRunReporter.Status.STARTED, variables());
-			      String IDvar1=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.COMPONENT, "dummyComponent", IDvar1, TestRunReporter.Status.STARTED, variables());
-			      String IDvar2=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "myJsonObject = Read jsonObject from <dummyElement> [com.google.gson.JsonObject]", IDvar2, TestRunReporter.Status.STARTED, variables("<dummyElement>", "Locator: dummyLocator in __synthetic0.aml:144"));
+			      String IDvar0=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.SPECIFICATION_STEP, "test something", IDvar0, TestRunReporter.Status.STARTED, variables("@", "MyTest.tcl:8-16"));
+			      String IDvar1=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.COMPONENT, "dummyComponent", IDvar1, TestRunReporter.Status.STARTED, variables("@", "MyTest.tcl:10-16"));
+			      String IDvar2=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "myJsonObject = Read jsonObject from <dummyElement> [com.google.gson.JsonObject]", IDvar2, TestRunReporter.Status.STARTED, variables("<dummyElement>", "Locator: dummyLocator in __synthetic0.aml:144", "@", "MyTest.tcl:11"));
 			      com.google.gson.JsonObject myJsonObject = dummyFixture.getJsonObject("dummyLocator");
-			      reporter.leave(TestRunReporter.SemanticUnit.STEP, "myJsonObject = Read jsonObject from <dummyElement> [com.google.gson.JsonObject]", IDvar2, TestRunReporter.Status.OK, variables("myJsonObject", myJsonObject.getAsJsonPrimitive().getAsString(), "<dummyElement>", "Locator: dummyLocator in __synthetic0.aml:144"));
-			      String IDvar3=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "myVal = Read value from <dummyElement> [java.lang.String]", IDvar3, TestRunReporter.Status.STARTED, variables("<dummyElement>", "Locator: dummyLocator in __synthetic0.aml:144"));
+			      reporter.leave(TestRunReporter.SemanticUnit.STEP, "myJsonObject = Read jsonObject from <dummyElement> [com.google.gson.JsonObject]", IDvar2, TestRunReporter.Status.OK, variables("myJsonObject", myJsonObject.getAsJsonPrimitive().getAsString(), "<dummyElement>", "Locator: dummyLocator in __synthetic0.aml:144", "@", "MyTest.tcl:11"));
+			      String IDvar3=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "myVal = Read value from <dummyElement> [java.lang.String]", IDvar3, TestRunReporter.Status.STARTED, variables("<dummyElement>", "Locator: dummyLocator in __synthetic0.aml:144", "@", "MyTest.tcl:12"));
 			      java.lang.String myVal = dummyFixture.getValue("dummyLocator");
-			      reporter.leave(TestRunReporter.SemanticUnit.STEP, "myVal = Read value from <dummyElement> [java.lang.String]", IDvar3, TestRunReporter.Status.OK, variables("myVal", myVal, "<dummyElement>", "Locator: dummyLocator in __synthetic0.aml:144"));
-			      String IDvar4=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "Start application @myJsonObject.\"my key\"", IDvar4, TestRunReporter.Status.STARTED, variables("myJsonObject.\"my key\"", myJsonObject.getAsJsonObject().get("my key").getAsJsonPrimitive().getAsString()));
+			      reporter.leave(TestRunReporter.SemanticUnit.STEP, "myVal = Read value from <dummyElement> [java.lang.String]", IDvar3, TestRunReporter.Status.OK, variables("myVal", myVal, "<dummyElement>", "Locator: dummyLocator in __synthetic0.aml:144", "@", "MyTest.tcl:12"));
+			      String IDvar4=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "Start application @myJsonObject.\"my key\"", IDvar4, TestRunReporter.Status.STARTED, variables("myJsonObject.\"my key\"", myJsonObject.getAsJsonObject().get("my key").getAsJsonPrimitive().getAsString(), "@", "MyTest.tcl:13"));
 			      org.junit.Assert.assertTrue("Parameter is expected to be of type = 'java.lang.String' but a non coercible value = '"+myJsonObject.getAsJsonObject().get("my key").toString()+"' was passed through variable reference = 'myJsonObject'.", myJsonObject.getAsJsonObject().get("my key").getAsJsonPrimitive().isString());
 			      dummyFixture.startApplication(myJsonObject.getAsJsonObject().get("my key").getAsJsonPrimitive().getAsString());
-			      reporter.leave(TestRunReporter.SemanticUnit.STEP, "Start application @myJsonObject.\"my key\"", IDvar4, TestRunReporter.Status.OK, variables("myJsonObject.\"my key\"", myJsonObject.getAsJsonObject().get("my key").getAsJsonPrimitive().getAsString()));
-			      String IDvar5=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "Start application @myVal", IDvar5, TestRunReporter.Status.STARTED, variables("myVal", myVal));
+			      reporter.leave(TestRunReporter.SemanticUnit.STEP, "Start application @myJsonObject.\"my key\"", IDvar4, TestRunReporter.Status.OK, variables("myJsonObject.\"my key\"", myJsonObject.getAsJsonObject().get("my key").getAsJsonPrimitive().getAsString(), "@", "MyTest.tcl:13"));
+			      String IDvar5=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "Start application @myVal", IDvar5, TestRunReporter.Status.STARTED, variables("myVal", myVal, "@", "MyTest.tcl:14"));
 			      dummyFixture.startApplication(myVal);
-			      reporter.leave(TestRunReporter.SemanticUnit.STEP, "Start application @myVal", IDvar5, TestRunReporter.Status.OK, variables("myVal", myVal));
-			      String IDvar6=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "Type confidential @confEnvVar into <Input>", IDvar6, TestRunReporter.Status.STARTED, variables("confEnvVar", "*****", "<Input>", "Locator: some, Strategy: org.testeditor.dsl.common.testing.DummyLocatorStrategy.ID in __synthetic0.aml:140"));
+			      reporter.leave(TestRunReporter.SemanticUnit.STEP, "Start application @myVal", IDvar5, TestRunReporter.Status.OK, variables("myVal", myVal, "@", "MyTest.tcl:14"));
+			      String IDvar6=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "Type confidential @confEnvVar into <Input>", IDvar6, TestRunReporter.Status.STARTED, variables("confEnvVar", "*****", "<Input>", "Locator: some, Strategy: org.testeditor.dsl.common.testing.DummyLocatorStrategy.ID in __synthetic0.aml:140", "@", "MyTest.tcl:15"));
 			      dummyFixture.typeConfidentialInformationInto("some", org.testeditor.dsl.common.testing.DummyLocatorStrategy.ID, env_confEnvVar);
-			      reporter.leave(TestRunReporter.SemanticUnit.STEP, "Type confidential @confEnvVar into <Input>", IDvar6, TestRunReporter.Status.OK, variables("confEnvVar", "*****", "<Input>", "Locator: some, Strategy: org.testeditor.dsl.common.testing.DummyLocatorStrategy.ID in __synthetic0.aml:140"));
-			      String IDvar7=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "Type @nonConfEnvVar into <Input>", IDvar7, TestRunReporter.Status.STARTED, variables("nonConfEnvVar", env_nonConfEnvVar, "<Input>", "Locator: some, Strategy: org.testeditor.dsl.common.testing.DummyLocatorStrategy.ID in __synthetic0.aml:140"));
+			      reporter.leave(TestRunReporter.SemanticUnit.STEP, "Type confidential @confEnvVar into <Input>", IDvar6, TestRunReporter.Status.OK, variables("confEnvVar", "*****", "<Input>", "Locator: some, Strategy: org.testeditor.dsl.common.testing.DummyLocatorStrategy.ID in __synthetic0.aml:140", "@", "MyTest.tcl:15"));
+			      String IDvar7=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "Type @nonConfEnvVar into <Input>", IDvar7, TestRunReporter.Status.STARTED, variables("nonConfEnvVar", env_nonConfEnvVar, "<Input>", "Locator: some, Strategy: org.testeditor.dsl.common.testing.DummyLocatorStrategy.ID in __synthetic0.aml:140", "@", "MyTest.tcl:16"));
 			      dummyFixture.typeInto("some", org.testeditor.dsl.common.testing.DummyLocatorStrategy.ID, env_nonConfEnvVar);
-			      reporter.leave(TestRunReporter.SemanticUnit.STEP, "Type @nonConfEnvVar into <Input>", IDvar7, TestRunReporter.Status.OK, variables("nonConfEnvVar", env_nonConfEnvVar, "<Input>", "Locator: some, Strategy: org.testeditor.dsl.common.testing.DummyLocatorStrategy.ID in __synthetic0.aml:140"));
-			      reporter.leave(TestRunReporter.SemanticUnit.COMPONENT, "dummyComponent", IDvar1, TestRunReporter.Status.OK, variables());
-			      reporter.leave(TestRunReporter.SemanticUnit.SPECIFICATION_STEP, "test something", IDvar0, TestRunReporter.Status.OK, variables());
+			      reporter.leave(TestRunReporter.SemanticUnit.STEP, "Type @nonConfEnvVar into <Input>", IDvar7, TestRunReporter.Status.OK, variables("nonConfEnvVar", env_nonConfEnvVar, "<Input>", "Locator: some, Strategy: org.testeditor.dsl.common.testing.DummyLocatorStrategy.ID in __synthetic0.aml:140", "@", "MyTest.tcl:16"));
+			      reporter.leave(TestRunReporter.SemanticUnit.COMPONENT, "dummyComponent", IDvar1, TestRunReporter.Status.OK, variables("@", "MyTest.tcl:10-16"));
+			      reporter.leave(TestRunReporter.SemanticUnit.SPECIFICATION_STEP, "test something", IDvar0, TestRunReporter.Status.OK, variables("@", "MyTest.tcl:8-16"));
 			      finishedTestWith(TestRunReporter.Status.OK); // reaching this line of code means successful test execution
 			    } catch (AssertionError e) {
 			      reporter.assertionExit(e);
@@ -132,7 +132,7 @@ class TclParameterGeneratorIntegrationTest extends AbstractTclGeneratorIntegrati
 			    }
 			  }
 			}
-		'''.toString)		
+		'''.toString)
 		} catch (Exception e) {
 		}
 	}

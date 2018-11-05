@@ -16,6 +16,8 @@ import java.util.List
 import org.eclipse.xtext.common.types.JvmDeclaredType
 import org.eclipse.xtext.common.types.JvmField
 import org.eclipse.xtext.common.types.JvmVisibility
+import org.eclipse.xtext.generator.trace.AbstractTraceRegion
+import org.eclipse.xtext.generator.trace.ILocationData
 
 class JvmModelHelper {
 
@@ -48,6 +50,18 @@ class JvmModelHelper {
 			return field.declaringType.packageName == sourceType.packageName
 		}
 		return true
+	}
+
+	def String toLocationString(AbstractTraceRegion traceRegion) {
+		return '''«traceRegion.associatedSrcRelativePath.toString»:«traceRegion.associatedLocations.map[toReportableString].join(", ")»'''
+	}
+
+	private def String toReportableString(ILocationData locationData) {
+		if (locationData.lineNumber == locationData.endLineNumber) {
+			return Integer.toString(locationData.lineNumber + 1)
+		} else {
+			return '''«locationData.lineNumber + 1»-«locationData.endLineNumber + 1»'''.toString
+		}
 	}
 
 }

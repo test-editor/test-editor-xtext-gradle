@@ -98,6 +98,10 @@ class AssertionHelper {
 			''')
 		}
 	}
+	
+	def String removeLinesMatching(String original, String pattern) {
+		return original.split(System.lineSeparator).map[if (matches(pattern)) {null}else{it}].filterNull.join(System.lineSeparator)
+	}
 
 	def void assertContains(String container, CharSequence substring) {
 		if (!container.contains(substring)) {

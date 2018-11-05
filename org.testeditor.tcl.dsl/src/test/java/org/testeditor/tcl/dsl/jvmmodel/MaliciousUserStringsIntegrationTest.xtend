@@ -32,9 +32,9 @@ class MaliciousUserStringsIntegrationTest extends AbstractTclGeneratorIntegratio
 
 		// when
 		val generatedCode = tcl.parseAndGenerate
-
+		generatedCode.assertContains('''reporter.enter(TestRunReporter.SemanticUnit.SPECIFICATION_STEP, "Some test step \";System.exit(0);//\"", IDvar0, TestRunReporter.Status.STARTED, variables("@", "SimpleTest.tcl:5"));''')
 		// then
-		generatedCode.assertContains('''reporter.enter(TestRunReporter.SemanticUnit.SPECIFICATION_STEP, "Some test step \";System.exit(0);//\"", IDvar0, TestRunReporter.Status.STARTED, variables());''')
+
 	}
 
 	@Test

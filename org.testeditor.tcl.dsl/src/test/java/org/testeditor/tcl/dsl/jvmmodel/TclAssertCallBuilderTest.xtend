@@ -14,6 +14,7 @@ package org.testeditor.tcl.dsl.jvmmodel
 
 import com.google.inject.Provider
 import javax.inject.Inject
+import org.eclipse.xtext.generator.trace.AbstractTraceRegion
 import org.eclipse.xtext.resource.XtextResourceSet
 import org.eclipse.xtext.xbase.jvmmodel.JvmTypeReferenceBuilder
 import org.junit.Before
@@ -29,6 +30,7 @@ import org.testeditor.tcl.dsl.tests.AbstractTclTest
 import org.testeditor.tcl.dsl.tests.TclModelGenerator
 import org.testeditor.tcl.util.TclModelUtil
 
+import static org.mockito.ArgumentMatchers.*
 import static org.mockito.Mockito.*
 
 class TclAssertCallBuilderTest extends AbstractTclTest {
@@ -41,6 +43,11 @@ class TclAssertCallBuilderTest extends AbstractTclTest {
 	@Mock TclExpressionTypeComputer tclExpressionTypeComputer // injected into class under test
 	@Mock JvmTypeReferenceUtil tclJvmTypeReferenceUtil // injected into class under test
 	@Mock TclElementStringifier elementStringifier // injected into class under test
+	@Mock JvmModelHelper jvmModelHelper // injected into class under test
+	
+	
+	@Mock AbstractTraceRegion traceRegion
+	
 	
 	@Inject extension TclModelGenerator
 	@Inject protected Provider<XtextResourceSet> resourceSetProvider
@@ -66,6 +73,11 @@ class TclAssertCallBuilderTest extends AbstractTclTest {
 		when(expressionBuilder.buildReadExpression(isA(VariableReference))).thenReturn(VARIABLE_NAME)
 		when(expressionBuilder.buildReadExpression(isA(VariableReferencePathAccess))).thenReturn(VARIABLE_NAME+'.get("key")')
 	}
+	
+	@Before
+	def void setupLocationStringBehaviour() {
+		when(jvmModelHelper.toLocationString(any)).thenReturn('prefix')
+	}
 
 	@Test
 	def void testEqualsGen() {
@@ -73,7 +85,7 @@ class TclAssertCallBuilderTest extends AbstractTclTest {
 		val expression = flatReference(VARIABLE_NAME).compareOnEquality(STRING_FOR_COMPARISON)
 
 		// when
-		val generatedCode = assertCallBuilder.build(expression, "prefix")
+		val generatedCode = assertCallBuilder.build(expression, traceRegion)
 
 		// then
 		assertCodeLine('''org.junit.Assert.assertEquals("prefix: ", "«STRING_FOR_COMPARISON»", «VARIABLE_NAME»);''', generatedCode)
@@ -85,7 +97,7 @@ class TclAssertCallBuilderTest extends AbstractTclTest {
 		val expression = flatReference(VARIABLE_NAME).compareNotEqual(STRING_FOR_COMPARISON)
 
 		// when
-		val generatedCode = assertCallBuilder.build(expression, "prefix")
+		val generatedCode = assertCallBuilder.build(expression, traceRegion)
 
 		// then
 		assertCodeLine('''org.junit.Assert.assertNotEquals("prefix: ", "«STRING_FOR_COMPARISON»", «VARIABLE_NAME»);''', generatedCode)
@@ -98,7 +110,7 @@ class TclAssertCallBuilderTest extends AbstractTclTest {
 		val expression = nullOrBoolCheck(VARIABLE_NAME)
 
 		// when
-		val generatedCode = assertCallBuilder.build(expression, "prefix")
+		val generatedCode = assertCallBuilder.build(expression, traceRegion)
 
 		// then
 		assertCodeLine('''org.junit.Assert.assertNotNull("prefix: ", «VARIABLE_NAME»);''', generatedCode)
@@ -111,7 +123,7 @@ class TclAssertCallBuilderTest extends AbstractTclTest {
 		val expression = nullOrBoolCheck(VARIABLE_NAME) => [negated = true]
 
 		// when
-		val generatedCode = assertCallBuilder.build(expression, "prefix")
+		val generatedCode = assertCallBuilder.build(expression, traceRegion)
 
 		// then
 		assertCodeLine('''org.junit.Assert.assertNull("prefix: ", «VARIABLE_NAME»);''', generatedCode)
@@ -124,7 +136,7 @@ class TclAssertCallBuilderTest extends AbstractTclTest {
 		val expression = nullOrBoolCheck(VARIABLE_NAME)
 
 		// when
-		val generatedCode = assertCallBuilder.build(expression, "prefix")
+		val generatedCode = assertCallBuilder.build(expression, traceRegion)
 
 		// then
 		assertCodeLine('''org.junit.Assert.assertTrue("prefix: ", «VARIABLE_NAME»);''', generatedCode)
@@ -137,7 +149,7 @@ class TclAssertCallBuilderTest extends AbstractTclTest {
 		val expression = nullOrBoolCheck(VARIABLE_NAME) => [negated = true]
 
 		// when
-		val generatedCode = assertCallBuilder.build(expression, "prefix")
+		val generatedCode = assertCallBuilder.build(expression, traceRegion)
 
 		// then
 		assertCodeLine('''org.junit.Assert.assertFalse("prefix: ", «VARIABLE_NAME»);''', generatedCode)
@@ -150,7 +162,7 @@ class TclAssertCallBuilderTest extends AbstractTclTest {
 		val expression = nullOrBoolCheck(VARIABLE_NAME)
 
 		// when
-		val generatedCode = assertCallBuilder.build(expression, "prefix")
+		val generatedCode = assertCallBuilder.build(expression, traceRegion)
 
 		// then
 		assertCodeLine('''org.junit.Assert.assertTrue("prefix: ", («VARIABLE_NAME» != null) && «VARIABLE_NAME».booleanValue());''', generatedCode)
@@ -163,7 +175,7 @@ class TclAssertCallBuilderTest extends AbstractTclTest {
 		val expression = nullOrBoolCheck(VARIABLE_NAME) => [negated = true]
 
 		// when
-		val generatedCode = assertCallBuilder.build(expression, "prefix")
+		val generatedCode = assertCallBuilder.build(expression, traceRegion)
 
 		// then
 		assertCodeLine('''org.junit.Assert.assertFalse("prefix: ", («VARIABLE_NAME» != null) && «VARIABLE_NAME».booleanValue());''',
@@ -176,7 +188,7 @@ class TclAssertCallBuilderTest extends AbstractTclTest {
 		val expression = flatReference(VARIABLE_NAME).compareMatching(STRING_FOR_COMPARISON)
 
 		// when
-		val generatedCode = assertCallBuilder.build(expression, "prefix")
+		val generatedCode = assertCallBuilder.build(expression, traceRegion)
 
 		// then
 		assertCodeLine('''org.junit.Assert.assertTrue("prefix: ", «VARIABLE_NAME».toString().matches("«STRING_FOR_COMPARISON»".toString()));''',
@@ -189,7 +201,7 @@ class TclAssertCallBuilderTest extends AbstractTclTest {
 		val expression = flatReference(VARIABLE_NAME).compareNotMatching(STRING_FOR_COMPARISON)
 
 		// when
-		val generatedCode = assertCallBuilder.build(expression, "prefix")
+		val generatedCode = assertCallBuilder.build(expression, traceRegion)
 
 		// then
 		assertCodeLine('''org.junit.Assert.assertFalse("prefix: ", «VARIABLE_NAME».toString().matches("«STRING_FOR_COMPARISON»".toString()));''',
@@ -203,7 +215,7 @@ class TclAssertCallBuilderTest extends AbstractTclTest {
 		when(expressionBuilder.buildReadExpression(isA(VariableReferencePathAccess),any)).thenReturn('''«VARIABLE_NAME».get("key")''')
 
 		// when
-		val generatedCode = assertCallBuilder.build(expression, "prefix")
+		val generatedCode = assertCallBuilder.build(expression, traceRegion)
 
 		// then
 		assertCodeLine('''org.junit.Assert.assertEquals("prefix: ", "«STRING_FOR_COMPARISON»", «VARIABLE_NAME».get("key"));''', generatedCode)
@@ -216,7 +228,7 @@ class TclAssertCallBuilderTest extends AbstractTclTest {
 		when(expressionBuilder.buildReadExpression(isA(VariableReferencePathAccess),any)).thenReturn('''«VARIABLE_NAME».get("key with spaces")''')
 
 		// when
-		val generatedCode = assertCallBuilder.build(expression, "prefix")
+		val generatedCode = assertCallBuilder.build(expression, traceRegion)
 
 		// then
 		assertCodeLine('''org.junit.Assert.assertEquals("prefix: ", "«STRING_FOR_COMPARISON»", «VARIABLE_NAME».get("key with spaces"));''', generatedCode)
