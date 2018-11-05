@@ -78,18 +78,18 @@ class TclParameterGeneratorIntegrationTest extends AbstractTclGeneratorIntegrati
 			@SuppressWarnings("all")
 			public class MyTest extends AbstractTestCase {
 			  private DummyFixture dummyFixture = new DummyFixture();
-
+			  
 			  private MaskingString env_confEnvVar = new MaskingString(System.getenv("confEnvVar"));
-
+			  
 			  private String env_nonConfEnvVar = System.getenv("nonConfEnvVar");
-
+			  
 			  @Before
 			  public void checkEnvironmentVariablesOnExistence() throws Exception {
-
+			    
 			    org.junit.Assert.assertNotNull("environment variable 'confEnvVar' must not be null", env_confEnvVar.get());
 			    org.junit.Assert.assertNotNull("environment variable 'nonConfEnvVar' must not be null", env_nonConfEnvVar);
 			  }
-
+			  
 			  @Test
 			  public void execute() throws Exception {
 			    try {
