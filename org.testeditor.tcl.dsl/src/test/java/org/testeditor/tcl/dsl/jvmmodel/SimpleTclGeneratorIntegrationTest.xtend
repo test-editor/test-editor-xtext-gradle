@@ -279,7 +279,7 @@ class SimpleTclGeneratorIntegrationTest extends AbstractTclGeneratorIntegrationT
 
 		// then
 		generatedCode.assertContains('''
-			String IDvar2=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "Is <bar> visible ? (SimpleTest.tcl:7)", IDvar2, TestRunReporter.Status.STARTED, variables("<bar>", "Locator: label.greet in __synthetic0.aml:123", "@", "SimpleTest.tcl:7"));
+			String IDvar2=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "Is <bar> visible ?", IDvar2, TestRunReporter.Status.STARTED, variables("<bar>", "Locator: label.greet in __synthetic0.aml:123", "@", "SimpleTest.tcl:7"));
 			dummyFixture.isVisible("label.greet");
 		'''.indent(3))
 	}
@@ -298,7 +298,7 @@ class SimpleTclGeneratorIntegrationTest extends AbstractTclGeneratorIntegrationT
 
 		// then
 		generatedCode.assertContains('''
-			String IDvar2=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "Set value of <Input> to \"theValue\" (SimpleTest.tcl:7)", IDvar2, TestRunReporter.Status.STARTED, variables("<Input>", "Locator: text.input, Strategy: org.testeditor.dsl.common.testing.DummyLocatorStrategy.ID in __synthetic0.aml:127", "@", "SimpleTest.tcl:7"));
+			String IDvar2=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "Set value of <Input> to \"theValue\"", IDvar2, TestRunReporter.Status.STARTED, variables("<Input>", "Locator: text.input, Strategy: org.testeditor.dsl.common.testing.DummyLocatorStrategy.ID in __synthetic0.aml:127", "@", "SimpleTest.tcl:7"));
 			dummyFixture.setValue("text.input", "theValue");
 		'''.indent(3))
 	}
@@ -327,7 +327,7 @@ class SimpleTclGeneratorIntegrationTest extends AbstractTclGeneratorIntegrationT
 
 		// then
 		generatedCode.assertContains('''
-			String IDvar2=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "Set value \"theValue\" to <Input> (SimpleTest.tcl:7)", IDvar2, TestRunReporter.Status.STARTED, variables("<Input>", "Locator: text.input, Strategy: org.testeditor.dsl.common.testing.DummyLocatorStrategy.ID in __synthetic0.aml:127", "@", "SimpleTest.tcl:7"));
+			String IDvar2=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "Set value \"theValue\" to <Input>", IDvar2, TestRunReporter.Status.STARTED, variables("<Input>", "Locator: text.input, Strategy: org.testeditor.dsl.common.testing.DummyLocatorStrategy.ID in __synthetic0.aml:127", "@", "SimpleTest.tcl:7"));
 			dummyFixture.setValue("text.input", "theValue");
 		'''.indent(3))
 	}

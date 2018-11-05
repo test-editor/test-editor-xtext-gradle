@@ -82,7 +82,7 @@ class TestRunReporterGeneratorTest extends AbstractTclTest {
 			
 			String IDvar0=newVarId(); reporter.enter('''.toString)
 			get(1).assertEquals(someJvmType)
-			get(2).assertEquals('''.COMPONENT, "message (location)", IDvar0, TestRunReporter.Status.STARTED, variables("foo", "*****", "bar", bar.toString(), "@", "location"));'''.toString)
+			get(2).assertEquals('''.COMPONENT, "message", IDvar0, TestRunReporter.Status.STARTED, variables("foo", "*****", "bar", bar.toString(), "@", "location"));'''.toString)
 		]
 	}
 }

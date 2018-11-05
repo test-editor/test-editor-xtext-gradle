@@ -93,11 +93,10 @@ class TestRunReporterGenerator {
 				// TODO: typeRef='SemanticUnit' could not be resolved.
 			'''.toString]
 		} else {
-			val locationString = modelHelper.toLocationString(traceRegion)
 			return #['''
 
 			«generateCommentPrefix»«initIdVar(action, id)»«reporterInstanceVariableName».«action.toString.toLowerCase»('''.toString, type,
-				'''.«unit.name», "«escapedMessage» («locationString»)", «id», TestRunReporter.Status.«status.name», variables(«#[variablesValuesList,amlElementsList,locationVarList].filter[length>0].join(', ')»));'''.toString.replaceAll('" *\\+ *"',
+				'''.«unit.name», "«escapedMessage»", «id», TestRunReporter.Status.«status.name», variables(«#[variablesValuesList,amlElementsList,locationVarList].filter[length>0].join(', ')»));'''.toString.replaceAll('" *\\+ *"',
 					'')];
 		}
 	}
