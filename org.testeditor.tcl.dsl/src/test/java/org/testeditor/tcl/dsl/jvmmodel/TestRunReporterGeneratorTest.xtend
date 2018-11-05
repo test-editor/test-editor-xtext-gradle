@@ -18,6 +18,8 @@ import org.testeditor.tcl.dsl.tests.TclModelGenerator
 
 import static org.mockito.ArgumentMatchers.*
 import static org.mockito.Mockito.*
+import org.eclipse.xtext.generator.trace.AbstractTraceRegion
+import org.junit.Before
 
 class TestRunReporterGeneratorTest extends AbstractTclTest {
 
@@ -26,7 +28,15 @@ class TestRunReporterGeneratorTest extends AbstractTclTest {
 	@Mock TclExpressionBuilder expressionBuilder
 	@Mock TclGeneratorConfig generatorConfig
 	@Mock TclExpressionTypeComputer typeComputer
+	@Mock JvmModelHelper jvmModelHelper
 	@Inject JvmTypeReferenceUtil typeReferenceUtil
+	
+	@Mock AbstractTraceRegion traceRegion
+	
+	@Before
+	def void setupLocationStringBehaviour() {
+		when(jvmModelHelper.toLocationString(any)).thenReturn('location')
+	}
 
 	@Test
 	def void testCommentPrefix() {
@@ -37,7 +47,7 @@ class TestRunReporterGeneratorTest extends AbstractTclTest {
 
 		// when
 		val resultingList = testRunReporterGenerator.buildReporterCall(someJvmType, SemanticUnit.COMPONENT, Action.ENTER,
-			"message", "IDvar0", Status.STARTED, "reporter", #[], #[], jvmTypeReference);
+			"message", "IDvar0", Status.STARTED, "reporter", traceRegion, #[], #[], jvmTypeReference);
 
 		// then
 		resultingList => [
@@ -63,7 +73,7 @@ class TestRunReporterGeneratorTest extends AbstractTclTest {
 
 		// when
 		val resultingList = testRunReporterGenerator.buildReporterCall(someJvmType, SemanticUnit.COMPONENT, Action.ENTER,
-			"message", "IDvar0", Status.STARTED, "reporter", #[foo, bar], #[], jvmTypeReference);
+			"message", "IDvar0", Status.STARTED, "reporter", traceRegion, #[foo, bar], #[], jvmTypeReference);
 			
 
 		// then
@@ -72,7 +82,7 @@ class TestRunReporterGeneratorTest extends AbstractTclTest {
 			
 			String IDvar0=newVarId(); reporter.enter('''.toString)
 			get(1).assertEquals(someJvmType)
-			get(2).assertEquals('''.COMPONENT, "message", IDvar0, TestRunReporter.Status.STARTED, variables("foo", "*****", "bar", bar.toString()));'''.toString)
+			get(2).assertEquals('''.COMPONENT, "message (location)", IDvar0, TestRunReporter.Status.STARTED, variables("foo", "*****", "bar", bar.toString(), "@", "location"));'''.toString)
 		]
 	}
 }

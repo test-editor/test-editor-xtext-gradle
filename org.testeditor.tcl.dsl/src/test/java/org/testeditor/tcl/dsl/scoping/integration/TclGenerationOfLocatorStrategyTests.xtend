@@ -3,6 +3,8 @@ package org.testeditor.tcl.dsl.scoping.integration
 import javax.inject.Inject
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtext.common.types.JvmType
+import org.eclipse.xtext.generator.trace.AbstractTraceRegion
+import org.eclipse.xtext.generator.trace.SourceRelativeURI
 import org.eclipse.xtext.xbase.compiler.output.ITreeAppendable
 import org.junit.Before
 import org.junit.Test
@@ -24,6 +26,7 @@ class TclGenerationOfLocatorStrategyTests extends AbstractTclGeneratorIntegratio
 
 	@Inject TclJvmModelInferrer jvmModelInferrer // class under test
 	@Mock ITreeAppendable outputStub
+	@Mock AbstractTraceRegion traceRegion
 
 	@Inject extension TclModelGenerator
 	@Inject extension AmlModelGenerator
@@ -34,6 +37,9 @@ class TclGenerationOfLocatorStrategyTests extends AbstractTclGeneratorIntegratio
 		when(outputStub.append(any(CharSequence))).thenReturn(outputStub)
 		when(outputStub.append(any(JvmType))).thenReturn(outputStub)
 		when(outputStub.newLine).thenReturn(outputStub)
+		when(outputStub.traceRegion).thenReturn(traceRegion)
+		when(traceRegion.associatedSrcRelativePath).thenReturn(mock(SourceRelativeURI))
+		when(traceRegion.associatedLocations).thenReturn(#[])
 		jvmModelInferrer.initWith(resourceSet)
 	}
 

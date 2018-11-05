@@ -7,6 +7,7 @@ import org.apache.commons.lang3.StringEscapeUtils
 import org.apache.commons.lang3.StringUtils
 import org.eclipse.xtext.common.types.JvmType
 import org.eclipse.xtext.common.types.JvmTypeReference
+import org.eclipse.xtext.generator.trace.AbstractTraceRegion
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils
 import org.slf4j.LoggerFactory
 import org.testeditor.fixture.core.MaskingString
@@ -25,19 +26,28 @@ class TestRunReporterGenerator {
 	@Inject TclExpressionBuilder expressionBuilder
 	@Inject TclGeneratorConfig generatorConfig
 	@Inject TclExpressionTypeComputer typeComputer
+	@Inject JvmModelHelper modelHelper
 	@Inject extension TclModelUtil
 
 	static val logger = LoggerFactory.getLogger(TestRunReporterGenerator)
 
+    static val RESOURCE_PREFIX = '/src/test/java/'
+
 	private def String getLocationInfo(StepContentElement stepElement) {
 		val element = stepElement.componentElement
 		val nodeModel = NodeModelUtils.findActualNodeFor(element)
-		return '''«element.eResource.URI»«if (nodeModel !== null) ':' + nodeModel.startLine»''' // node model may be absent in some test
+        val resourceURI = element.eResource.URI.toString
+        val resourcePath = if (resourceURI.contains(RESOURCE_PREFIX)) {
+            resourceURI.substring(resourceURI.indexOf(RESOURCE_PREFIX)+RESOURCE_PREFIX.length())
+        } else {
+            resourceURI
+        }
+		return '''«resourcePath»«if (nodeModel !== null) ':' + nodeModel.startLine»''' // node model may be absent in some test
 	}
 
 
 	def List<Object> buildReporterCall(JvmType type, SemanticUnit unit, Action action, String message, String id, Status status,
-		String reporterInstanceVariableName, List<VariableReference> variables, List<StepContentElement> amlElements, JvmTypeReference stringTypeReference) {
+		String reporterInstanceVariableName, AbstractTraceRegion traceRegion, List<VariableReference> variables, List<StepContentElement> amlElements, JvmTypeReference stringTypeReference) {
 		val amlElementsList = if (amlElements !== null) {
 			amlElements.filterNull.map[
 				val element = componentElement
@@ -72,6 +82,8 @@ class TestRunReporterGenerator {
 			} else {
 				''
 			}
+			
+		val locationVarList = '''"@", "«modelHelper.toLocationString(traceRegion)»"'''
 
 		val escapedMessage = StringEscapeUtils.escapeJava(message.trim)
 
@@ -81,10 +93,11 @@ class TestRunReporterGenerator {
 				// TODO: typeRef='SemanticUnit' could not be resolved.
 			'''.toString]
 		} else {
+			val locationString = modelHelper.toLocationString(traceRegion)
 			return #['''
 
 			«generateCommentPrefix»«initIdVar(action, id)»«reporterInstanceVariableName».«action.toString.toLowerCase»('''.toString, type,
-				'''.«unit.name», "«escapedMessage»", «id», TestRunReporter.Status.«status.name», variables(«#[variablesValuesList,amlElementsList].filter[length>0].join(', ')»));'''.toString.replaceAll('" *\\+ *"',
+				'''.«unit.name», "«escapedMessage» («locationString»)", «id», TestRunReporter.Status.«status.name», variables(«#[variablesValuesList,amlElementsList,locationVarList].filter[length>0].join(', ')»));'''.toString.replaceAll('" *\\+ *"',
 					'')];
 		}
 	}
