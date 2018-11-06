@@ -265,9 +265,12 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 				visibility = JvmVisibility.PRIVATE
 				val variablesWithTypes = typeComputer.getVariablesWithTypes(macro)
 				parameters += variablesWithTypes.entrySet.map[toParameter(key, key.name, value.orElse(typeRef(String)))]
+				parameters += macro.toParameter("id", typeRef(String))
 				val macroParameters = parameters
 				body = [
+					idPrefix='id'
 					macro.generateMethodBody(trace(macro), macroParameters)
+					idPrefix='"ID"'
 				]
 			]
 		]
@@ -288,7 +291,9 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 			]
 		]
 	}
-
+	
+	var idPrefix = '"ID"';
+	 
 	private def JvmOperation createSetupMethod(SetupAndCleanupProvider container) {
 		val setup = container.setup.head
 		return setup.toMethod(container.setupMethodName, typeRef(Void.TYPE)) [
@@ -297,11 +302,13 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 			body = [
 				val output = trace(setup, true)
 				val id = generateNewIDVar
+				idPrefix = '"IDS"'
 				output.wrapWithExceptionHandler(setup.contexts) [
 					output.appendReporterEnterCall(SemanticUnit.SETUP, 'setup', id, Status.STARTED, output.traceRegion)
 					setup.contexts.forEach[generateContext(output.trace(it))]
 					output.appendReporterLeaveCall(SemanticUnit.SETUP, 'setup', id, Status.OK, output.traceRegion)
 				]
+				idPrefix = '"ID"'
 			]
 		]
 	}
@@ -314,11 +321,13 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 			body = [
 				val output = trace(cleanup, true)
 				val id = generateNewIDVar
+				idPrefix = '"IDC"'
 				output.wrapWithExceptionHandler(cleanup.contexts) [
 					output.appendReporterEnterCall(SemanticUnit.CLEANUP, 'cleanup', id, Status.STARTED, output.traceRegion)
 					cleanup.contexts.forEach[generateContext(output.trace(it))]
 					output.appendReporterLeaveCall(SemanticUnit.CLEANUP, 'cleanup', id, Status.OK, output.traceRegion)
 				]
+				idPrefix = '"ID"'
 			]
 		]
 	}
@@ -653,7 +662,7 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 				}
 			]
 			val parameters = generateCallParameters(step, macro)
-			output.append('''«macroHelper.getMethodName(macro)»(«parameters»);''')
+			output.append('''«macroHelper.getMethodName(macro)»(«parameters»«if (parameters.length () > 0) ', ' else ''»«id»);''')
 		} else {
 			output.append('''org.junit.Assert.fail("Could not resolve '«context.macroCollection.name»'. Please check your «step.locationInfo»");''')
 		}
@@ -754,7 +763,7 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 
 	private def void appendReporterCall(ITreeAppendable output, SemanticUnit unit, Action action, String message, String id, Status status,
 		AbstractTraceRegion traceRegion, List<VariableReference> variables, List<StepContentElement> amlElements) {
-		testRunReporterGenerator.buildReporterCall(_typeReferenceBuilder?.typeRef(SemanticUnit)?.type, unit, action, message, id, status, reporterFieldName, traceRegion, variables, amlElements,
+		testRunReporterGenerator.buildReporterCall(_typeReferenceBuilder?.typeRef(SemanticUnit)?.type, unit, action, message, id, idPrefix, status, reporterFieldName, traceRegion, variables, amlElements,
 			typeReferenceUtil.stringJvmTypeReference).forEach [
 			switch (it) {
 				JvmType: output.append(it)
@@ -771,5 +780,6 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 	private def void appendReporterLeaveCall(ITreeAppendable output, SemanticUnit unit, String message, String id, Status status, AbstractTraceRegion traceRegion) {
 		appendReporterCall(output, unit, Action.LEAVE, message, id, status, traceRegion, #[], #[])
 	}
+
 
 }

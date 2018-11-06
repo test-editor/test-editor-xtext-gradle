@@ -47,13 +47,13 @@ class TestRunReporterGeneratorTest extends AbstractTclTest {
 
 		// when
 		val resultingList = testRunReporterGenerator.buildReporterCall(someJvmType, SemanticUnit.COMPONENT, Action.ENTER,
-			"message", "IDvar0", Status.STARTED, "reporter", traceRegion, #[], #[], jvmTypeReference);
+			"message", "IDvar0", '"ID"', Status.STARTED, "reporter", traceRegion, #[], #[], jvmTypeReference);
 
 		// then
 		resultingList => [
 			get(0).assertEquals('''
 			
-			/*          */ String IDvar0=newVarId(); reporter.enter('''.toString)			
+			/*          */ String IDvar0=nextSubId("ID"); reporter.enter('''.toString)			
 		]
 	}
 
@@ -73,14 +73,14 @@ class TestRunReporterGeneratorTest extends AbstractTclTest {
 
 		// when
 		val resultingList = testRunReporterGenerator.buildReporterCall(someJvmType, SemanticUnit.COMPONENT, Action.ENTER,
-			"message", "IDvar0", Status.STARTED, "reporter", traceRegion, #[foo, bar], #[], jvmTypeReference);
+			"message", "IDvar0", '"ID"', Status.STARTED, "reporter", traceRegion, #[foo, bar], #[], jvmTypeReference);
 			
 
 		// then
 		resultingList => [
 			get(0).assertEquals('''
 			
-			String IDvar0=newVarId(); reporter.enter('''.toString)
+			String IDvar0=nextSubId("ID"); reporter.enter('''.toString)
 			get(1).assertEquals(someJvmType)
 			get(2).assertEquals('''.COMPONENT, "message", IDvar0, TestRunReporter.Status.STARTED, variables("foo", "*****", "bar", bar.toString(), "@", "location"));'''.toString)
 		]

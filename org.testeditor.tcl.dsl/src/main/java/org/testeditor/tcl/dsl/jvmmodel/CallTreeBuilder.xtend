@@ -5,6 +5,7 @@ import javax.inject.Singleton
 import org.eclipse.emf.ecore.EObject
 import org.testeditor.tcl.AbstractTestStep
 import org.testeditor.tcl.CallTreeNode
+import org.testeditor.tcl.Macro
 import org.testeditor.tcl.StepContainer
 import org.testeditor.tcl.TestCase
 import org.testeditor.tcl.TestStep
@@ -12,13 +13,14 @@ import org.testeditor.tcl.TestStepContext
 import org.testeditor.tcl.dsl.messages.TclElementStringifier
 import org.testeditor.tcl.impl.TclFactoryImpl
 import org.testeditor.tcl.util.TclModelUtil
-import org.testeditor.tcl.Macro
 
 @Singleton
 class CallTreeBuilder {
 
-	static val testSetupDisplayName = 'Setup'
-	static val testCleanupDisplayName = 'Cleanup'
+	static val testSetupDisplayName = 'setup'
+	static val testCleanupDisplayName = 'cleanup'
+	static val testConfigName = 'Config'
+	static val testLocalName = 'Local'
 
 	@Inject extension TclFactoryImpl tclFactory
 	@Inject extension TclModelUtil
@@ -26,20 +28,39 @@ class CallTreeBuilder {
 
 	def CallTreeNode buildCallTree(TestCase model) {
 		return model.namedCallTreeNode => [
-			val setups = (model.config?.setup ?: #[]) + model.setup
-			val cleanups = model.cleanup + (model.config?.cleanup ?: #[])
+			val parentSetup = (model.config?.setup ?: #[])
+			val parentCleanup = (model.config?.cleanup ?: #[])
 
-			if (!setups.empty) {
-				children += callTreeNodeNamed(testSetupDisplayName) => [
-					children += setups.flatMap[toCallTreeChildren]
+			treeId = 'IDROOT'
+
+			runningNumber = 0
+			idPrefix = 'IDS'
+			if (!parentSetup.empty) {
+				children += callTreeNodeNamed(#[testConfigName, testSetupDisplayName].join(' ')) => [
+					children += parentSetup.flatMap[toCallTreeChildren]
+				]
+			}
+			if (!model.setup.empty) {
+				children += callTreeNodeNamed(#[testLocalName, testSetupDisplayName].join(' ')) => [
+					children += model.setup.flatMap[toCallTreeChildren]
+				]
+			}
+			
+			runningNumber = 0
+			idPrefix = 'ID'
+			children += model.steps.map[toCallTree]
+			
+			runningNumber = 0
+			idPrefix = 'IDC'
+			if (!model.cleanup.empty) {
+				children += callTreeNodeNamed(#[testLocalName, testCleanupDisplayName].join(' ')) => [
+					children += model.cleanup.flatMap[toCallTreeChildren]
 				]
 			}
 
-			children += model.steps.map[toCallTree]
-
-			if (!cleanups.empty) {
-				children += callTreeNodeNamed(testCleanupDisplayName) => [
-					children += cleanups.flatMap[toCallTreeChildren]
+			if (!parentCleanup.empty) {
+				children += callTreeNodeNamed(#[testConfigName, testCleanupDisplayName].join(' ')) => [
+					children += parentCleanup.flatMap[toCallTreeChildren]
 				]
 			}
 		]
@@ -49,6 +70,8 @@ class CallTreeBuilder {
 		return model.contexts.map[toCallTree]
 	}
 
+	var String idPrefix = 'ID'
+	
 	def dispatch CallTreeNode toCallTree(StepContainer model) {
 		return model.namedCallTreeNode => [
 			children += model.contexts.map[toCallTree]
@@ -64,13 +87,23 @@ class CallTreeBuilder {
 	def dispatch CallTreeNode toCallTree(AbstractTestStep model) {
 		return model.namedCallTreeNode
 	}
+	
+	long runningNumber = 0
 
 	def dispatch CallTreeNode toCallTree(TestStep model) {
-		return model.namedCallTreeNode => [
+		val result = model.namedCallTreeNode
+		result => [
 			if (model.hasMacroContext) {
+				val previousPrefix = idPrefix
+				val previousRunningNumber = runningNumber
+				idPrefix = result.treeId
+				runningNumber = 0
 				children += model.findMacro.toCallTree
+				idPrefix = previousPrefix
+				runningNumber = previousRunningNumber
 			}
 		]
+		return result
 	}
 	
 	def dispatch CallTreeNode toCallTree(Macro model) {
@@ -90,6 +123,8 @@ class CallTreeBuilder {
 	def callTreeNodeNamed(String name) {
 		return createCallTreeNode => [
 			displayname = name
+			treeId = idPrefix + '-' + Long.toString(runningNumber)
+			runningNumber++
 		]
 	}
 
