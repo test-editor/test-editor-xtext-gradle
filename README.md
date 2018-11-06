@@ -8,9 +8,17 @@ Gradle based project to build Xtext test-editor languages.
 The resulting language jars provide rich editing and test generation facilities. They are wrapped into rest services served by [test-editor-backend](https://github.com/test-editor/test-editor-backend).
 
 ## Development
+### Setup development
+
+Make sure to have a working [nix](https://nixos.org/nix/) installation. Please ensure that the `nixpkgs-unstable` channel is available. It
+can be added with `nix-channel --add https://nixos.org/channels/nixpkgs-unstable`.
+
+To enter the development environment, execute `NIXPKGS_ALLOW_UNFREE=1 nix-shell` in this repos root directory. For even more convenience,
+please install [direnv](https://github.com/direnv/direnv) which will enter the development environment automatically for you.
+
+Once within the development environment, run `./gradlew build` to resolve all necessary dependencies.
 
 ### Setup
-
 ``` shell
 git clone https://github.com/test-editor/test-editor-xtext-gradle.git  # clone the sources
 curl https://nixos.org/nix/install | sh                                # get nix package manager (if you happen to not have it installed)
