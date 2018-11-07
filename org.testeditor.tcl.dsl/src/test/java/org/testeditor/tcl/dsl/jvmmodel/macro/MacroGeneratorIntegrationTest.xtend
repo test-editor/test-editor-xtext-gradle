@@ -75,16 +75,16 @@ class MacroGeneratorIntegrationTest extends AbstractTclGeneratorIntegrationTest 
 				@Test
 				public void execute() throws Exception {
 				  try {
-				    String IDvar=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.SPECIFICATION_STEP, "step1", IDvar, TestRunReporter.Status.STARTED, variables("@", "SimpleTest.tcl:5-8"));
-				    String IDvar=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.MACRO_LIB, "MyMacroCollection", IDvar, TestRunReporter.Status.STARTED, variables("@", "SimpleTest.tcl:7-8"));
-				    String IDvar=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "Do nothing", IDvar, TestRunReporter.Status.STARTED, variables("@", "SimpleTest.tcl:8"));
-				    macro_MyMacroCollection_EmptyMacro();
+				    String IDvar=nextSubId("ID-1"); reporter.enter(TestRunReporter.SemanticUnit.SPECIFICATION_STEP, "step1", IDvar, TestRunReporter.Status.STARTED, variables("@", "SimpleTest.tcl:5-8"));
+				    String IDvar=nextSubId("ID-1"); reporter.enter(TestRunReporter.SemanticUnit.MACRO_LIB, "MyMacroCollection", IDvar, TestRunReporter.Status.STARTED, variables("@", "SimpleTest.tcl:7-8"));
+				    String IDvar=nextSubId("ID-1"); reporter.enter(TestRunReporter.SemanticUnit.STEP, "Do nothing", IDvar, TestRunReporter.Status.STARTED, variables("@", "SimpleTest.tcl:8"));
+				    macro_MyMacroCollection_EmptyMacro(IDvar);
 			'''.indent(1))
 
 			assertContains('''
-				private void macro_MyMacroCollection_EmptyMacro() throws Exception {
+				private void macro_MyMacroCollection_EmptyMacro(final String id) throws Exception {
 				  try {
-				    String IDvar=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.MACRO, "EmptyMacro", IDvar, TestRunReporter.Status.STARTED, variables("@", "__synthetic0.tcl:5-6"));
+				    String IDvar=nextSubId(id); reporter.enter(TestRunReporter.SemanticUnit.MACRO, "EmptyMacro", IDvar, TestRunReporter.Status.STARTED, variables("@", "__synthetic0.tcl:5-6"));
 				    reporter.leave(TestRunReporter.SemanticUnit.MACRO, "EmptyMacro", IDvar, TestRunReporter.Status.OK, variables("@", "__synthetic0.tcl:5-6"));
 			'''.indent(1))
 		]
@@ -104,13 +104,13 @@ class MacroGeneratorIntegrationTest extends AbstractTclGeneratorIntegrationTest 
 		// then
 		generatedCode.replaceIDVarNumbering => [
 			assertContains('''
-				macro_MyMacroCollection_EmptyMacroWithUnusedParameter("x");
+				macro_MyMacroCollection_EmptyMacroWithUnusedParameter("x", IDvar);
 			'''.indent(2))
 
 			assertContains('''
-				private void macro_MyMacroCollection_EmptyMacroWithUnusedParameter(final String unused) throws Exception {
+				private void macro_MyMacroCollection_EmptyMacroWithUnusedParameter(final String unused, final String id) throws Exception {
 				  try {
-				    String IDvar=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.MACRO, "EmptyMacroWithUnusedParameter", IDvar, TestRunReporter.Status.STARTED, variables("@", "__synthetic0.tcl:13-14"));
+				    String IDvar=nextSubId(id); reporter.enter(TestRunReporter.SemanticUnit.MACRO, "EmptyMacroWithUnusedParameter", IDvar, TestRunReporter.Status.STARTED, variables("@", "__synthetic0.tcl:13-14"));
 				    reporter.leave(TestRunReporter.SemanticUnit.MACRO, "EmptyMacroWithUnusedParameter", IDvar, TestRunReporter.Status.OK, variables("@", "__synthetic0.tcl:13-14"));
 				  } catch (AssertionError e) {
 				    reporter.assertionExit(e);
@@ -141,17 +141,17 @@ class MacroGeneratorIntegrationTest extends AbstractTclGeneratorIntegrationTest 
 		// then
 		generatedCode.replaceIDVarNumbering => [
 			assertContains('''
-				macro_MyMacroCollection_ReadMacro();
+				macro_MyMacroCollection_ReadMacro(IDvar);
 				reporter.leave(TestRunReporter.SemanticUnit.STEP, "Read some values", IDvar, TestRunReporter.Status.OK, variables("@", "SimpleTest.tcl:8"));
-				String IDvar=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "Read some values", IDvar, TestRunReporter.Status.STARTED, variables("@", "SimpleTest.tcl:9"));
-				macro_MyMacroCollection_ReadMacro();
-			'''.indent(3))
+				String IDvar=nextSubId("ID-1"); reporter.enter(TestRunReporter.SemanticUnit.STEP, "Read some values", IDvar, TestRunReporter.Status.STARTED, variables("@", "SimpleTest.tcl:9"));
+				macro_MyMacroCollection_ReadMacro(IDvar);
+ 			'''.indent(3))
 			assertContains('''
-			  private void macro_MyMacroCollection_ReadMacro() throws Exception {
+			  private void macro_MyMacroCollection_ReadMacro(final String id) throws Exception {
 			    try {
-			      String IDvar=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.MACRO, "ReadMacro", IDvar, TestRunReporter.Status.STARTED, variables("@", "__synthetic0.tcl:16-19"));
-			      String IDvar=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.COMPONENT, "GreetingApplication", IDvar, TestRunReporter.Status.STARTED, variables("@", "__synthetic0.tcl:18-19"));
-			      String IDvar=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "value = Read value from <bar> [java.lang.String]", IDvar, TestRunReporter.Status.STARTED, variables("<bar>", "Locator: label.greet in __synthetic0.aml:123", "@", "__synthetic0.tcl:19"));
+			      String IDvar=nextSubId(id); reporter.enter(TestRunReporter.SemanticUnit.MACRO, "ReadMacro", IDvar, TestRunReporter.Status.STARTED, variables("@", "__synthetic0.tcl:16-19"));
+			      String IDvar=nextSubId(id); reporter.enter(TestRunReporter.SemanticUnit.COMPONENT, "GreetingApplication", IDvar, TestRunReporter.Status.STARTED, variables("@", "__synthetic0.tcl:18-19"));
+			      String IDvar=nextSubId(id); reporter.enter(TestRunReporter.SemanticUnit.STEP, "value = Read value from <bar> [java.lang.String]", IDvar, TestRunReporter.Status.STARTED, variables("<bar>", "Locator: label.greet in __synthetic0.aml:123", "@", "__synthetic0.tcl:19"));
 			      java.lang.String value = dummyFixture.getValue("label.greet");
 			'''.indent(1))
 		]
@@ -175,14 +175,14 @@ class MacroGeneratorIntegrationTest extends AbstractTclGeneratorIntegrationTest 
 		// then
 		generatedCode.replaceIDVarNumbering => [
 			assertContains('''
-				macro_MyMacroCollection_SleepMacro(5);
+				macro_MyMacroCollection_SleepMacro(5, IDvar);
 			'''.indent(2))
 			assertContains('''
-				private void macro_MyMacroCollection_SleepMacro(final long x) throws Exception {
+				private void macro_MyMacroCollection_SleepMacro(final long x, final String id) throws Exception {
 				  try {
-				    String IDvar=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.MACRO, "SleepMacro", IDvar, TestRunReporter.Status.STARTED, variables("@", "__synthetic0.tcl:26-29"));
-				    String IDvar=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.COMPONENT, "GreetingApplication", IDvar, TestRunReporter.Status.STARTED, variables("@", "__synthetic0.tcl:28-29"));
-				    String IDvar=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "Wait for @x seconds", IDvar, TestRunReporter.Status.STARTED, variables("x", Long.toString(x), "@", "__synthetic0.tcl:29"));
+				    String IDvar=nextSubId(id); reporter.enter(TestRunReporter.SemanticUnit.MACRO, "SleepMacro", IDvar, TestRunReporter.Status.STARTED, variables("@", "__synthetic0.tcl:26-29"));
+				    String IDvar=nextSubId(id); reporter.enter(TestRunReporter.SemanticUnit.COMPONENT, "GreetingApplication", IDvar, TestRunReporter.Status.STARTED, variables("@", "__synthetic0.tcl:28-29"));
+				    String IDvar=nextSubId(id); reporter.enter(TestRunReporter.SemanticUnit.STEP, "Wait for @x seconds", IDvar, TestRunReporter.Status.STARTED, variables("x", Long.toString(x), "@", "__synthetic0.tcl:29"));
 				    dummyFixture.waitSeconds(x);
 				    reporter.leave(TestRunReporter.SemanticUnit.STEP, "Wait for @x seconds", IDvar, TestRunReporter.Status.OK, variables("x", Long.toString(x), "@", "__synthetic0.tcl:29"));
 				    reporter.leave(TestRunReporter.SemanticUnit.COMPONENT, "GreetingApplication", IDvar, TestRunReporter.Status.OK, variables("@", "__synthetic0.tcl:28-29"));
@@ -219,13 +219,13 @@ class MacroGeneratorIntegrationTest extends AbstractTclGeneratorIntegrationTest 
 		// then
 		generatedCode.replaceIDVarNumbering => [
 			assertContains('''
-				macro_MyMacroCollection_EmptyNestedMacro();
+				macro_MyMacroCollection_EmptyNestedMacro(IDvar);
 			'''.indent(2))
 			assertContains('''
-				macro_MyMacroCollection_EmptyMacro();
+				macro_MyMacroCollection_EmptyMacro(IDvar);
 			'''.indent(1))
 			assertContains('''
-				String IDvar=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.MACRO, "EmptyMacro", IDvar, TestRunReporter.Status.STARTED, variables("@", "__synthetic0.tcl:5-6"));
+				String IDvar=nextSubId(id); reporter.enter(TestRunReporter.SemanticUnit.MACRO, "EmptyMacro", IDvar, TestRunReporter.Status.STARTED, variables("@", "__synthetic0.tcl:5-6"));
 				reporter.leave(TestRunReporter.SemanticUnit.MACRO, "EmptyMacro", IDvar, TestRunReporter.Status.OK, variables("@", "__synthetic0.tcl:5-6"));
  			'''.indent(3))
 		]
@@ -245,25 +245,25 @@ class MacroGeneratorIntegrationTest extends AbstractTclGeneratorIntegrationTest 
 		// then
 		generatedCode.replaceIDVarNumbering => [
 			assertContains('''
-				macro_MyMacroCollection_SetValueAndWait(5);
+				macro_MyMacroCollection_SetValueAndWait(5, IDvar);
 			'''.indent(2))
 			assertContains('''
-				private void macro_MyMacroCollection_SetValueAndWait(final long seconds) throws Exception {
+				private void macro_MyMacroCollection_SetValueAndWait(final long seconds, final String id) throws Exception {
 				  try {
-				    String IDvar=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.MACRO, "SetValueAndWait", IDvar, TestRunReporter.Status.STARTED, variables("@", "__synthetic0.tcl:31-38"));
-				    String IDvar=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.COMPONENT, "GreetingApplication", IDvar, TestRunReporter.Status.STARTED, variables("@", "__synthetic0.tcl:33-34"));
-				    String IDvar=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "value = Read value from <bar> [java.lang.String]", IDvar, TestRunReporter.Status.STARTED, variables("<bar>", "Locator: label.greet in __synthetic0.aml:123", "@", "__synthetic0.tcl:34"));
+				    String IDvar=nextSubId(id); reporter.enter(TestRunReporter.SemanticUnit.MACRO, "SetValueAndWait", IDvar, TestRunReporter.Status.STARTED, variables("@", "__synthetic0.tcl:31-38"));
+				    String IDvar=nextSubId(id); reporter.enter(TestRunReporter.SemanticUnit.COMPONENT, "GreetingApplication", IDvar, TestRunReporter.Status.STARTED, variables("@", "__synthetic0.tcl:33-34"));
+				    String IDvar=nextSubId(id); reporter.enter(TestRunReporter.SemanticUnit.STEP, "value = Read value from <bar> [java.lang.String]", IDvar, TestRunReporter.Status.STARTED, variables("<bar>", "Locator: label.greet in __synthetic0.aml:123", "@", "__synthetic0.tcl:34"));
 				    java.lang.String value = dummyFixture.getValue("label.greet");
 				    reporter.leave(TestRunReporter.SemanticUnit.STEP, "value = Read value from <bar> [java.lang.String]", IDvar, TestRunReporter.Status.OK, variables("value", value, "<bar>", "Locator: label.greet in __synthetic0.aml:123", "@", "__synthetic0.tcl:34"));
 				    reporter.leave(TestRunReporter.SemanticUnit.COMPONENT, "GreetingApplication", IDvar, TestRunReporter.Status.OK, variables("@", "__synthetic0.tcl:33-34"));
-				    String IDvar=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.MACRO_LIB, "MyMacroCollection", IDvar, TestRunReporter.Status.STARTED, variables("@", "__synthetic0.tcl:35-36"));
-				    String IDvar=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "Set input to @value", IDvar, TestRunReporter.Status.STARTED, variables("value", value, "@", "__synthetic0.tcl:36"));
-				    macro_MyMacroCollection_WriteMacro(value);
+				    String IDvar=nextSubId(id); reporter.enter(TestRunReporter.SemanticUnit.MACRO_LIB, "MyMacroCollection", IDvar, TestRunReporter.Status.STARTED, variables("@", "__synthetic0.tcl:35-36"));
+				    String IDvar=nextSubId(id); reporter.enter(TestRunReporter.SemanticUnit.STEP, "Set input to @value", IDvar, TestRunReporter.Status.STARTED, variables("value", value, "@", "__synthetic0.tcl:36"));
+				    macro_MyMacroCollection_WriteMacro(value, IDvar);
 				    reporter.leave(TestRunReporter.SemanticUnit.STEP, "Set input to @value", IDvar, TestRunReporter.Status.OK, variables("value", value, "@", "__synthetic0.tcl:36"));
 				    reporter.leave(TestRunReporter.SemanticUnit.MACRO_LIB, "MyMacroCollection", IDvar, TestRunReporter.Status.OK, variables("@", "__synthetic0.tcl:35-36"));
-				    String IDvar=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.MACRO_LIB, "MyMacroCollection", IDvar, TestRunReporter.Status.STARTED, variables("@", "__synthetic0.tcl:37-38"));
-				    String IDvar=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "Sleep for @seconds seconds", IDvar, TestRunReporter.Status.STARTED, variables("seconds", Long.toString(seconds), "@", "__synthetic0.tcl:38"));
-				    macro_MyMacroCollection_SleepMacro(seconds);
+				    String IDvar=nextSubId(id); reporter.enter(TestRunReporter.SemanticUnit.MACRO_LIB, "MyMacroCollection", IDvar, TestRunReporter.Status.STARTED, variables("@", "__synthetic0.tcl:37-38"));
+				    String IDvar=nextSubId(id); reporter.enter(TestRunReporter.SemanticUnit.STEP, "Sleep for @seconds seconds", IDvar, TestRunReporter.Status.STARTED, variables("seconds", Long.toString(seconds), "@", "__synthetic0.tcl:38"));
+				    macro_MyMacroCollection_SleepMacro(seconds, IDvar);
 				    reporter.leave(TestRunReporter.SemanticUnit.STEP, "Sleep for @seconds seconds", IDvar, TestRunReporter.Status.OK, variables("seconds", Long.toString(seconds), "@", "__synthetic0.tcl:38"));
 				    reporter.leave(TestRunReporter.SemanticUnit.MACRO_LIB, "MyMacroCollection", IDvar, TestRunReporter.Status.OK, variables("@", "__synthetic0.tcl:37-38"));
 				    reporter.leave(TestRunReporter.SemanticUnit.MACRO, "SetValueAndWait", IDvar, TestRunReporter.Status.OK, variables("@", "__synthetic0.tcl:31-38"));
@@ -308,7 +308,7 @@ class MacroGeneratorIntegrationTest extends AbstractTclGeneratorIntegrationTest 
 		generatedCode => [
 			assertContains('''
 				try { Long.parseLong(env_myEnvVar); } catch (NumberFormatException nfe) { org.junit.Assert.fail("Parameter is expected to be of type = 'long' but a non coercible value = '"+env_myEnvVar.toString()+"' was passed through variable reference = 'myEnvVar'."); }
-				macro_MyMacroCollection_SleepMacro(Long.parseLong(env_myEnvVar));
+				macro_MyMacroCollection_SleepMacro(Long.parseLong(env_myEnvVar), IDvar2);
 			'''.indent(3))
 		]
 	}
@@ -334,10 +334,10 @@ class MacroGeneratorIntegrationTest extends AbstractTclGeneratorIntegrationTest 
 		// then
 		generatedCode.replaceIDVarNumbering => [
 			assertContains('''
-				macro_MyMacroCollection_MacroWithNotExistingFixture();
+				macro_MyMacroCollection_MacroWithNotExistingFixture(IDvar);
 			'''.indent(2))
 			assertContains('''
-				String IDvar=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "Stop application", IDvar, TestRunReporter.Status.STARTED, variables("@", "__synthetic0.tcl:43"));
+				String IDvar=nextSubId(id); reporter.enter(TestRunReporter.SemanticUnit.STEP, "Stop application", IDvar, TestRunReporter.Status.STARTED, variables("@", "__synthetic0.tcl:43"));
 				dummyFixture.stopApplication();
 				reporter.leave(TestRunReporter.SemanticUnit.STEP, "Stop application", IDvar, TestRunReporter.Status.OK, variables("@", "__synthetic0.tcl:43"));
 				org.junit.Assert.fail("Template 'do something' cannot be resolved with any known macro/fixture. Please check your Macro 'MyMacroCollection' in line 44.");

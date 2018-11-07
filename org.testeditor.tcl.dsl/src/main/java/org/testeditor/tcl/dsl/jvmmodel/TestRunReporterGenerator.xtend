@@ -46,7 +46,7 @@ class TestRunReporterGenerator {
 	}
 
 
-	def List<Object> buildReporterCall(JvmType type, SemanticUnit unit, Action action, String message, String id, Status status,
+	def List<Object> buildReporterCall(JvmType type, SemanticUnit unit, Action action, String message, String id, String parentId, Status status,
 		String reporterInstanceVariableName, AbstractTraceRegion traceRegion, List<VariableReference> variables, List<StepContentElement> amlElements, JvmTypeReference stringTypeReference) {
 		val amlElementsList = if (amlElements !== null) {
 			amlElements.filterNull.map[
@@ -95,15 +95,15 @@ class TestRunReporterGenerator {
 		} else {
 			return #['''
 
-			«generateCommentPrefix»«initIdVar(action, id)»«reporterInstanceVariableName».«action.toString.toLowerCase»('''.toString, type,
+			«generateCommentPrefix»«initIdVar(action, id, parentId)»«reporterInstanceVariableName».«action.toString.toLowerCase»('''.toString, type,
 				'''.«unit.name», "«escapedMessage»", «id», TestRunReporter.Status.«status.name», variables(«#[variablesValuesList,amlElementsList,locationVarList].filter[length>0].join(', ')»));'''.toString.replaceAll('" *\\+ *"',
 					'')];
 		}
 	}
 
-	private def String initIdVar(Action action, String idVar) {
+	private def String initIdVar(Action action, String idVar, String parentId) {
 		if (Action.ENTER.equals(action)) {
-			'''String «idVar»=newVarId(); '''
+			'''String «idVar»=nextSubId(«parentId»); '''
 		}
 	}
 

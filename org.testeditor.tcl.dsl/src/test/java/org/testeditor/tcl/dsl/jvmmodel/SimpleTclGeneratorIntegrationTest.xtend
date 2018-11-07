@@ -213,13 +213,13 @@ class SimpleTclGeneratorIntegrationTest extends AbstractTclGeneratorIntegrationT
 			dummyFixture.setEnum("text.input", org.testeditor.dsl.common.testing.DummyEnum.valueOf(stringvar));
 			dummyFixture.setEnum("text.input", org.testeditor.dsl.common.testing.DummyEnum.valueOf("enum_a"));
 			org.junit.Assert.assertTrue("Parameter is expected to be of type = 'boolean' but a non coercible value = '"+jsonvar.getAsJsonObject().get("key").toString()+"' was passed through variable reference = 'jsonvar'.", jsonvar.getAsJsonObject().get("key").getAsJsonPrimitive().isBoolean());
-			macro_GreetingApplicationMacro_TypeBoolIntoInputField(jsonvar.getAsJsonObject().get("key").getAsJsonPrimitive().getAsBoolean());
+			macro_GreetingApplicationMacro_TypeBoolIntoInputField(jsonvar.getAsJsonObject().get("key").getAsJsonPrimitive().getAsBoolean(), IDvar20);
 			org.junit.Assert.assertTrue("Parameter is expected to be of type = 'long' but a non coercible value = '"+jsonvar.getAsJsonObject().get("key").toString()+"' was passed through variable reference = 'jsonvar'.", jsonvar.getAsJsonObject().get("key").getAsJsonPrimitive().isNumber());
-			macro_GreetingApplicationMacro_TypeLongIntoInputField(jsonvar.getAsJsonObject().get("key").getAsJsonPrimitive().getAsLong());
+			macro_GreetingApplicationMacro_TypeLongIntoInputField(jsonvar.getAsJsonObject().get("key").getAsJsonPrimitive().getAsLong(), IDvar21);
 			org.junit.Assert.assertTrue("Parameter is expected to be of type = 'boolean' but a non coercible value = '"+stringvar.toString()+"' was passed through variable reference = 'stringvar'.", Boolean.TRUE.toString().equals(stringvar) || Boolean.FALSE.toString().equals(stringvar));
-			macro_GreetingApplicationMacro_TypeBoolIntoInputField(Boolean.valueOf(stringvar));
+			macro_GreetingApplicationMacro_TypeBoolIntoInputField(Boolean.valueOf(stringvar), IDvar22);
 			try { Long.parseLong(stringvar); } catch (NumberFormatException nfe) { org.junit.Assert.fail("Parameter is expected to be of type = 'long' but a non coercible value = '"+stringvar.toString()+"' was passed through variable reference = 'stringvar'."); }
-			macro_GreetingApplicationMacro_TypeLongIntoInputField(Long.parseLong(stringvar));
+			macro_GreetingApplicationMacro_TypeLongIntoInputField(Long.parseLong(stringvar), IDvar23);
 		'''.indent(3))
 	}
 
@@ -279,7 +279,7 @@ class SimpleTclGeneratorIntegrationTest extends AbstractTclGeneratorIntegrationT
 
 		// then
 		generatedCode.assertContains('''
-			String IDvar2=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "Is <bar> visible ?", IDvar2, TestRunReporter.Status.STARTED, variables("<bar>", "Locator: label.greet in __synthetic0.aml:123", "@", "SimpleTest.tcl:7"));
+			String IDvar2=nextSubId("ID-1"); reporter.enter(TestRunReporter.SemanticUnit.STEP, "Is <bar> visible ?", IDvar2, TestRunReporter.Status.STARTED, variables("<bar>", "Locator: label.greet in __synthetic0.aml:123", "@", "SimpleTest.tcl:7"));
 			dummyFixture.isVisible("label.greet");
 		'''.indent(3))
 	}
@@ -298,7 +298,7 @@ class SimpleTclGeneratorIntegrationTest extends AbstractTclGeneratorIntegrationT
 
 		// then
 		generatedCode.assertContains('''
-			String IDvar2=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "Set value of <Input> to \"theValue\"", IDvar2, TestRunReporter.Status.STARTED, variables("<Input>", "Locator: text.input, Strategy: org.testeditor.dsl.common.testing.DummyLocatorStrategy.ID in __synthetic0.aml:127", "@", "SimpleTest.tcl:7"));
+			String IDvar2=nextSubId("ID-1"); reporter.enter(TestRunReporter.SemanticUnit.STEP, "Set value of <Input> to \"theValue\"", IDvar2, TestRunReporter.Status.STARTED, variables("<Input>", "Locator: text.input, Strategy: org.testeditor.dsl.common.testing.DummyLocatorStrategy.ID in __synthetic0.aml:127", "@", "SimpleTest.tcl:7"));
 			dummyFixture.setValue("text.input", "theValue");
 		'''.indent(3))
 	}
@@ -327,7 +327,7 @@ class SimpleTclGeneratorIntegrationTest extends AbstractTclGeneratorIntegrationT
 
 		// then
 		generatedCode.assertContains('''
-			String IDvar2=newVarId(); reporter.enter(TestRunReporter.SemanticUnit.STEP, "Set value \"theValue\" to <Input>", IDvar2, TestRunReporter.Status.STARTED, variables("<Input>", "Locator: text.input, Strategy: org.testeditor.dsl.common.testing.DummyLocatorStrategy.ID in __synthetic0.aml:127", "@", "SimpleTest.tcl:7"));
+			String IDvar2=nextSubId("ID-1"); reporter.enter(TestRunReporter.SemanticUnit.STEP, "Set value \"theValue\" to <Input>", IDvar2, TestRunReporter.Status.STARTED, variables("<Input>", "Locator: text.input, Strategy: org.testeditor.dsl.common.testing.DummyLocatorStrategy.ID in __synthetic0.aml:127", "@", "SimpleTest.tcl:7"));
 			dummyFixture.setValue("text.input", "theValue");
 		'''.indent(3))
 	}

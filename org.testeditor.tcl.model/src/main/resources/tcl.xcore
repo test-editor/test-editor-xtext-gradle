@@ -235,5 +235,6 @@ class JsonNumber extends JsonValue {
 // Tree that is used to model call trees as executed/expected by a testcase
 class CallTreeNode {
 	String displayname
+	String treeId
 	contains CallTreeNode[0..*] children
 }

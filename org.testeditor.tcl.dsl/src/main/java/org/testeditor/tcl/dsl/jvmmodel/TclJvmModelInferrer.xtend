@@ -86,6 +86,12 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 
 	static val logger = LoggerFactory.getLogger(TclJvmModelInferrer)
 	var int variableIdRunningNumber = 0
+	
+	public static val ID_PREFIX_CONFIG_SETUP = 'ID-0'
+	public static val ID_PREFIX_TEST = 'ID-1'
+	public static val ID_PREFIX_CONFIG_CLEANUP = 'ID-2'
+	var idPrefix = '''"«ID_PREFIX_TEST»"'''; // default is regular section
+	 
 
 	@Inject extension JvmTypesBuilder
 	@Inject extension ModelUtil
@@ -147,6 +153,12 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 			initWith(element.eResource.resourceSet)
 
 			documentation = '''Generated from «element.eResource.URI»'''
+			
+			val reportPrefix = if(element instanceof TestCase) {
+				'Local'
+			} else {
+				'Config'
+			}
 
 			// Create constructor, if initialization of instantiated types with reporter is necessary
 			val typesToInitWithReporter = getAllInstantiatedTypesImplementingTestRunReportable(element, generatedClass)
@@ -155,11 +167,11 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 			}
 			// Create @Before method if relevant
 			if (!element.setup.empty) {
-				members += element.createSetupMethod
+				members += element.createSetupMethod(reportPrefix)
 			}
 			// Create @After method if relevant
 			if (!element.cleanup.empty) {
-				members += element.createCleanupMethod
+				members += element.createCleanupMethod(reportPrefix)
 			}
 
 			// subclass specific operations
@@ -265,9 +277,12 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 				visibility = JvmVisibility.PRIVATE
 				val variablesWithTypes = typeComputer.getVariablesWithTypes(macro)
 				parameters += variablesWithTypes.entrySet.map[toParameter(key, key.name, value.orElse(typeRef(String)))]
+				parameters += macro.toParameter("id", typeRef(String))
 				val macroParameters = parameters
 				body = [
+					idPrefix='id'
 					macro.generateMethodBody(trace(macro), macroParameters)
+					idPrefix='''"«ID_PREFIX_TEST»"'''
 				]
 			]
 		]
@@ -288,8 +303,8 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 			]
 		]
 	}
-
-	private def JvmOperation createSetupMethod(SetupAndCleanupProvider container) {
+	
+	private def JvmOperation createSetupMethod(SetupAndCleanupProvider container, String reportPrefix) {
 		val setup = container.setup.head
 		return setup.toMethod(container.setupMethodName, typeRef(Void.TYPE)) [
 			exceptions += typeRef(Exception)
@@ -297,16 +312,18 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 			body = [
 				val output = trace(setup, true)
 				val id = generateNewIDVar
+				idPrefix = '''"«ID_PREFIX_CONFIG_SETUP»"'''
 				output.wrapWithExceptionHandler(setup.contexts) [
-					output.appendReporterEnterCall(SemanticUnit.SETUP, 'setup', id, Status.STARTED, output.traceRegion)
+					output.appendReporterEnterCall(SemanticUnit.SETUP, reportPrefix + ' setup', id, Status.STARTED, output.traceRegion)
 					setup.contexts.forEach[generateContext(output.trace(it))]
-					output.appendReporterLeaveCall(SemanticUnit.SETUP, 'setup', id, Status.OK, output.traceRegion)
+					output.appendReporterLeaveCall(SemanticUnit.SETUP, reportPrefix + ' setup', id, Status.OK, output.traceRegion)
 				]
+				idPrefix = '''"«ID_PREFIX_TEST»"'''
 			]
 		]
 	}
 
-	private def JvmOperation createCleanupMethod(SetupAndCleanupProvider container) {
+	private def JvmOperation createCleanupMethod(SetupAndCleanupProvider container, String reportPrefix) {
 		val cleanup = container.cleanup.head
 		return cleanup.toMethod(container.cleanupMethodName, typeRef(Void.TYPE)) [
 			exceptions += typeRef(Exception)
@@ -314,11 +331,13 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 			body = [
 				val output = trace(cleanup, true)
 				val id = generateNewIDVar
+				idPrefix = '''"«ID_PREFIX_CONFIG_CLEANUP»"'''
 				output.wrapWithExceptionHandler(cleanup.contexts) [
-					output.appendReporterEnterCall(SemanticUnit.CLEANUP, 'cleanup', id, Status.STARTED, output.traceRegion)
+					output.appendReporterEnterCall(SemanticUnit.CLEANUP, reportPrefix + ' cleanup', id, Status.STARTED, output.traceRegion)
 					cleanup.contexts.forEach[generateContext(output.trace(it))]
-					output.appendReporterLeaveCall(SemanticUnit.CLEANUP, 'cleanup', id, Status.OK, output.traceRegion)
+					output.appendReporterLeaveCall(SemanticUnit.CLEANUP, reportPrefix + ' cleanup', id, Status.OK, output.traceRegion)
 				]
+				idPrefix = '''"«ID_PREFIX_TEST»"'''
 			]
 		]
 	}
@@ -653,7 +672,7 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 				}
 			]
 			val parameters = generateCallParameters(step, macro)
-			output.append('''«macroHelper.getMethodName(macro)»(«parameters»);''')
+			output.append('''«macroHelper.getMethodName(macro)»(«parameters»«if (parameters.length () > 0) ', ' else ''»«id»);''')
 		} else {
 			output.append('''org.junit.Assert.fail("Could not resolve '«context.macroCollection.name»'. Please check your «step.locationInfo»");''')
 		}
@@ -754,7 +773,7 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 
 	private def void appendReporterCall(ITreeAppendable output, SemanticUnit unit, Action action, String message, String id, Status status,
 		AbstractTraceRegion traceRegion, List<VariableReference> variables, List<StepContentElement> amlElements) {
-		testRunReporterGenerator.buildReporterCall(_typeReferenceBuilder?.typeRef(SemanticUnit)?.type, unit, action, message, id, status, reporterFieldName, traceRegion, variables, amlElements,
+		testRunReporterGenerator.buildReporterCall(_typeReferenceBuilder?.typeRef(SemanticUnit)?.type, unit, action, message, id, idPrefix, status, reporterFieldName, traceRegion, variables, amlElements,
 			typeReferenceUtil.stringJvmTypeReference).forEach [
 			switch (it) {
 				JvmType: output.append(it)
@@ -771,5 +790,6 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 	private def void appendReporterLeaveCall(ITreeAppendable output, SemanticUnit unit, String message, String id, Status status, AbstractTraceRegion traceRegion) {
 		appendReporterCall(output, unit, Action.LEAVE, message, id, status, traceRegion, #[], #[])
 	}
+
 
 }
