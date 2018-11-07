@@ -38,7 +38,7 @@ class CallTreeBuilder {
 			runningNumber = 0
 			idPrefix = TclJvmModelInferrer.ID_PREFIX_CONFIG_SETUP
 			if (!parentSetup.empty) {
-				children += callTreeNodeNamed(#[testConfigName, testSetupDisplayName].join(' ')) => [
+				children += callTreeNodeNamed('''«testConfigName» «testSetupDisplayName»''')) => [
 					children += parentSetup.flatMap[toCallTreeChildren]
 				]
 			}
