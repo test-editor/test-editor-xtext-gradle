@@ -58,7 +58,7 @@ class CallTreeBuilderTest extends AbstractTclTest {
 		actualTree.children => [
 			assertSize(1)
 			head.displayname.assertEquals('My first test step')
-			head.treeId.assertEquals('ID-0')
+			head.treeId.assertEquals('ID-1-0')
 		]
 	}
 
@@ -75,8 +75,8 @@ class CallTreeBuilderTest extends AbstractTclTest {
 		// then
 		actualTree.children => [
 			assertSize(1)
-			head.displayname.assertEquals('Cleanup')
-			head.treeId.assertEquals('IDC-0')
+			head.displayname.assertEquals('Local cleanup')
+			head.treeId.assertEquals('ID-2-0')
 		]
 	}
 
@@ -93,8 +93,8 @@ class CallTreeBuilderTest extends AbstractTclTest {
 		// then
 		actualTree.children => [
 			assertSize(1)
-			head.displayname.assertEquals('Setup')
-			head.treeId.assertEquals('IDS-0')
+			head.displayname.assertEquals('Local setup')
+			head.treeId.assertEquals('ID-0-0')
 		]
 	}
 
@@ -116,12 +116,12 @@ class CallTreeBuilderTest extends AbstractTclTest {
 		// then
 		actualTree.children => [
 			assertSize(3)
-			get(0).displayname.assertEquals('Setup')
-			get(0).treeId.assertEquals('IDS-0')
+			get(0).displayname.assertEquals('Local setup')
+			get(0).treeId.assertEquals('ID-0-0')
 			get(1).displayname.assertEquals('My first test step')
-			get(1).treeId.assertEquals('ID-0')
-			get(2).displayname.assertEquals('Cleanup')
-			get(2).treeId.assertEquals('IDC-0')
+			get(1).treeId.assertEquals('ID-1-0')
+			get(2).displayname.assertEquals('Local cleanup')
+			get(2).treeId.assertEquals('ID-2-0')
 		]
 	}
 
@@ -282,24 +282,24 @@ class CallTreeBuilderTest extends AbstractTclTest {
 		// then
 		actualTree.children.head.children.head.children.assertSingleElement => [
 			displayname.assertEquals('read "bar"')
-			treeId = 'ID-2'
+			treeId.assertEquals('ID-1-2')
 			children.assertSingleElement => [
 				displayname.assertEquals(macros.macros.head.name)
 				children.assertSingleElement => [
 					displayname.assertEquals(amlComponentForTesting.name)
 					children.assertSingleElement => [
 						displayname.assertEquals('myVar = Read jsonObject from <bar> [com.google.gson.JsonObject]')
-						treeId.assertEquals('ID-2-2')
+						treeId.assertEquals('ID-1-2-2')
 					]
 				]
 			]
 		]
 		actualTree.children.assertSingleElement.children.last => [
 			displayname.assertEquals(amlComponentForTesting.name)
-			treeId.assertEquals('ID-3')
+			treeId.assertEquals('ID-1-3')
 			children.assertSingleElement => [
 				displayname.assertEquals('next step')
-				treeId.assertEquals('ID-4')
+				treeId.assertEquals('ID-1-4')
 			]
 		]
 	}
@@ -320,10 +320,10 @@ class CallTreeBuilderTest extends AbstractTclTest {
 		// then
 		actualTree.children => [
 			assertSize(2)
-			head.displayname.assertEquals('Setup')
-			head.treeId.assertEquals('IDS-0')
-			last.displayname.assertEquals('Cleanup')
-			last.treeId.assertEquals('IDC-0')
+			head.displayname.assertEquals('Config setup')
+			head.treeId.assertEquals('ID-0-0')
+			last.displayname.assertEquals('Config cleanup')
+			last.treeId.assertEquals('ID-2-0')
 		]
 	}
 
@@ -376,50 +376,50 @@ class CallTreeBuilderTest extends AbstractTclTest {
 		actualTree.children => [
 			assertSize(4)
 			head => [
-				displayname.assertEquals('Setup')
-				treeId.assertEquals('IDS-0')
+				displayname.assertEquals('Config setup')
+				treeId.assertEquals('ID-0-0')
 				children.assertSingleElement => [
 					displayname.assertEquals(amlComponentForTesting.name)
-					treeId.assertEquals('IDS-1')
+					treeId.assertEquals('ID-0-1')
 					children.assertSingleElement => [
 						displayname.assertEquals('Global Setup')
-						treeId.assertEquals('IDS-2')
+						treeId.assertEquals('ID-0-2')
 					]
 				]
 			]
 			get(1) => [
-				displayname.assertEquals('Setup')
-				treeId.assertEquals('IDS-3')
+				displayname.assertEquals('Local setup')
+				treeId.assertEquals('ID-0-3')
 				children.assertSingleElement => [
 					displayname.assertEquals(amlComponentForTesting.name)
-					treeId.assertEquals('IDS-4')
+					treeId.assertEquals('ID-0-4')
 					children.assertSingleElement => [
 						displayname.assertEquals('Local Setup')
-						treeId.assertEquals('IDS-5')
+						treeId.assertEquals('ID-0-5')
 					]
 				]
 			]
 			get(2) => [
-				displayname.assertEquals('Cleanup')
-				treeId.assertEquals('IDC-0')
+				displayname.assertEquals('Local cleanup')
+				treeId.assertEquals('ID-2-0')
 				children.assertSingleElement => [
 					displayname.assertEquals(amlComponentForTesting.name)
-					treeId.assertEquals('IDC-1')
+					treeId.assertEquals('ID-2-1')
 					children.assertSingleElement => [
 						displayname.assertEquals('Local Cleanup')
-						treeId.assertEquals('IDC-2')
+						treeId.assertEquals('ID-2-2')
 					]
 				]
 			]
 			last => [
-				displayname.assertEquals('Cleanup')
-				treeId.assertEquals('IDC-3')
+				displayname.assertEquals('Config cleanup')
+				treeId.assertEquals('ID-2-3')
 				children.assertSingleElement => [
 					displayname.assertEquals(amlComponentForTesting.name)
-					treeId.assertEquals('IDC-4')
+					treeId.assertEquals('ID-2-4')
 					children.assertSingleElement => [
 						displayname.assertEquals('Global Cleanup')
-						treeId.assertEquals('IDC-5')
+						treeId.assertEquals('ID-2-5')
 					]
 				]
 			]

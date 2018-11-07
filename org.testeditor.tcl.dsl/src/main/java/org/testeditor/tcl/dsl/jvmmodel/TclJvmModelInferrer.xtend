@@ -86,6 +86,12 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 
 	static val logger = LoggerFactory.getLogger(TclJvmModelInferrer)
 	var int variableIdRunningNumber = 0
+	
+	public static val ID_PREFIX_CONFIG_SETUP = 'ID-0'
+	public static val ID_PREFIX_TEST = 'ID-1'
+	public static val ID_PREFIX_CONFIG_CLEANUP = 'ID-2'
+	var idPrefix = '''"«ID_PREFIX_TEST»"'''; // default is regular section
+	 
 
 	@Inject extension JvmTypesBuilder
 	@Inject extension ModelUtil
@@ -270,7 +276,7 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 				body = [
 					idPrefix='id'
 					macro.generateMethodBody(trace(macro), macroParameters)
-					idPrefix='"ID"'
+					idPrefix='''"«ID_PREFIX_TEST»"'''
 				]
 			]
 		]
@@ -292,8 +298,6 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 		]
 	}
 	
-	var idPrefix = '"ID"';
-	 
 	private def JvmOperation createSetupMethod(SetupAndCleanupProvider container) {
 		val setup = container.setup.head
 		return setup.toMethod(container.setupMethodName, typeRef(Void.TYPE)) [
@@ -302,13 +306,13 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 			body = [
 				val output = trace(setup, true)
 				val id = generateNewIDVar
-				idPrefix = '"IDS"'
+				idPrefix = '''"«ID_PREFIX_CONFIG_SETUP»"'''
 				output.wrapWithExceptionHandler(setup.contexts) [
 					output.appendReporterEnterCall(SemanticUnit.SETUP, 'setup', id, Status.STARTED, output.traceRegion)
 					setup.contexts.forEach[generateContext(output.trace(it))]
 					output.appendReporterLeaveCall(SemanticUnit.SETUP, 'setup', id, Status.OK, output.traceRegion)
 				]
-				idPrefix = '"ID"'
+				idPrefix = '''"«ID_PREFIX_TEST»"'''
 			]
 		]
 	}
@@ -321,13 +325,13 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 			body = [
 				val output = trace(cleanup, true)
 				val id = generateNewIDVar
-				idPrefix = '"IDC"'
+				idPrefix = '''"«ID_PREFIX_CONFIG_CLEANUP»"'''
 				output.wrapWithExceptionHandler(cleanup.contexts) [
 					output.appendReporterEnterCall(SemanticUnit.CLEANUP, 'cleanup', id, Status.STARTED, output.traceRegion)
 					cleanup.contexts.forEach[generateContext(output.trace(it))]
 					output.appendReporterLeaveCall(SemanticUnit.CLEANUP, 'cleanup', id, Status.OK, output.traceRegion)
 				]
-				idPrefix = '"ID"'
+				idPrefix = '''"«ID_PREFIX_TEST»"'''
 			]
 		]
 	}

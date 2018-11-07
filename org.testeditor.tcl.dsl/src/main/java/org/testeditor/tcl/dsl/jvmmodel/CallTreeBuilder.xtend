@@ -22,6 +22,8 @@ class CallTreeBuilder {
 	static val testConfigName = 'Config'
 	static val testLocalName = 'Local'
 
+	var String idPrefix = TclJvmModelInferrer.ID_PREFIX_TEST
+
 	@Inject extension TclFactoryImpl tclFactory
 	@Inject extension TclModelUtil
 	@Inject extension TclElementStringifier
@@ -34,7 +36,7 @@ class CallTreeBuilder {
 			treeId = 'IDROOT'
 
 			runningNumber = 0
-			idPrefix = 'IDS'
+			idPrefix = TclJvmModelInferrer.ID_PREFIX_CONFIG_SETUP
 			if (!parentSetup.empty) {
 				children += callTreeNodeNamed(#[testConfigName, testSetupDisplayName].join(' ')) => [
 					children += parentSetup.flatMap[toCallTreeChildren]
@@ -47,11 +49,11 @@ class CallTreeBuilder {
 			}
 			
 			runningNumber = 0
-			idPrefix = 'ID'
+			idPrefix = TclJvmModelInferrer.ID_PREFIX_TEST
 			children += model.steps.map[toCallTree]
 			
 			runningNumber = 0
-			idPrefix = 'IDC'
+			idPrefix = TclJvmModelInferrer.ID_PREFIX_CONFIG_CLEANUP
 			if (!model.cleanup.empty) {
 				children += callTreeNodeNamed(#[testLocalName, testCleanupDisplayName].join(' ')) => [
 					children += model.cleanup.flatMap[toCallTreeChildren]
@@ -70,8 +72,6 @@ class CallTreeBuilder {
 		return model.contexts.map[toCallTree]
 	}
 
-	var String idPrefix = 'ID'
-	
 	def dispatch CallTreeNode toCallTree(StepContainer model) {
 		return model.namedCallTreeNode => [
 			children += model.contexts.map[toCallTree]

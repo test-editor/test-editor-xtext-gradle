@@ -75,9 +75,9 @@ class MacroGeneratorIntegrationTest extends AbstractTclGeneratorIntegrationTest 
 				@Test
 				public void execute() throws Exception {
 				  try {
-				    String IDvar=nextSubId("ID"); reporter.enter(TestRunReporter.SemanticUnit.SPECIFICATION_STEP, "step1", IDvar, TestRunReporter.Status.STARTED, variables("@", "SimpleTest.tcl:5-8"));
-				    String IDvar=nextSubId("ID"); reporter.enter(TestRunReporter.SemanticUnit.MACRO_LIB, "MyMacroCollection", IDvar, TestRunReporter.Status.STARTED, variables("@", "SimpleTest.tcl:7-8"));
-				    String IDvar=nextSubId("ID"); reporter.enter(TestRunReporter.SemanticUnit.STEP, "Do nothing", IDvar, TestRunReporter.Status.STARTED, variables("@", "SimpleTest.tcl:8"));
+				    String IDvar=nextSubId("ID-1"); reporter.enter(TestRunReporter.SemanticUnit.SPECIFICATION_STEP, "step1", IDvar, TestRunReporter.Status.STARTED, variables("@", "SimpleTest.tcl:5-8"));
+				    String IDvar=nextSubId("ID-1"); reporter.enter(TestRunReporter.SemanticUnit.MACRO_LIB, "MyMacroCollection", IDvar, TestRunReporter.Status.STARTED, variables("@", "SimpleTest.tcl:7-8"));
+				    String IDvar=nextSubId("ID-1"); reporter.enter(TestRunReporter.SemanticUnit.STEP, "Do nothing", IDvar, TestRunReporter.Status.STARTED, variables("@", "SimpleTest.tcl:8"));
 				    macro_MyMacroCollection_EmptyMacro(IDvar);
 			'''.indent(1))
 
@@ -143,7 +143,7 @@ class MacroGeneratorIntegrationTest extends AbstractTclGeneratorIntegrationTest 
 			assertContains('''
 				macro_MyMacroCollection_ReadMacro(IDvar);
 				reporter.leave(TestRunReporter.SemanticUnit.STEP, "Read some values", IDvar, TestRunReporter.Status.OK, variables("@", "SimpleTest.tcl:8"));
-				String IDvar=nextSubId("ID"); reporter.enter(TestRunReporter.SemanticUnit.STEP, "Read some values", IDvar, TestRunReporter.Status.STARTED, variables("@", "SimpleTest.tcl:9"));
+				String IDvar=nextSubId("ID-1"); reporter.enter(TestRunReporter.SemanticUnit.STEP, "Read some values", IDvar, TestRunReporter.Status.STARTED, variables("@", "SimpleTest.tcl:9"));
 				macro_MyMacroCollection_ReadMacro(IDvar);
  			'''.indent(3))
 			assertContains('''
