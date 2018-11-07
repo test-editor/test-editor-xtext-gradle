@@ -38,12 +38,12 @@ class CallTreeBuilder {
 			runningNumber = 0
 			idPrefix = TclJvmModelInferrer.ID_PREFIX_CONFIG_SETUP
 			if (!parentSetup.empty) {
-				children += callTreeNodeNamed('''«testConfigName» «testSetupDisplayName»''')) => [
+				children += callTreeNodeNamed('''«testConfigName» «testSetupDisplayName»''') => [
 					children += parentSetup.flatMap[toCallTreeChildren]
 				]
 			}
 			if (!model.setup.empty) {
-				children += callTreeNodeNamed(#[testLocalName, testSetupDisplayName].join(' ')) => [
+				children += callTreeNodeNamed('''«testLocalName» «testSetupDisplayName»''') => [
 					children += model.setup.flatMap[toCallTreeChildren]
 				]
 			}
@@ -55,13 +55,13 @@ class CallTreeBuilder {
 			runningNumber = 0
 			idPrefix = TclJvmModelInferrer.ID_PREFIX_CONFIG_CLEANUP
 			if (!model.cleanup.empty) {
-				children += callTreeNodeNamed(#[testLocalName, testCleanupDisplayName].join(' ')) => [
+				children += callTreeNodeNamed('''«testLocalName» «testCleanupDisplayName»''') => [
 					children += model.cleanup.flatMap[toCallTreeChildren]
 				]
 			}
 
 			if (!parentCleanup.empty) {
-				children += callTreeNodeNamed(#[testConfigName, testCleanupDisplayName].join(' ')) => [
+				children += callTreeNodeNamed('''«testConfigName» «testCleanupDisplayName»''') => [
 					children += parentCleanup.flatMap[toCallTreeChildren]
 				]
 			}

@@ -153,6 +153,12 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 			initWith(element.eResource.resourceSet)
 
 			documentation = '''Generated from «element.eResource.URI»'''
+			
+			val reportPrefix = if(element instanceof TestCase) {
+				'Local'
+			} else {
+				'Config'
+			}
 
 			// Create constructor, if initialization of instantiated types with reporter is necessary
 			val typesToInitWithReporter = getAllInstantiatedTypesImplementingTestRunReportable(element, generatedClass)
@@ -161,11 +167,11 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 			}
 			// Create @Before method if relevant
 			if (!element.setup.empty) {
-				members += element.createSetupMethod
+				members += element.createSetupMethod(reportPrefix)
 			}
 			// Create @After method if relevant
 			if (!element.cleanup.empty) {
-				members += element.createCleanupMethod
+				members += element.createCleanupMethod(reportPrefix)
 			}
 
 			// subclass specific operations
@@ -298,7 +304,7 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 		]
 	}
 	
-	private def JvmOperation createSetupMethod(SetupAndCleanupProvider container) {
+	private def JvmOperation createSetupMethod(SetupAndCleanupProvider container, String reportPrefix) {
 		val setup = container.setup.head
 		return setup.toMethod(container.setupMethodName, typeRef(Void.TYPE)) [
 			exceptions += typeRef(Exception)
@@ -308,16 +314,16 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 				val id = generateNewIDVar
 				idPrefix = '''"«ID_PREFIX_CONFIG_SETUP»"'''
 				output.wrapWithExceptionHandler(setup.contexts) [
-					output.appendReporterEnterCall(SemanticUnit.SETUP, 'setup', id, Status.STARTED, output.traceRegion)
+					output.appendReporterEnterCall(SemanticUnit.SETUP, reportPrefix + ' setup', id, Status.STARTED, output.traceRegion)
 					setup.contexts.forEach[generateContext(output.trace(it))]
-					output.appendReporterLeaveCall(SemanticUnit.SETUP, 'setup', id, Status.OK, output.traceRegion)
+					output.appendReporterLeaveCall(SemanticUnit.SETUP, reportPrefix + ' setup', id, Status.OK, output.traceRegion)
 				]
 				idPrefix = '''"«ID_PREFIX_TEST»"'''
 			]
 		]
 	}
 
-	private def JvmOperation createCleanupMethod(SetupAndCleanupProvider container) {
+	private def JvmOperation createCleanupMethod(SetupAndCleanupProvider container, String reportPrefix) {
 		val cleanup = container.cleanup.head
 		return cleanup.toMethod(container.cleanupMethodName, typeRef(Void.TYPE)) [
 			exceptions += typeRef(Exception)
@@ -327,9 +333,9 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 				val id = generateNewIDVar
 				idPrefix = '''"«ID_PREFIX_CONFIG_CLEANUP»"'''
 				output.wrapWithExceptionHandler(cleanup.contexts) [
-					output.appendReporterEnterCall(SemanticUnit.CLEANUP, 'cleanup', id, Status.STARTED, output.traceRegion)
+					output.appendReporterEnterCall(SemanticUnit.CLEANUP, reportPrefix + ' cleanup', id, Status.STARTED, output.traceRegion)
 					cleanup.contexts.forEach[generateContext(output.trace(it))]
-					output.appendReporterLeaveCall(SemanticUnit.CLEANUP, 'cleanup', id, Status.OK, output.traceRegion)
+					output.appendReporterLeaveCall(SemanticUnit.CLEANUP, reportPrefix + ' cleanup', id, Status.OK, output.traceRegion)
 				]
 				idPrefix = '''"«ID_PREFIX_TEST»"'''
 			]
