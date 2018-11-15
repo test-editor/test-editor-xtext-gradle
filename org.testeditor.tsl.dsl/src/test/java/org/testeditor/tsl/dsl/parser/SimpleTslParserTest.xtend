@@ -48,6 +48,18 @@ class SimpleTslParserTest extends AbstractParserTest {
 	}
 
 	@Test
+	def void parseEmptySpecificationWithoutPackage() {
+		// given
+		val tsl= '# Test'
+		
+		// when + then
+		tsl.parseTsl => [
+			assertNoSyntaxErrors
+			specification.name.assertEquals('Test')
+		]
+	}
+
+	@Test
 	def void parseEmptySpecification() {
 		// given
 		val tsl = '''
