@@ -17,9 +17,9 @@ import "http://www.testeditor.org/tsl"
 
 TslModel:
 	{TslModel}
-	('package' package=QualifiedName )?
-	(NL+ ML_COMMENT | NL+ SL_COMMENT)*
-	(NL+ specification=TestSpecification)?
+	(NL* 'package' package=QualifiedName NL)?
+	(NL* ((ML_COMMENT+ | SL_COMMENT) NL+)+)?
+	(NL* specification=TestSpecification)?
 	NL*;
 
 TestSpecification:

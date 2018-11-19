@@ -87,6 +87,7 @@ class TclAssertCallBuilder {
 				default: throw new RuntimeException('''Assertion expression of type='«expression.class.canonicalName»' cannot be built!''')
 			}
 			val messagePrefix = modelHelper.toLocationString(traceRegion)
+			// TODO use hamcrest matcher instead, to get more elaborate error messages!
 			return '''
 			org.junit.Assert.«expression.assertionMethod»("«messagePrefix»: «elementStringifier.assertionText(expression).escapeJava»", «expressionBuilt»);'''
 		}
