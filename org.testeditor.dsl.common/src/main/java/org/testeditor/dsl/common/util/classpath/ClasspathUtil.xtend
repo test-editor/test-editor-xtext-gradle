@@ -52,11 +52,11 @@ class ClasspathUtil {
 			val absolutePath = new Path(originPath.toFile.absolutePath).removeLastSegments(1)
 			var relativePath = absolutePath
 			val gradleJavaStandardPath = new Path('src/main/java')
-			val gradleTestStandardPath = new Path('src/main/test')
+			val gradleTestStandardPath = new Path('src/test/java')
 			while (relativePath.segmentCount > 2 && !(gradleJavaStandardPath.isPrefixOf(relativePath) || gradleTestStandardPath.isPrefixOf(relativePath))) {
 				relativePath = relativePath.removeFirstSegments(1)
 			}
-			if (gradleJavaStandardPath.isPrefixOf(absolutePath) || gradleTestStandardPath.isPrefixOf(absolutePath)) {
+			if (gradleJavaStandardPath.isPrefixOf(relativePath) || gradleTestStandardPath.isPrefixOf(relativePath)) {
                 logger.debug('found standard path for ' + originPath.toString)
 				return relativePath.removeFirstSegments(3).segments.join('.')
 			} else {
@@ -133,7 +133,7 @@ class ClasspathUtil {
 			val existingClasspath = javaProject.rawClasspath
 			val newClasspathEntries = newArrayOfSize(existingClasspath.length + entriesToAdd.size)
 			val result = (entriesToAdd + existingClasspath).toList.toArray(newClasspathEntries)
-			javaProject.setRawClasspath(result, NullProgressMonitor.newInstance)
+			javaProject.setRawClasspath(result, NullProgressMonitor.declaredConstructor.newInstance)
 		}
 	}
 
