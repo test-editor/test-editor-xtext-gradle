@@ -18,6 +18,8 @@ import java.nio.file.Files
 import java.util.List
 import org.eclipse.core.runtime.IPath
 import org.eclipse.core.runtime.Path
+import org.eclipse.emf.common.util.URI
+import org.eclipse.emf.ecore.InternalEObject
 import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
@@ -100,6 +102,28 @@ class ClasspathUtilTest extends AbstractTest {
 		assertNull(buildScriptNotFound)
 		assertSame(basePathWithPom, pathWithPom)
 		assertSame(basePathWithGradle, pathWithGradle)
+	}
+	
+	@Test
+	def void testInferPackageForTestCase() {
+		// given
+		val eObject = mock(InternalEObject)
+		when(eObject.eProxyURI).thenReturn(URI.createURI('src/test/java/org/testeditor/Some.tcl'))
+		
+		val result = classpathUtil.inferPackage(eObject)
+		
+		result.assertEquals('org.testeditor')
+	}
+	
+	@Test
+	def void testInferPackageForFixture() {
+		// given
+		val eObject = mock(InternalEObject)
+		when(eObject.eProxyURI).thenReturn(URI.createURI('src/main/java/org/testeditor/fixtures/HftFixture.java'))
+		
+		val result = classpathUtil.inferPackage(eObject)
+		
+		result.assertEquals('org.testeditor.fixtures')
 	}
 	
 	@Test
