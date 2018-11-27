@@ -18,6 +18,7 @@ import java.util.Map
 import java.util.Optional
 import java.util.Set
 import javax.inject.Inject
+import org.eclipse.xtext.EcoreUtil2
 import org.eclipse.xtext.common.types.JvmTypeReference
 import org.eclipse.xtext.validation.Check
 import org.eclipse.xtext.xtype.XImportSection
@@ -28,6 +29,7 @@ import org.testeditor.aml.TemplateVariable
 import org.testeditor.aml.dsl.validation.AmlValidator
 import org.testeditor.dsl.common.util.CollectionUtils
 import org.testeditor.dsl.common.util.JvmTypeReferenceUtil
+import org.testeditor.fixture.core.FixtureException
 import org.testeditor.tcl.AssertionTestStep
 import org.testeditor.tcl.AssignmentThroughPath
 import org.testeditor.tcl.ComparatorGreaterThan
@@ -42,6 +44,7 @@ import org.testeditor.tcl.SpecificationStepImplementation
 import org.testeditor.tcl.StepContentElement
 import org.testeditor.tcl.TclPackage
 import org.testeditor.tcl.TestCase
+import org.testeditor.tcl.TestConfiguration
 import org.testeditor.tcl.TestStep
 import org.testeditor.tcl.TestStepContext
 import org.testeditor.tcl.VariableReference
@@ -242,16 +245,39 @@ class TclValidator extends AbstractTclValidator {
 	@Check
 	def void checkName(TestCase testCase) {
 		val expectedName = testCase.expectedName
-		if (testCase.name != expectedName) {
+		if (testCase.name === null) {
+			testCase.name = expectedName
+		} else if (testCase.name != expectedName) {
 			val message = '''Test case name='«testCase.name»' does not match expected name='«expectedName»' based on filename='«testCase.model.eResource.URI.lastSegment»'.'''
 			error(message, NAMED_ELEMENT__NAME, INVALID_NAME)
 		}
 	}
 
 	@Check
+	def void checkName(TestConfiguration testConfiguration) {
+		val expectedName = testConfiguration.expectedName
+		if (testConfiguration.name === null) {
+			testConfiguration.name = expectedName
+		} else if (testConfiguration.name != expectedName) {
+			val message = '''Test configuration name='«testConfiguration.name»' does not match expected name='«expectedName»' based on filename='«testConfiguration.model.eResource.URI.lastSegment»'.'''
+			error(message, NAMED_ELEMENT__NAME, INVALID_NAME)
+		}
+	}
+
+	@Check
+	def void checkName(Macro macro) {
+		val expectedName = EcoreUtil2.getIdentification(macro)
+		if (macro.name === null) {
+			macro.name = expectedName
+		}
+	}
+
+	@Check
 	def void checkName(MacroCollection macroCollection) {
 		val expectedName = macroCollection.expectedName
-		if (macroCollection.name != expectedName) {
+		if (macroCollection.name === null) {
+			macroCollection.name = expectedName
+		} else if (macroCollection.name != expectedName) {
 			val message = '''Macro collection name='«macroCollection.name»' does not match expected name='«expectedName»' based on  filename='«macroCollection.model.eResource.URI.lastSegment»'.'''
 			error(message, NAMED_ELEMENT__NAME, INVALID_NAME)
 		}

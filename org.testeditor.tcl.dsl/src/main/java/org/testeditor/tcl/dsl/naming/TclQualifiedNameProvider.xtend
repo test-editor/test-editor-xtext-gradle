@@ -32,7 +32,13 @@ class TclQualifiedNameProvider extends XbaseQualifiedNameProvider {
 		if (obj instanceof TestCase) {
 			if (obj.name === null) {
 				val name = obj.eResource.URI.trimFileExtension.lastSegment
-				return qualifiedName(EcoreUtil2.getContainerOfType(obj, TclModel)).append(name)
+				val model = EcoreUtil2.getContainerOfType(obj, TclModel)
+				val derivedPackage = classpathUtil.inferPackage(model)
+				if (derivedPackage.nullOrEmpty) {
+					return QualifiedName.create(name)
+				} else {
+					return qualifiedName(model).append(name)
+				}
 			} 
 		}
 		return super.getFullyQualifiedName(obj)

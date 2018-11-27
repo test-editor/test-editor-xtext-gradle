@@ -12,5 +12,25 @@
  *******************************************************************************/
 package org.testeditor.tsl.dsl.validation
 
+import javax.inject.Inject
+import org.eclipse.xtext.validation.Check
+import org.testeditor.tsl.TestSpecification
+import org.testeditor.tsl.TslPackage
+import org.testeditor.tsl.util.TslModelUtil
+
 class TslValidator extends AbstractTslValidator {
+
+	@Inject extension TslModelUtil
+
+	@Check
+	def void checkName(TestSpecification testSpecification) {
+		val expectedName = testSpecification.expectedName
+		if (testSpecification.name === null) {
+			testSpecification.name = expectedName
+		} else if (testSpecification.name != expectedName) {
+			val message = '''Test specification name='«testSpecification.name»' does not match expected name='«expectedName»' based on filename='«testSpecification.eResource.URI.lastSegment»'.'''
+			error(message, TslPackage.Literals.TSL_MODEL__SPECIFICATION)
+		}
+	}
+
 }
