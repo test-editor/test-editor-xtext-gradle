@@ -50,7 +50,7 @@ class FileExtensionValidator extends AbstractDeclarativeValidator {
 				model.verifyNoTestCase
 				model.verifyNoTestConfiguration
 			}
-			case "config": {
+			case "config", case "tfr": {
 				model.verifyNoTestCase
 				model.verifyNoMacroCollection
 			}

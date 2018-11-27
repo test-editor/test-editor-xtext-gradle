@@ -106,7 +106,7 @@ class DslParseHelper {
 				} else if (model.test !== null) {
 					return model.addToResourceSet(model.tclModelName + ".tcl")
 				} else if (model.config !== null) {
-					return model.addToResourceSet(model.tclModelName + ".config")
+					return model.addToResourceSet(model.tclModelName + ".tfr")
 				} else {
 					throw new RuntimeException('''tcl model is neither a macroCollection nor a test nor a config''')
 				}

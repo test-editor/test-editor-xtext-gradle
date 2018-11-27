@@ -28,7 +28,7 @@ class TestCaseWithSeparateConfigTest extends AbstractStandaloneBuilderTest {
 						
 			# SimpleTest
 			
-			config MyConfig
+			use config MyConfig
 			
 			* Test Step
 				Component: GreetingApplication
@@ -91,7 +91,7 @@ class TestCaseWithSeparateConfigTest extends AbstractStandaloneBuilderTest {
 						
 			# SimpleTest
 			
-			config MyConfig
+			use config MyConfig
 			
 			* Test Step
 				Component: GreetingApplication

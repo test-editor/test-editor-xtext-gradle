@@ -17,15 +17,18 @@ import "http://www.testeditor.org/tsl"
 
 TslModel:
 	{TslModel}
-	(NL* 'package' package=QualifiedName NL)?
-	(NL* ((ML_COMMENT+ | SL_COMMENT) NL+)+)?
-	(NL* specification=TestSpecification)?
-	NL*;
+	NL*
+	(('package' package=QualifiedName (NL* (SL_COMMENT | ML_COMMENT+) (NL+ (SL_COMMENT | ML_COMMENT+))*)? 
+		(NL+ specification=TestSpecification)?)
+	 | ((SL_COMMENT | ML_COMMENT+) NL+)* specification=TestSpecification)
+	;
 
 TestSpecification:
-	'#' name=ID SL_COMMENT?
-	(NL+ description=Text)?
-	(=>(NL+ '*') steps+=SpecificationStep | NL+ ML_COMMENT | NL+ SL_COMMENT )*;
+	{TestSpecification}
+	('#' name=ID NL+ ((SL_COMMENT | ML_COMMENT+) NL+)*)?
+	(description=Text NL+ ((SL_COMMENT | ML_COMMENT+) NL+)*)?
+	('*' steps+=SpecificationStep (=>(NL+ '*') steps+=SpecificationStep | NL+ ML_COMMENT | NL+ SL_COMMENT )* NL*)?
+;
 
 SpecificationStep:
 	contents+=InnerStepContent+

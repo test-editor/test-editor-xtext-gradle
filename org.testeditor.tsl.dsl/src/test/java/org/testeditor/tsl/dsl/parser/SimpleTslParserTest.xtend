@@ -31,7 +31,9 @@ class SimpleTslParserTest extends AbstractParserTest {
 		// expect
 		tsl.parseTsl => [
 			package.assertEquals('com.example')
-			specification.assertNull
+			specification.name.assertNull
+			specification.description.assertNull
+			specification.steps.assertEmpty
 		]
 	}
 
@@ -43,14 +45,17 @@ class SimpleTslParserTest extends AbstractParserTest {
 		// expect
 		tsl.parseTsl => [
 			package.assertNull
-			specification.assertNull
+			specification.name.assertNull
+			specification.description.assertNull
+			specification.steps.assertEmpty
 		]
 	}
 
 	@Test
 	def void parseEmptySpecificationWithoutPackage() {
 		// given
-		val tsl= '# Test'
+		val tsl= '''# Test
+			'''
 		
 		// when + then
 		tsl.parseTsl => [

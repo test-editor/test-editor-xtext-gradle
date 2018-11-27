@@ -18,11 +18,25 @@ import org.eclipse.xtext.naming.QualifiedName
 import org.eclipse.xtext.xbase.scoping.XbaseQualifiedNameProvider
 import org.testeditor.dsl.common.util.classpath.ClasspathUtil
 import org.testeditor.tcl.TclModel
+import org.eclipse.emf.ecore.EObject
+import org.testeditor.tcl.TestCase
+import org.eclipse.xtext.EcoreUtil2
 
 @Singleton
 class TclQualifiedNameProvider extends XbaseQualifiedNameProvider {
 
 	@Inject ClasspathUtil classpathUtil
+
+
+	override QualifiedName getFullyQualifiedName(EObject obj) {
+		if (obj instanceof TestCase) {
+			if (obj.name === null) {
+				val name = obj.eResource.URI.trimFileExtension.lastSegment
+				return qualifiedName(EcoreUtil2.getContainerOfType(obj, TclModel)).append(name)
+			} 
+		}
+		return super.getFullyQualifiedName(obj)
+	}
 
 	def QualifiedName qualifiedName(TclModel model) {
 		if (model.package === null) {

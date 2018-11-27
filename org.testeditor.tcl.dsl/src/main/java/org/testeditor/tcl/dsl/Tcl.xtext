@@ -27,9 +27,10 @@ TclModel:
 	(XL? importSection=TclImportSection)?
 	// TODO move require to TestCase - this should not be part of a MacroCollection
 	(XL? 'require' XL? environmentVariables+=EnvironmentVariable (',' XL? environmentVariables+=EnvironmentVariable)*)?
-	(XL? (macroCollection=MacroCollection | 
-		test=TestCase | config=TestConfiguration ))
-	XL?;
+	(XL? (macroCollection=MacroCollection XL? | 
+		test=TestCase | // XL? is missing here since TestCase may end in XL (which is due to the fact, that it may hold no test at all) 
+		config=TestConfiguration XL? )) //
+	;
 
 /*
  * This terminal is used in addition to the whitespace token definitions of the base grammar xbase,
@@ -63,23 +64,25 @@ TclXImportDeclaration returns xtype::XImportDeclaration:
 	
 TestCase:
 	{TestCase}
-	'#' name=ID
-	(XL? 'implements' XL? specification=[tsl::TestSpecification|QualifiedName])?
-	(XL? 'config' XL? config=[TestConfiguration])?
+	('#' name=ID XL?)?
+	('implements' XL? specification=[tsl::TestSpecification|QualifiedName] XL?)?
+	('use' ('config'|'testframe') XL? config=[TestConfiguration] XL?)?
 	( // allow user to define setup and cleanup either at the beginning or end
   	  // unordered groups don't compose with XL, so validation has to check
   	  // that (max) only one setup/cleanup is specfied (either before the steps, or after the steps)
-		(XL setup+=TestSetup)?
-	 	(XL cleanup+=TestCleanup)?
-	 	(XL steps+=SpecificationStepImplementation
+		(setup+=TestSetup XL)?
+	 	(cleanup+=TestCleanup XL)?
+	 	(steps+=SpecificationStepImplementation
 	 		(XL steps+=SpecificationStepImplementation)*
 	 		(XL cleanup+=TestCleanup)?
-			(XL setup+=TestSetup)?	
+			(XL setup+=TestSetup)?
+			XL?	
 		)?
 	);
 
 TestConfiguration:
-	'config' name=ID
+	{TestConfiguration}
+	('config'|'testframe') name=ID?
 	((XL setup+=TestSetup)? & (XL cleanup+=TestCleanup)?);
 
 TestSetup:
@@ -127,12 +130,12 @@ EnvironmentVariable:
 	name=ID;
 
 MacroCollection:
-	'#' name=ID
-	(XL? macros+=Macro)+;
+	('#' name=ID XL?)?
+	macros+=Macro (XL? macros+=Macro)*;
 
 Macro:
-	'##' name=ID
-	XL? 'template' XL? '=' XL? template=Template
+	('##' name=ID XL?)?
+	'template' XL? '=' XL? template=Template
 	(XL contexts+=TestStepContext)*
 ;
 

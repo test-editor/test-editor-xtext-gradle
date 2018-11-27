@@ -32,11 +32,13 @@ import org.testeditor.tcl.util.TclModelUtil
 import org.testeditor.tsl.StepContentVariable
 
 import static extension org.eclipse.xtext.nodemodel.util.NodeModelUtils.*
+import org.testeditor.tcl.dsl.naming.TclQualifiedNameProvider
 
 class TclModelParserTest extends AbstractTclTest {
 	
 	@Inject extension DslParseHelper
 	@Inject extension TclModelUtil
+	@Inject TclQualifiedNameProvider _qualifiedNameProvider
 	
 	@Test
 	def void parseMinimal() {
@@ -50,6 +52,23 @@ class TclModelParserTest extends AbstractTclTest {
 		
 		// then
 		model.package.assertEquals('com.example')
+	}
+	
+	@Test
+	def void parseMinimalTestCaseWithoutName() {
+		// given
+		val input = ''
+		
+		// when
+		val model = parseTcl(input, "/home/project/src/test/java/com/example/MyTest.tcl")
+		
+		// then
+		model => [
+			assertNoSyntaxErrors
+			package.assertNull // is derived (e.g. during generation)
+			test.name.assertNull // is derived
+			_qualifiedNameProvider.getFullyQualifiedName(model.test).toString.assertEquals('com.example.MyTest')
+		]
 	}
 
 	@Test
