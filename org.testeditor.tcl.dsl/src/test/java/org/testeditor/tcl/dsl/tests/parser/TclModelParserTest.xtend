@@ -27,12 +27,12 @@ import org.testeditor.tcl.TclPackage
 import org.testeditor.tcl.TestStep
 import org.testeditor.tcl.TestStepWithAssignment
 import org.testeditor.tcl.VariableReference
+import org.testeditor.tcl.dsl.naming.TclQualifiedNameProvider
 import org.testeditor.tcl.dsl.tests.AbstractTclTest
 import org.testeditor.tcl.util.TclModelUtil
 import org.testeditor.tsl.StepContentVariable
 
 import static extension org.eclipse.xtext.nodemodel.util.NodeModelUtils.*
-import org.testeditor.tcl.dsl.naming.TclQualifiedNameProvider
 
 class TclModelParserTest extends AbstractTclTest {
 	

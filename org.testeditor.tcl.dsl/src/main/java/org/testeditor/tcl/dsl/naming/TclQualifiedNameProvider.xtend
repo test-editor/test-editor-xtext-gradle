@@ -14,13 +14,13 @@ package org.testeditor.tcl.dsl.naming
 
 import javax.inject.Inject
 import javax.inject.Singleton
+import org.eclipse.emf.ecore.EObject
+import org.eclipse.xtext.EcoreUtil2
 import org.eclipse.xtext.naming.QualifiedName
 import org.eclipse.xtext.xbase.scoping.XbaseQualifiedNameProvider
 import org.testeditor.dsl.common.util.classpath.ClasspathUtil
 import org.testeditor.tcl.TclModel
-import org.eclipse.emf.ecore.EObject
 import org.testeditor.tcl.TestCase
-import org.eclipse.xtext.EcoreUtil2
 
 @Singleton
 class TclQualifiedNameProvider extends XbaseQualifiedNameProvider {

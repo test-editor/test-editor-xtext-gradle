@@ -17,16 +17,22 @@ import "http://www.testeditor.org/tsl"
 
 TslModel:
 	{TslModel}
+	// newlineing is a bit tricky here, since TestSpecifications itself may be empty
 	NL*
 	(('package' package=QualifiedName (NL* (SL_COMMENT | ML_COMMENT+) (NL+ (SL_COMMENT | ML_COMMENT+))*)? 
-		(NL+ specification=TestSpecification)?)
+		(NL+ specification=TestSpecification)?) // this is done to ensure that the TestSpecification will always start a line
 	 | ((SL_COMMENT | ML_COMMENT+) NL+)* specification=TestSpecification)
 	;
 
+/* In order to ensure that the '*' in the beginning of a line (spaces are swallowed automatically),
+ * the rules are written to ensure NL before '*'. Keeping the rules somewhat readable, the name and description 
+ * have to end with (one or more) NL to ensure this. The rules could be rewritten such that if no specification follows, the NL
+ * is not mandatory, this will however make the grammar a lot uglier (see TslModel, which implements this for the optional package field)).
+ */
 TestSpecification:
 	{TestSpecification}
-	('#' name=ID NL+ ((SL_COMMENT | ML_COMMENT+) NL+)*)?
-	(description=Text NL+ ((SL_COMMENT | ML_COMMENT+) NL+)*)?
+	('#' name=ID NL+ ((SL_COMMENT | ML_COMMENT+) NL+)*)? // note that the name must be terminated with a NL (to enure * of a spec to start the line) 
+	(description=Text NL+ ((SL_COMMENT | ML_COMMENT+) NL+)*)? // note that description must be terminated with a NL (to enure * of a spec to start the line)
 	('*' steps+=SpecificationStep (=>(NL+ '*') steps+=SpecificationStep | NL+ ML_COMMENT | NL+ SL_COMMENT )* NL*)?
 ;
 
