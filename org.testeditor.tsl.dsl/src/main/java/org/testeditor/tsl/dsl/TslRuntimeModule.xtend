@@ -13,11 +13,16 @@
 package org.testeditor.tsl.dsl
 
 import org.testeditor.tsl.dsl.conversion.TslValueConverterService
+import org.testeditor.tsl.dsl.naming.TslQualifiedNameProvider
 
 class TslRuntimeModule extends AbstractTslRuntimeModule {
 
 	override bindIValueConverterService() {
 		return TslValueConverterService
+	}
+
+	override bindIQualifiedNameProvider() {
+		return TslQualifiedNameProvider
 	}
 
 }
