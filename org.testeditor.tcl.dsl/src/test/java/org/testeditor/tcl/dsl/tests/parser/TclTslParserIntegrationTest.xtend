@@ -40,11 +40,7 @@ class TclTslParserIntegrationTest extends AbstractParserTest {
 
 		// then
 		tslModel.assertNoErrors
-		tclModel => [
-			assertNoErrors
-			test.specification.name.assertEquals(tslId)
-			test.name.assertEquals(tclId)
-		]
+		tclModel.assertNoErrors
 	}
 	
 	@Test

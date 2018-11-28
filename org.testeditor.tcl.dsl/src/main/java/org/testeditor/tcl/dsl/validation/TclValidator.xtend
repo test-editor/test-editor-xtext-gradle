@@ -244,9 +244,7 @@ class TclValidator extends AbstractTclValidator {
 	@Check
 	def void checkName(TestCase testCase) {
 		val expectedName = testCase.expectedName
-		if (testCase.name === null) {
-			testCase.name = expectedName
-		} else if (testCase.name != expectedName) {
+		if (testCase.name !== null && testCase.name != expectedName) {
 			val message = '''Test case name='«testCase.name»' does not match expected name='«expectedName»' based on filename='«testCase.model.eResource.URI.lastSegment»'.'''
 			error(message, NAMED_ELEMENT__NAME, INVALID_NAME)
 		}
@@ -255,28 +253,16 @@ class TclValidator extends AbstractTclValidator {
 	@Check
 	def void checkName(TestConfiguration testConfiguration) {
 		val expectedName = testConfiguration.expectedName
-		if (testConfiguration.name === null) {
-			testConfiguration.name = expectedName
-		} else if (testConfiguration.name != expectedName) {
+		if (testConfiguration.name !== null && testConfiguration.name != expectedName) {
 			val message = '''Test configuration name='«testConfiguration.name»' does not match expected name='«expectedName»' based on filename='«testConfiguration.model.eResource.URI.lastSegment»'.'''
 			error(message, NAMED_ELEMENT__NAME, INVALID_NAME)
 		}
 	}
 
 	@Check
-	def void checkName(Macro macro) {
-		val expectedName = EcoreUtil2.getIdentification(macro)
-		if (macro.name === null) {
-			macro.name = expectedName
-		}
-	}
-
-	@Check
 	def void checkName(MacroCollection macroCollection) {
 		val expectedName = macroCollection.expectedName
-		if (macroCollection.name === null) {
-			macroCollection.name = expectedName
-		} else if (macroCollection.name != expectedName) {
+		if (macroCollection.name !== null && macroCollection.name != expectedName) {
 			val message = '''Macro collection name='«macroCollection.name»' does not match expected name='«expectedName»' based on  filename='«macroCollection.model.eResource.URI.lastSegment»'.'''
 			error(message, NAMED_ELEMENT__NAME, INVALID_NAME)
 		}

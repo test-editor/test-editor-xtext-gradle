@@ -25,9 +25,7 @@ class TslValidator extends AbstractTslValidator {
 	@Check
 	def void checkName(TestSpecification testSpecification) {
 		val expectedName = testSpecification.expectedName
-		if (testSpecification.name === null) {
-			testSpecification.name = expectedName
-		} else if (testSpecification.name != expectedName) {
+		if (testSpecification.name !== null && testSpecification.name != expectedName) {
 			val message = '''Test specification name='«testSpecification.name»' does not match expected name='«expectedName»' based on filename='«testSpecification.eResource.URI.lastSegment»'.'''
 			error(message, TslPackage.Literals.TSL_MODEL__SPECIFICATION)
 		}
