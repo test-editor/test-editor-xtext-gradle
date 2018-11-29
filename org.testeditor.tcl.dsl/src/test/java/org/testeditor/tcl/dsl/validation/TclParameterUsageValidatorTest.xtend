@@ -56,7 +56,7 @@ class TclParameterUsageValidatorTest extends AbstractParserTestWithDummyComponen
 				]
 			]
 		]
-		macroModel.addToResourceSet("test.tml")
+		macroModel.addToResourceSet("Test.tml")
 
 		val allEnvVars=environmentVariablesPublic("envVar", "myEnvString")
 		val tclModel = tclModel => [
@@ -186,7 +186,7 @@ class TclParameterUsageValidatorTest extends AbstractParserTestWithDummyComponen
 				]
 			]
 		]
-		tclModel.addToResourceSet('test.tcl')
+		tclModel.addToResourceSet('Test.tcl')
 
 		// when then
 		validator.assertNoErrors(tclModel)
@@ -206,7 +206,7 @@ class TclParameterUsageValidatorTest extends AbstractParserTestWithDummyComponen
 				]
 			]
 		]
-		tclModel.addToResourceSet('test.tcl')
+		tclModel.addToResourceSet('Test.tcl')
 		
 		// when then
 		validator.assertError(tclModel, TEST_STEP, TclValidator.INVALID_VAR_DEREF) // since assignment must take place before usage!

@@ -16,13 +16,14 @@ import javax.inject.Inject
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtext.naming.IQualifiedNameProvider
 import org.junit.Test
+import org.mockito.InjectMocks
+import org.mockito.Mock
+import org.testeditor.dsl.common.util.classpath.ClasspathUtil
 import org.testeditor.tcl.dsl.tests.AbstractTclTest
 import org.testeditor.tcl.dsl.tests.TclModelGenerator
-import org.mockito.Mock
 
+import static org.mockito.ArgumentMatchers.*
 import static org.mockito.Mockito.*
-import org.mockito.InjectMocks
-import org.testeditor.dsl.common.util.classpath.ClasspathUtil
 
 class QualifiedNameProviderTest extends AbstractTclTest {
 
@@ -41,7 +42,7 @@ class QualifiedNameProviderTest extends AbstractTclTest {
 		// then
 		actualName.toString.assertEquals(expectedName)
 	}
-
+	
 	@Test
 	def void nameForTclModel() {
 		// given

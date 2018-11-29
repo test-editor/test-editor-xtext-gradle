@@ -23,16 +23,7 @@ import org.testeditor.tsl.StepContentVariable
 class TslModelUtil {
 
 	def String getExpectedName(EObject model) {
-		val lastSegment = model.eResource?.URI?.lastSegment
-		if (lastSegment !== null) {
-			val separator = lastSegment.lastIndexOf('.')
-			if (separator >= 0) {
-				return lastSegment.substring(0, separator).toFirstUpper
-			} else {
-				return lastSegment.toFirstUpper
-			}
-		}
-		return null
+		return model.eResource?.URI?.trimFileExtension?.lastSegment
 	}
 
 	def String restoreString(Iterable<StepContent> contents) {

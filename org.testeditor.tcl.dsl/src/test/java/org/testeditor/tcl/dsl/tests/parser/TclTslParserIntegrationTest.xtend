@@ -26,17 +26,11 @@ class TclTslParserIntegrationTest extends AbstractParserTest {
 		val tslId = 'ÖttoIsÜberμm'
 		val tclId = 'ÜbersichtDerVerträgeλ'
 		val tsl = '''
-			package com.example
-			
-			# «tslId»
-			
 			* Unicode Spec Step Ü (ω=25 °/s, 25 µm/s))
 		'''
 
 		val tcl = '''
-			package com.example
-			
-			# «tclId» implements «tslId»
+			implements «tslId»
 			
 			* Unicode Spec Step Ü (ω=25 °/s, 25 µm/s))'''
 
@@ -46,23 +40,15 @@ class TclTslParserIntegrationTest extends AbstractParserTest {
 
 		// then
 		tslModel.assertNoErrors
-		tclModel => [
-			assertNoErrors
-			test.specification.name.assertEquals(tslId)
-			test.name.assertEquals(tclId)
-		]
+		tclModel.assertNoErrors
 	}
 	
 	@Test
 	def void testMultilineTestSteps() {
 		val tcl = '''
-			package com.example
-				   	
-			# SimpleTest
-			
 			* MyId another id 
 			  multiline
-			  Component: MyDialog
+			  Component: com.example.MyDialog
 			  - Enter month "10" and year "2000" into <Date>
 			* next
 			'''

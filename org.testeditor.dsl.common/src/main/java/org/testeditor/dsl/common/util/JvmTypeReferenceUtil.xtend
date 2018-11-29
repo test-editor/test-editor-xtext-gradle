@@ -56,10 +56,10 @@ class JvmTypeReferenceUtil {
 	def void initWith(ResourceSet resourceSet) {
 		// cache a valid typeReferenceBuilder ?
 		if (resourceSet === null) {
-			log.debug('''type reference builder initialized with injected resource set.''')
+			log.trace('''type reference builder initialized with injected resource set.''')
 			typeReferenceBuilder = typeReferenceBuilderFactory.create(this.resourceSet) // useful for testing with models without resources
 		} else if (resourceSet !== this.resourceSet || typeReferenceBuilder === null) {
-			log.debug('''type reference build (re)initialized with different resource set.''')
+			log.trace('''type reference build (re)initialized with different resource set.''')
 			typeReferenceBuilder = typeReferenceBuilderFactory.create(resourceSet)
 			this.resourceSet = resourceSet // overwrite injected one (which was injected for test purposes only)
 			this.typeReferenceOwner = null // failure to do this will result in different instances of type references, failing in object identity comparisons within the rcp

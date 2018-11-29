@@ -83,7 +83,7 @@ subprojects {
             logger.quiet "${result.resultType}: ${desc.name} [${desc.className}]"
         }
 
-        maxParallelForks = Runtime.runtime.availableProcessors()
+        maxParallelForks = Runtime.runtime.availableProcessors() / 2
     }
 
     tasks.withType(JavaCompile) {

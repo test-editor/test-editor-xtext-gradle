@@ -118,7 +118,7 @@ class TestConfigurationParserTest extends AbstractTclTest {
 			
 			# MyTest
 			
-			config MyConfig
+			use config MyConfig
 		'''
 
 		// when
