@@ -80,6 +80,7 @@ TestCase:
 		)?
 	);
 
+@Exported
 TestConfiguration:
 	{TestConfiguration}
 	('config'|'testframe') name=ID?
@@ -129,6 +130,7 @@ EnvironmentVariable:
 	(nonConfidential?='public')?
 	name=ID;
 
+@Exported
 MacroCollection:
 	('#' name=ID XL?)?
 	macros+=Macro (XL? macros+=Macro)*;
