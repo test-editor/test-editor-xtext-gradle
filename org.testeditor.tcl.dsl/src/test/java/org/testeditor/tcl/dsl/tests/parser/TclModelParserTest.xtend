@@ -377,6 +377,30 @@ class TclModelParserTest extends AbstractTclTest {
 		// then
 		model.package.assertEquals('com.example')
 	}
+	
+	@Test
+	def void parseMacroWithReturnValue() {
+		// given
+		val input = '''
+			package com.example
+
+			# TestThatUsesMacroWithReturnValue
+
+			* Test step
+			Macro: MyMacroCollection
+			- value = my first macro call
+		'''
+
+		// when
+		val model = parseTcl(input).assertNoSyntaxErrors
+
+		// then
+		model.test.steps.assertSingleElement.contexts.assertSingleElement.assertInstanceOf(MacroTestStepContext)
+		.steps.assertSingleElement.assertInstanceOf(TestStepWithAssignment) => [
+			variable.name.assertEquals('value')
+			contents.restoreString.assertEquals('my first macro call')
+		]
+	}
 
 	@Test
 	def void parseSetup() {
