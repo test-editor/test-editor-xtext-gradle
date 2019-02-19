@@ -166,6 +166,9 @@ class AssignmentVariable extends Variable {
 class StepContentElement extends StepContentValue {
 }
 
+class StepContentElementVariable extends StepContentElement, VariableReference {
+}
+
 class StepContentPunctuation extends StepContentText {
 }
 

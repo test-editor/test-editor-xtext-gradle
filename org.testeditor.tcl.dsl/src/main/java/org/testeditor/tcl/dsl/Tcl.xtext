@@ -281,8 +281,12 @@ StepContentVariable returns tsl::StepContentVariable:
 	value=STRING;
 
 StepContentElement hidden():
+	('<' StepContentElementVariable '>') |
 	('<' value=ID '>') |
 	{StepContentElement} ('<>' | '<' (SPACES | XL ) '>');
+
+StepContentElementVariable:
+	'@' variable=[aml::Variable];
 
 StepContentPunctuation hidden():
 	value=('.'|'?')

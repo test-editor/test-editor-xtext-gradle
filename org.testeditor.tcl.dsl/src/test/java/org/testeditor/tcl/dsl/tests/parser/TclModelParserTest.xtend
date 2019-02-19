@@ -23,6 +23,7 @@ import org.testeditor.tcl.JsonString
 import org.testeditor.tcl.MacroTestStepContext
 import org.testeditor.tcl.NullOrBoolCheck
 import org.testeditor.tcl.StepContentElement
+import org.testeditor.tcl.StepContentElementVariable
 import org.testeditor.tcl.TclPackage
 import org.testeditor.tcl.TestStep
 import org.testeditor.tcl.TestStepWithAssignment
@@ -376,6 +377,56 @@ class TclModelParserTest extends AbstractTclTest {
 
 		// then
 		model.package.assertEquals('com.example')
+	}
+	
+	@Test
+	def void parseMacroWithElementParameter() {
+		// given
+		val input = '''
+			package com.example
+
+			# TestThatUsesMacroWithElementParameter
+
+			* Test step
+			Macro: MyMacroCollection
+			- enter "test" into <anElement>
+		'''
+
+		// when
+		val model = parseTcl(input).assertNoSyntaxErrors
+
+		// then
+		model.test.steps.assertSingleElement.contexts.assertSingleElement.assertInstanceOf(MacroTestStepContext)
+		.steps.assertSingleElement.assertInstanceOf(TestStep) => [
+			contents.restoreString.assertEquals('enter "test" into <anElement>')
+		]
+	}
+	
+	@Test
+	def void parseTestStepWithElementVariableReference() {
+		// given
+		val input = '''
+			package com.example
+
+			# MyMacroCollection
+
+			## MacroWithElementParameter
+			template = "enter" ${content} "into" ${field}
+			Component: AComponent
+			- enter @content into <@field>
+		'''
+
+		// when
+		val model = parseTcl(input).assertNoSyntaxErrors
+
+		// then
+		model.macroCollection.macros.assertSingleElement
+				.contexts.assertSingleElement.assertInstanceOf(ComponentTestStepContext)
+				.steps.assertSingleElement.assertInstanceOf(TestStep)
+				.contents.get(3).assertInstanceOf(StepContentElementVariable) => [
+					value.assertEquals(null)
+					variable.name.assertEquals('field')
+				]
 	}
 
 	@Test
