@@ -33,6 +33,8 @@ import org.testeditor.tcl.util.TclModelUtil
 import org.testeditor.tsl.StepContentVariable
 
 import static extension org.eclipse.xtext.nodemodel.util.NodeModelUtils.*
+import org.testeditor.tcl.ExpressionReturnTestStep
+import org.testeditor.tcl.JsonNumber
 
 class TclModelParserTest extends AbstractTclTest {
 	
@@ -400,6 +402,29 @@ class TclModelParserTest extends AbstractTclTest {
 			variable.name.assertEquals('value')
 			contents.restoreString.assertEquals('my first macro call')
 		]
+	}
+	
+	@Test
+	def void parseMacroWithReturnExpression() {
+		// given
+		val input = '''
+			package org.testeditor
+			
+			# MyMacroCollection
+			
+			## MacroWithReturn
+			template = "return variable with keyword"
+			Component: AComponent
+			- return 42
+		'''
+
+		// when
+		val model = parseTcl(input).assertNoSyntaxErrors
+
+		// then
+		model.macroCollection.macros.assertSingleElement.contexts.assertSingleElement.assertInstanceOf(ComponentTestStepContext)
+				.steps.assertSingleElement.assertInstanceOf(ExpressionReturnTestStep)
+				.returnExpression.assertInstanceOf(Comparison).left.assertInstanceOf(JsonNumber).value.assertEquals('42')
 	}
 
 	@Test
