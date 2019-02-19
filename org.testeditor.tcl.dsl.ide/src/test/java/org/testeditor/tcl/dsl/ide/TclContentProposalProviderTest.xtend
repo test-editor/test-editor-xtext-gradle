@@ -31,6 +31,7 @@ class TclContentProposalProviderTest extends AbstractContentAssistTest {
 		'assert',
 		'name'
 	]
+	val variable = #['name']
 	val value = #['value']
 	val keywords = #[
 		'Component',
@@ -324,7 +325,7 @@ class TclContentProposalProviderTest extends AbstractContentAssistTest {
 		val proposals = tclSnippet.proposals
 
 		// then
-		proposals.expectOnly(macroTemplates + stepValue + value + elementPunctuation)
+		proposals.expectOnly(macroTemplates + stepValue + value + elementPunctuation + variable)
 		proposals.expectNoneOf(macroTemplates.prefixWith('- '))
 	}
 
@@ -344,7 +345,7 @@ class TclContentProposalProviderTest extends AbstractContentAssistTest {
 		val proposals = tclSnippet.proposals
 
 		// then
-		proposals.expectOnly(macroTemplates + stepValue + value + elementPunctuation)
+		proposals.expectOnly(macroTemplates + stepValue + value + elementPunctuation + variable)
 		proposals.expectNoneOf(macroTemplates.prefixWith('- '))
 	}
 
