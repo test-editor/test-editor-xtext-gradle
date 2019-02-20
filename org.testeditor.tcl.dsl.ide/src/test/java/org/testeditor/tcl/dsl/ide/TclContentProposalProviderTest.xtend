@@ -38,6 +38,7 @@ class TclContentProposalProviderTest extends AbstractContentAssistTest {
 		'Macro',
 		'Mask'
 	]
+	val returnKeyowrd = #[ 'return' ]
 	val testSurroundKeywords = #[
 		'Cleanup',
 		'Setup'
@@ -406,7 +407,7 @@ class TclContentProposalProviderTest extends AbstractContentAssistTest {
 		// then
 		proposals.expectOnly(#[
 			'@boolParameter'
-		] + componentTemplates + stepValue + commandOrVariable + elementPunctuation + value)
+		] + componentTemplates + stepValue + commandOrVariable + elementPunctuation + value + returnKeyowrd)
 	}
 
 	@Test

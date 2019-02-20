@@ -35,6 +35,7 @@ import org.testeditor.tcl.VariableReferencePathAccess
 import org.testeditor.tcl.dsl.jvmmodel.SimpleTypeComputer
 import org.testeditor.tcl.dsl.services.TclGrammarAccess
 import org.testeditor.tcl.util.TclModelUtil
+import org.testeditor.tcl.Macro
 
 class TclContentProposalProvider extends IdeContentProposalProvider {
 
@@ -100,9 +101,14 @@ class TclContentProposalProvider extends IdeContentProposalProvider {
 	
 	override protected filterKeyword(Keyword keyword, ContentAssistContext context) {
 		return switch (keyword) {
-			case expressionReturnTestStepAccess.returnKeyword_1: false
+			case expressionReturnTestStepAccess.returnKeyword_1: context.allowsReturnKeyword
 			default: super.filterKeyword(keyword, context)
 		}
+	}
+	
+	private def boolean allowsReturnKeyword(ContentAssistContext context) {
+		val model = context.currentModel
+		return model instanceof TestStepContext && model.eContainer instanceof Macro
 	}
 
 	private def void makeTestStepProposals(ContentAssistContext context, IIdeContentProposalAcceptor acceptor) {
