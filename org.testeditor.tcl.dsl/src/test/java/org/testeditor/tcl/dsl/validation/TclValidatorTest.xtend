@@ -105,6 +105,108 @@ class TclValidatorTest extends AbstractParserTest {
 		validator.validate(model).assertNotExists(warningPredicate, model.reportableValidations)
 		validator.validate(modelExpectingWarning).assertExists(warningPredicate, modelExpectingWarning.reportableValidations)
 	}
+	
+	@Test
+	def void testValidateMacroReturnCorrectUsage() {
+		// given
+		val Function1<Issue, Boolean> errorPredicate = [
+			message.matches(".*'return' is only allowed as last step of a macro definition.*") && severity == Severity.ERROR
+		]
+
+		val model = '''
+			package org.testeditor
+			
+			# MyMacroCollection
+			
+			## MacroWithReturn
+			template = "return variable with keyword"
+			Component: AComponent
+			- return 42
+		'''.toString.parseTcl("MyMacroCollection.tml")
+
+		// when
+		val validations = validator.validate(model)
+
+		// then
+		validations.assertNotExists(errorPredicate, model.reportableValidations)
+	}
+	
+	@Test
+	def void testValidateMacroReturnNotLastStep() {
+		// given
+		val Function1<Issue, Boolean> errorPredicate = [
+			message.matches(".*'return' is only allowed as last step of a macro definition.*") && severity == Severity.ERROR
+		]
+
+		val model = '''
+			package org.testeditor
+			
+			# MyMacroCollection
+			
+			## MacroWithReturn
+			template = "return variable with keyword"
+			Component: AComponent
+			- return 42
+			- some other step
+		'''.toString.parseTcl("MyMacroCollection.tml")
+
+		// when
+		val validations = validator.validate(model)
+
+		// then
+		validations.assertExists(errorPredicate, model.reportableValidations)
+	}
+	
+	@Test
+	def void testValidateMacroReturnNotLastContext() {
+		// given
+		val Function1<Issue, Boolean> errorPredicate = [
+			message.matches(".*'return' is only allowed as last step of a macro definition.*") && severity == Severity.ERROR
+		]
+
+		val model = '''
+			package org.testeditor
+			
+			# MyMacroCollection
+			
+			## MacroWithReturn
+			template = "return variable with keyword"
+			Component: AComponent
+			- return 42
+			Component: AnotherComponent
+			- some other step
+		'''.toString.parseTcl("MyMacroCollection.tml")
+
+		// when
+		val validations = validator.validate(model)
+
+		// then
+		validations.assertExists(errorPredicate, model.reportableValidations)
+	}
+	
+	@Test
+	def void testValidateMacroReturnNotInsideMacroDefinition() {
+		// given
+		val Function1<Issue, Boolean> errorPredicate = [
+			message.matches(".*'return' is only allowed as last step of a macro definition.*") && severity == Severity.ERROR
+		]
+
+		val model = '''
+			package com.example
+			
+			# SampleTest
+			* Sample Step
+			Component: AComponent
+			- return 42
+		'''.toString.parseTcl("SampleTest.tcl")
+
+		// when
+		val validations = validator.validate(model)
+
+		// then
+		validations.assertExists(errorPredicate, model.reportableValidations)
+	}
+	
 
 	def getTCLWithTwoValueSpaces(String testName, String value1, String value2) {
 		getTCLWithValue(testName, value1) + '''
