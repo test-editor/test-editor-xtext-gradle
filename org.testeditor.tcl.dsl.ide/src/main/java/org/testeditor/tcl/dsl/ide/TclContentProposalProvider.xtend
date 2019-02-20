@@ -97,6 +97,13 @@ class TclContentProposalProvider extends IdeContentProposalProvider {
 			return super.getCrossrefFilter(reference, context)
 		}
 	}
+	
+	override protected filterKeyword(Keyword keyword, ContentAssistContext context) {
+		return switch (keyword) {
+			case expressionReturnTestStepAccess.returnKeyword_1: false
+			default: super.filterKeyword(keyword, context)
+		}
+	}
 
 	private def void makeTestStepProposals(ContentAssistContext context, IIdeContentProposalAcceptor acceptor) {
 		val entry = proposalCreator.createProposal('- ', context)
