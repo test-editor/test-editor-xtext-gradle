@@ -50,6 +50,7 @@ import org.testeditor.tcl.TestCase
 import org.testeditor.tcl.TestConfiguration
 import org.testeditor.tcl.TestStep
 import org.testeditor.tcl.TestStepContext
+import org.testeditor.tcl.TestStepWithAssignment
 import org.testeditor.tcl.VariableReference
 import org.testeditor.tcl.VariableReferencePathAccess
 import org.testeditor.tcl.dsl.jvmmodel.SimpleTypeComputer
@@ -82,6 +83,7 @@ class TclValidator extends AbstractTclValidator {
 	public static val MISSING_FIXTURE = 'missingFixture'
 	public static val FIXTURE_MISSING_EXCEPTION = 'fixtureMissingException'
 	public static val MISSING_MACRO = 'missingMacro'
+	public static val MACRO_WITHOUT_RETURN_ASSIGNED = 'macroWithoutReturnAssigned'
 	public static val INVALID_VAR_DEREF = "invalidVariableDereference"
 	public static val INVALID_MODEL_CONTENT = "invalidModelContent"
 	public static val INVALID_PARAMETER_TYPE = "invalidParameterType"
@@ -154,13 +156,19 @@ class TclValidator extends AbstractTclValidator {
 	}
 
 	@Check
-	def checkMacroCall(TestStep testStep) {
+	def void checkMacroCall(TestStep testStep) {
 		if (testStep.hasMacroContext) {
 			val normalizedTeststep = testStep.normalize
 			val macroCollection = testStep.macroContext.macroCollection
-			if (!macroCollection.macros.exists[template.normalize == normalizedTeststep]) {
+			val macro = macroCollection.macros.findFirst[template.normalize == normalizedTeststep]
+			if (macro === null) {
 				warning("test step could not resolve macro usage", TclPackage.Literals.TEST_STEP__CONTENTS,
 					MISSING_MACRO)
+			} else if (testStep instanceof TestStepWithAssignment) {
+				if (!macro.hasReturn) {
+					error('''macro cannot be assigned to '«testStep.variable.name»' since it does not return anything''',
+						testStep, null, MACRO_WITHOUT_RETURN_ASSIGNED)	
+				}
 			}
 		}
 	}
