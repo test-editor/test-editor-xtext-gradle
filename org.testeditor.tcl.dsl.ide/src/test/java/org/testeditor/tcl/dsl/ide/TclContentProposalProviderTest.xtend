@@ -31,12 +31,14 @@ class TclContentProposalProviderTest extends AbstractContentAssistTest {
 		'assert',
 		'name'
 	]
+	val variable = #['name']
 	val value = #['value']
 	val keywords = #[
 		'Component',
 		'Macro',
 		'Mask'
 	]
+	val returnKeyowrd = #[ 'return' ]
 	val testSurroundKeywords = #[
 		'Cleanup',
 		'Setup'
@@ -324,7 +326,7 @@ class TclContentProposalProviderTest extends AbstractContentAssistTest {
 		val proposals = tclSnippet.proposals
 
 		// then
-		proposals.expectOnly(macroTemplates + stepValue + value + elementPunctuation)
+		proposals.expectOnly(macroTemplates + stepValue + value + elementPunctuation + variable)
 		proposals.expectNoneOf(macroTemplates.prefixWith('- '))
 	}
 
@@ -344,7 +346,7 @@ class TclContentProposalProviderTest extends AbstractContentAssistTest {
 		val proposals = tclSnippet.proposals
 
 		// then
-		proposals.expectOnly(macroTemplates + stepValue + value + elementPunctuation)
+		proposals.expectOnly(macroTemplates + stepValue + value + elementPunctuation + variable)
 		proposals.expectNoneOf(macroTemplates.prefixWith('- '))
 	}
 
@@ -405,7 +407,7 @@ class TclContentProposalProviderTest extends AbstractContentAssistTest {
 		// then
 		proposals.expectOnly(#[
 			'@boolParameter'
-		] + componentTemplates + stepValue + commandOrVariable + elementPunctuation + value)
+		] + componentTemplates + stepValue + commandOrVariable + elementPunctuation + value + returnKeyowrd)
 	}
 
 	@Test

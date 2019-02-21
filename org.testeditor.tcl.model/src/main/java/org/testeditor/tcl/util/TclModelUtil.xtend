@@ -26,6 +26,7 @@ import org.testeditor.aml.TemplateContainer
 import org.testeditor.aml.TemplateVariable
 import org.testeditor.dsl.common.util.CollectionUtils
 import org.testeditor.fixture.core.FixtureException
+import org.testeditor.tcl.AbstractTestStep
 import org.testeditor.tcl.AccessPathElement
 import org.testeditor.tcl.ArrayPathElement
 import org.testeditor.tcl.AssertionTestStep
@@ -34,6 +35,7 @@ import org.testeditor.tcl.Comparison
 import org.testeditor.tcl.ComponentTestStepContext
 import org.testeditor.tcl.EnvironmentVariable
 import org.testeditor.tcl.Expression
+import org.testeditor.tcl.ExpressionReturnTestStep
 import org.testeditor.tcl.KeyPathElement
 import org.testeditor.tcl.Macro
 import org.testeditor.tcl.MacroCollection
@@ -113,6 +115,10 @@ class TclModelUtil extends TslModelUtil {
 		return macroCallSite.macroCollection?.macros?.findFirst [
 			template.normalize == normalizedMacroCallStep
 		]
+	}
+	
+	def boolean hasReturn(Macro macro) {
+		return macro.contexts?.last?.steps?.last instanceof ExpressionReturnTestStep
 	}
 	
 	def TemplateContainer getTemplateContainer(TestStep step) {
@@ -212,12 +218,20 @@ class TclModelUtil extends TslModelUtil {
 		return EcoreUtil2.getContainerOfType(step, ComponentTestStepContext)
 	}
 
-	def boolean hasMacroContext(TestStep step) {
+	def boolean hasMacroContext(AbstractTestStep step) {
 		return step.macroContext !== null
 	}
 
-	def MacroTestStepContext getMacroContext(TestStep step) {
+	def MacroTestStepContext getMacroContext(AbstractTestStep step) {
 		return EcoreUtil2.getContainerOfType(step, MacroTestStepContext)
+	}
+	
+	def boolean isPartOfMacroDefinition(ExpressionReturnTestStep step) {
+		return step.enclosingMacroDefinition !== null
+	}
+	
+	def Macro getEnclosingMacroDefinition(ExpressionReturnTestStep step) {
+		return EcoreUtil2.getContainerOfType(step, Macro)
 	}
 
 	def Set<TemplateVariable> getEnclosingMacroParameters(EObject object) {

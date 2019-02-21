@@ -157,12 +157,18 @@ TestStepContext:
 ComponentTestStepContext returns TestStepContext:
 	{ComponentTestStepContext}
 	('Mask' | 'Component') ':' component=[aml::Component|QualifiedName]
-	(XL steps+=(TestStep | TestStepWithAssignment | AssertionTestStep | AssignmentThroughPath))*;
+	(XL steps+=(ExpressionReturnTestStep  | TestStep | TestStepWithAssignment | AssertionTestStep | AssignmentThroughPath))*;
 
 MacroTestStepContext returns TestStepContext:
 	{MacroTestStepContext}
 	'Macro' ':' macroCollection=[MacroCollection|QualifiedName]
-	(XL steps+=TestStep)*; // currently macro calls can only be TestSteps!
+	(XL steps+=(ExpressionReturnTestStep | TestStep | TestStepWithAssignment))*; 
+	// macro calls are either TestSteps, TestStepWithAssignment (for macros that return a result value),
+	// or ExpressionReturnTestStep (only valid from within a macro definition, which has to be ensured
+	// using a corresponding validation).
+
+ExpressionReturnTestStep:
+	'-' 'return' returnExpression=Expression;
 
 /**
  * keep in mind that an aml validator exists that will check templates to be parsable given the following rule

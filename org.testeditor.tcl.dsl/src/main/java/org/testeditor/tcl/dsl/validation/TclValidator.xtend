@@ -29,23 +29,28 @@ import org.testeditor.aml.TemplateVariable
 import org.testeditor.aml.dsl.validation.AmlValidator
 import org.testeditor.dsl.common.util.CollectionUtils
 import org.testeditor.dsl.common.util.JvmTypeReferenceUtil
+import org.testeditor.fixture.core.FixtureException
+import org.testeditor.tcl.AbstractTestStep
 import org.testeditor.tcl.AssertionTestStep
 import org.testeditor.tcl.AssignmentThroughPath
 import org.testeditor.tcl.ComparatorGreaterThan
 import org.testeditor.tcl.ComparatorLessThan
 import org.testeditor.tcl.Comparison
 import org.testeditor.tcl.ComponentTestStepContext
+import org.testeditor.tcl.ExpressionReturnTestStep
 import org.testeditor.tcl.Macro
 import org.testeditor.tcl.MacroCollection
 import org.testeditor.tcl.MacroTestStepContext
 import org.testeditor.tcl.SetupAndCleanupProvider
 import org.testeditor.tcl.SpecificationStepImplementation
+import org.testeditor.tcl.StepContainer
 import org.testeditor.tcl.StepContentElement
 import org.testeditor.tcl.TclPackage
 import org.testeditor.tcl.TestCase
 import org.testeditor.tcl.TestConfiguration
 import org.testeditor.tcl.TestStep
 import org.testeditor.tcl.TestStepContext
+import org.testeditor.tcl.TestStepWithAssignment
 import org.testeditor.tcl.VariableReference
 import org.testeditor.tcl.VariableReferencePathAccess
 import org.testeditor.tcl.dsl.jvmmodel.SimpleTypeComputer
@@ -78,10 +83,12 @@ class TclValidator extends AbstractTclValidator {
 	public static val MISSING_FIXTURE = 'missingFixture'
 	public static val FIXTURE_MISSING_EXCEPTION = 'fixtureMissingException'
 	public static val MISSING_MACRO = 'missingMacro'
+	public static val MACRO_WITHOUT_RETURN_ASSIGNED = 'macroWithoutReturnAssigned'
 	public static val INVALID_VAR_DEREF = "invalidVariableDereference"
 	public static val INVALID_MODEL_CONTENT = "invalidModelContent"
 	public static val INVALID_PARAMETER_TYPE = "invalidParameterType"
 	public static val INVALID_ORDER_TYPE = "invalidOrderType"
+	public static val INVALID_RETURN = "invalidReturn"
 	
 	public static val MULTIPLE_SETUP_SECTIONS = "multipleSetupSections"
 	public static val MULTIPLE_CLEANUP_SECTIONS = "multipleCleanupSections"
@@ -142,22 +149,48 @@ class TclValidator extends AbstractTclValidator {
 			val method = testStep.interaction?.defaultMethod
 			if ((method === null ) || (method.operation === null) || (method.typeReference?.type === null)) {
 				info("test step could not resolve fixture", TclPackage.Literals.TEST_STEP__CONTENTS, MISSING_FIXTURE)
-			} else if (!method.operation.exceptions.map[qualifiedName].exists[equals(org.testeditor.fixture.core.FixtureException.name)]) {
+			} else if (!method.operation.exceptions.map[qualifiedName].exists[equals(FixtureException.name)]) {
 				info("Fixture does not provide additional information on failures (FixtureException)", TclPackage.Literals.TEST_STEP__CONTENTS, FIXTURE_MISSING_EXCEPTION)
 			}
 		}
 	}
 
 	@Check
-	def checkMacroCall(TestStep testStep) {
+	def void checkMacroCall(TestStep testStep) {
 		if (testStep.hasMacroContext) {
 			val normalizedTeststep = testStep.normalize
 			val macroCollection = testStep.macroContext.macroCollection
-			if (!macroCollection.macros.exists[template.normalize == normalizedTeststep]) {
+			val macro = macroCollection.macros.findFirst[template.normalize == normalizedTeststep]
+			if (macro === null) {
 				warning("test step could not resolve macro usage", TclPackage.Literals.TEST_STEP__CONTENTS,
 					MISSING_MACRO)
+			} else if (testStep instanceof TestStepWithAssignment) {
+				if (!macro.hasReturn) {
+					error('''macro cannot be assigned to '«testStep.variable.name»' since it does not return anything''',
+						testStep, null, MACRO_WITHOUT_RETURN_ASSIGNED)	
+				}
 			}
 		}
+	}
+	
+	@Check
+	def void checkMacroReturn(ExpressionReturnTestStep returnStep) {
+		if (!returnStep.isPartOfMacroDefinition ||
+			!returnStep.isLastStep || 
+			!returnStep.testStepContext.isLastContext) {
+			error("'return' is only allowed as last step of a macro definition", 
+					returnStep, null, INVALID_RETURN)
+		}
+	}
+	
+	private def boolean isLastStep(AbstractTestStep step) {
+		val container = EcoreUtil2.getContainerOfType(step, TestStepContext)
+		return container.steps.last === step
+	}
+	
+	private def boolean isLastContext(TestStepContext context) {
+		val container = EcoreUtil2.getContainerOfType(context, StepContainer)
+		return container.contexts.last === context
 	}
 
 	/**
@@ -220,6 +253,16 @@ class TclValidator extends AbstractTclValidator {
 			error(errorMessage, step.assertExpression.eContainer, step.assertExpression.eContainingFeature, INVALID_VAR_DEREF)
 		]		
 	}
+	
+	private def dispatch void checkAllReferencedVariablesAreKnown(ExpressionReturnTestStep step, Set<String> knownVariableNames,
+		String errorMessage) {
+		val erroneousContents = step.returnExpression.eAllContents.filter(VariableReference).filter [
+			!knownVariableNames.contains(variable.name)
+		]
+		erroneousContents.forEach [
+			error(errorMessage, step.returnExpression.eContainer, step.returnExpression.eContainingFeature, INVALID_VAR_DEREF)
+		]	
+		}
 
 	@Check
 	def void checkValueInValueSpace(StepContentVariable stepContentVariable) {
@@ -426,6 +469,16 @@ class TclValidator extends AbstractTclValidator {
 		Map<String, JvmTypeReference> declaredVariablesTypeMap, TestStepContext context,
 		Set<String> excludedVariableNames) {
 		step.assertExpression.eAllContents.filter(VariableReference).filter [
+			!excludedVariableNames.contains(variable.name)
+		].forEach [
+			checkVariableReferenceIsUsedWellTyped(declaredVariablesTypeMap, context, 0)
+		]
+	}
+	
+	private def dispatch void checkReferencedVariablesAreUsedWellTypedExcluding(ExpressionReturnTestStep step,
+		Map<String, JvmTypeReference> declaredVariablesTypeMap, TestStepContext context,
+		Set<String> excludedVariableNames) {
+		step.returnExpression.eAllContents.filter(VariableReference).filter [
 			!excludedVariableNames.contains(variable.name)
 		].forEach [
 			checkVariableReferenceIsUsedWellTyped(declaredVariablesTypeMap, context, 0)

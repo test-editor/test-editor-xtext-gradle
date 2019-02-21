@@ -121,6 +121,10 @@ class AssertionTestStep extends AbstractTestStep {
 	contains Expression assertExpression
 }
 
+class ExpressionReturnTestStep extends AbstractTestStep {
+	contains Expression returnExpression
+}
+
 abstract class Expression {
 }
 

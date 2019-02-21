@@ -26,6 +26,7 @@ import org.testeditor.aml.TemplateVariable
 import org.testeditor.dsl.common.util.JvmTypeReferenceUtil
 import org.testeditor.tcl.ComponentTestStepContext
 import org.testeditor.tcl.EnvironmentVariable
+import org.testeditor.tcl.Macro
 import org.testeditor.tcl.MacroCollection
 import org.testeditor.tcl.MacroTestStepContext
 import org.testeditor.tcl.StepContentElement
@@ -96,6 +97,18 @@ class TclContentProposalProvider extends IdeContentProposalProvider {
 		} else {
 			return super.getCrossrefFilter(reference, context)
 		}
+	}
+	
+	override protected filterKeyword(Keyword keyword, ContentAssistContext context) {
+		return switch (keyword) {
+			case expressionReturnTestStepAccess.returnKeyword_1: context.allowsReturnKeyword
+			default: super.filterKeyword(keyword, context)
+		}
+	}
+	
+	private def boolean allowsReturnKeyword(ContentAssistContext context) {
+		val model = context.currentModel
+		return model instanceof TestStepContext && model.eContainer instanceof Macro
 	}
 
 	private def void makeTestStepProposals(ContentAssistContext context, IIdeContentProposalAcceptor acceptor) {
