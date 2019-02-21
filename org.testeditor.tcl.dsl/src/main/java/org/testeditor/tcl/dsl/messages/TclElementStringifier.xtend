@@ -9,6 +9,7 @@ import org.testeditor.tcl.AssertionTestStep
 import org.testeditor.tcl.AssignmentThroughPath
 import org.testeditor.tcl.ComponentTestStepContext
 import org.testeditor.tcl.Expression
+import org.testeditor.tcl.ExpressionReturnTestStep
 import org.testeditor.tcl.Macro
 import org.testeditor.tcl.MacroTestStepContext
 import org.testeditor.tcl.TestCase
@@ -58,6 +59,10 @@ class TclElementStringifier {
 
 	def dispatch String stringify(TestStepWithAssignment it) {
 		return '''«variable.name» = «stringifyTestStep» «typeInfoSuffix»'''
+	}
+	
+	def dispatch String stringify(ExpressionReturnTestStep it) {
+		return '''return «assertionText(returnExpression)»'''
 	}
 
 	def dispatch String stringify(AssertionTestStep it) {
