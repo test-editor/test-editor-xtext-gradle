@@ -89,6 +89,120 @@ class TclModelUtilTest extends AbstractParserTest {
 		// then
 		macro.assertSame(macroCalled)
 	}
+	
+	@Test
+	def void testMacroDefinitionHasReturn() {
+		// given
+		val tmlModel = parseTcl( '''
+			package com.example
+			
+			# MyMacroCollection
+			
+			## MacroWithReturn
+			template = "call macro with return"
+			Component: MyComponent
+			- some step
+			- return 42
+		''')
+		val macro = tmlModel.macroCollection.macros.head
+
+		// when
+		val actualResult = tclModelUtil.hasReturn(macro)
+
+		// then
+		actualResult.assertTrue
+	}
+	
+	@Test
+	def void testMacroDefinitionHasNoReturn() {
+		// given
+		val tmlModel = parseTcl( '''
+			package com.example
+			
+			# MyMacroCollection
+			
+			## MacroWithReturn
+			template = "call macro with return"
+			Component: MyComponent
+			- some step
+			- some other step
+		''')
+		val macro = tmlModel.macroCollection.macros.head
+
+		// when
+		val actualResult = tclModelUtil.hasReturn(macro)
+
+		// then
+		actualResult.assertFalse
+	}
+	
+	@Test
+	def void testEmptyMacroDefinitionHasNoReturn() {
+		// given
+		val tmlModel = parseTcl( '''
+			package com.example
+			
+			# MyMacroCollection
+			
+			## MacroWithReturn
+			template = "call macro with return"
+			Component: MyComponent
+		''')
+		val macro = tmlModel.macroCollection.macros.head
+
+		// when
+		val actualResult = tclModelUtil.hasReturn(macro)
+
+		// then
+		actualResult.assertFalse
+	}
+	
+	@Test
+	def void testIllegalMacroDefinitionHasNoReturn() {
+		// given
+		val tmlModel = parseTcl( '''
+			package com.example
+			
+			# MyMacroCollection
+			
+			## MacroWithReturn
+			template = "call macro with return"
+			Component: MyComponent
+			- return 42
+			- some step
+		''')
+		val macro = tmlModel.macroCollection.macros.head
+
+		// when
+		val actualResult = tclModelUtil.hasReturn(macro)
+
+		// then
+		actualResult.assertFalse
+	}
+	
+	@Test
+	def void testIllegalMacroDefinitionWithMultipleContextsHasNoReturn() {
+		// given
+		val tmlModel = parseTcl( '''
+			package com.example
+			
+			# MyMacroCollection
+			
+			## MacroWithReturn
+			template = "call macro with return"
+			Component: MyComponent
+			- return 42
+			Macro: SomeOtherMacro
+			- some step
+		''')
+		val macro = tmlModel.macroCollection.macros.head
+
+		// when
+		val actualResult = tclModelUtil.hasReturn(macro)
+
+		// then
+		actualResult.assertFalse
+	}
 
 	@Test
 	def void testNormalizeTemplate() {

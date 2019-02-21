@@ -117,6 +117,10 @@ class TclModelUtil extends TslModelUtil {
 		]
 	}
 	
+	def boolean hasReturn(Macro macro) {
+		return macro.contexts?.last?.steps?.last instanceof ExpressionReturnTestStep
+	}
+	
 	def TemplateContainer getTemplateContainer(TestStep step) {
 		if (step.hasComponentContext) {
 			return step.interaction
