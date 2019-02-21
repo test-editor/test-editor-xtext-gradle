@@ -26,6 +26,7 @@ import org.testeditor.aml.TemplateVariable
 import org.testeditor.dsl.common.util.JvmTypeReferenceUtil
 import org.testeditor.tcl.ComponentTestStepContext
 import org.testeditor.tcl.EnvironmentVariable
+import org.testeditor.tcl.Macro
 import org.testeditor.tcl.MacroCollection
 import org.testeditor.tcl.MacroTestStepContext
 import org.testeditor.tcl.StepContentElement
@@ -35,7 +36,6 @@ import org.testeditor.tcl.VariableReferencePathAccess
 import org.testeditor.tcl.dsl.jvmmodel.SimpleTypeComputer
 import org.testeditor.tcl.dsl.services.TclGrammarAccess
 import org.testeditor.tcl.util.TclModelUtil
-import org.testeditor.tcl.Macro
 
 class TclContentProposalProvider extends IdeContentProposalProvider {
 
