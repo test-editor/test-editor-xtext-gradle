@@ -13,7 +13,9 @@
 package org.testeditor.tcl.dsl.jvmmodel
 
 import java.util.Map
+import java.util.Optional
 import javax.inject.Inject
+import javax.inject.Provider
 import org.eclipse.xtext.common.types.JvmTypeReference
 import org.testeditor.dsl.common.util.CollectionUtils
 import org.testeditor.tcl.AssertionTestStep
@@ -29,6 +31,7 @@ class VariableCollector {
 	
 	@Inject extension TclModelUtil
 	@Inject extension CollectionUtils
+	@Inject Provider<TclExpressionTypeComputer> tclExpressionTypeComputer
 	
 	/**
 	 * collect all variables (and their types) declared (currently only through assignment).
@@ -49,8 +52,18 @@ class VariableCollector {
 	
 	def dispatch Map<String, JvmTypeReference> collectDeclaredVariablesTypeMap(TestStepWithAssignment testStep) {
 		// must be declared before dispatch method collectDeclaredVariablesTypeMap(TestStep)
-		val typeReference = testStep.interaction?.defaultMethod?.operation?.returnType
-		return #{testStep.variable.name -> typeReference}
+		return if (testStep.hasMacroContext) {
+			val macroReturnStep = testStep.findMacro?.contexts?.last?.steps?.last
+			if (macroReturnStep instanceof ExpressionReturnTestStep) {
+				val typeReference = tclExpressionTypeComputer.get.determineType(macroReturnStep.returnExpression, Optional.empty)
+				#{testStep.variable.name -> typeReference}
+			} else {
+				emptyMap
+			}
+		} else {
+			val typeReference = testStep.interaction?.defaultMethod?.operation?.returnType
+			#{testStep.variable.name -> typeReference}
+		} 
 	}
 	
 	def dispatch Map<String, JvmTypeReference> collectDeclaredVariablesTypeMap(TestStep testStep) {

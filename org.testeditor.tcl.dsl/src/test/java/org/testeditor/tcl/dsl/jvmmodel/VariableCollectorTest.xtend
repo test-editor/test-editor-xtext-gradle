@@ -23,12 +23,29 @@ import org.testeditor.tcl.TestStepContext
 import org.testeditor.tcl.dsl.tests.parser.AbstractParserTest
 
 class VariableCollectorTest extends AbstractParserTest {
+	static val macroCollectionName = 'MyMacroCollection'
 
 	@Inject VariableCollector variableCollector // class under test
 
 	@Before
 	def void setup() {
-		parseAml(DummyFixture.amlModel)
+		DummyFixture.amlModel.parseAml
+		'''
+				«DummyFixture.getMacroModel(macroCollectionName)»
+				
+				## ReturnLongFromInteraction
+				template = "get long"
+				Component: GreetingApplication
+				- result = Read long from <Input>
+				- return result
+				
+				## ReturnLongFromMacro
+				template = "get long indirectly"
+				Macro: «macroCollectionName»
+				- result = get long
+				- return result
+		'''.toString
+		.parseTcl(macroCollectionName + '.tml')
 	}
 
 	@Test
@@ -48,21 +65,31 @@ class VariableCollectorTest extends AbstractParserTest {
 				- Read value from <bar>             // no assignment of value
 				- stringVar = Read value from <bar>
 				- confidentialVar = Read confidential information from <bar>
+
+				Macro: «macroCollectionName»
+				- longFromMacro = get long // call a macro that calls a fixture
+				- longFromMacroIndirectly = get long indirectly // call a macro that calls another macro that calls a fixture
 		'''
 		val tclModel = tcl.parseTcl('MyTest.tcl')
 		tclModel.assertNoErrors
 
 		// when
-		val context = EcoreUtil2.getAllContentsOfType(tclModel, TestStepContext).head
-		val declaredVariables = variableCollector.collectDeclaredVariablesTypeMap(context)
+		val componentContext = EcoreUtil2.getAllContentsOfType(tclModel, TestStepContext).head
+		val macroContext = EcoreUtil2.getAllContentsOfType(tclModel, TestStepContext).last
+		val declaredVariables = newHashMap
+		declaredVariables += variableCollector.collectDeclaredVariablesTypeMap(componentContext)
+		declaredVariables += variableCollector.collectDeclaredVariablesTypeMap(macroContext)
 
 		// then
-		declaredVariables.keySet.assertSize(5)
+		declaredVariables.keySet.assertSize(7)
 		declaredVariables.get("longVar").qualifiedName.assertEquals(long.name)
 		declaredVariables.get("boolVar").qualifiedName.assertEquals(boolean.name)
 		declaredVariables.get("jsonVar").qualifiedName.assertEquals(JsonObject.name)
 		declaredVariables.get("stringVar").qualifiedName.assertEquals(String.name)
 		declaredVariables.get("confidentialVar").qualifiedName.assertEquals(MaskingString.name)
+
+		declaredVariables.get("longFromMacro").qualifiedName.assertEquals(long.name)
+		declaredVariables.get("longFromMacroIndirectly").qualifiedName.assertEquals(long.name)
 	}
 
 }
