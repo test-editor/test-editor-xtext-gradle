@@ -155,6 +155,10 @@ class TclValidatorTest extends AbstractParserTest {
 
 		// then
 		validations.assertExists(errorPredicate, model.reportableValidations)
+		validations.findFirst(errorPredicate) => [
+			lineNumber.assertEquals(8)
+			uriToProblem.fragment.assertEquals('/0/@macroCollection/@macros.0/@contexts.0/@steps.0')
+		]
 	}
 	
 	@Test
@@ -182,6 +186,10 @@ class TclValidatorTest extends AbstractParserTest {
 
 		// then
 		validations.assertExists(errorPredicate, model.reportableValidations)
+		validations.findFirst(errorPredicate) => [
+			lineNumber.assertEquals(8)
+			uriToProblem.fragment.assertEquals('/0/@macroCollection/@macros.0/@contexts.0/@steps.0')
+		]
 	}
 	
 	@Test
@@ -205,6 +213,10 @@ class TclValidatorTest extends AbstractParserTest {
 
 		// then
 		validations.assertExists(errorPredicate, model.reportableValidations)
+		validations.findFirst(errorPredicate) => [
+			lineNumber.assertEquals(6)
+			uriToProblem.fragment.assertEquals('/0/@test/@steps.0/@contexts.0/@steps.0')
+		]
 	}
 	
 

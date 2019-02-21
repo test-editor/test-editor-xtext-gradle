@@ -171,7 +171,7 @@ class TclValidator extends AbstractTclValidator {
 			!returnStep.isLastStep || 
 			!returnStep.testStepContext.isLastContext) {
 			error("'return' is only allowed as last step of a macro definition", 
-					returnStep.eContainer, returnStep.eContainingFeature, INVALID_RETURN)
+					returnStep, null, INVALID_RETURN)
 		}
 	}
 	
