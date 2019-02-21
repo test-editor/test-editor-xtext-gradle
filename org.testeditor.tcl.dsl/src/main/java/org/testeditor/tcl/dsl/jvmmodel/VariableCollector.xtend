@@ -18,11 +18,12 @@ import org.eclipse.xtext.common.types.JvmTypeReference
 import org.testeditor.dsl.common.util.CollectionUtils
 import org.testeditor.tcl.AssertionTestStep
 import org.testeditor.tcl.AssignmentThroughPath
+import org.testeditor.tcl.ExpressionReturnTestStep
+import org.testeditor.tcl.StepContainer
 import org.testeditor.tcl.TestStep
 import org.testeditor.tcl.TestStepContext
 import org.testeditor.tcl.TestStepWithAssignment
 import org.testeditor.tcl.util.TclModelUtil
-import org.testeditor.tcl.StepContainer
 
 class VariableCollector {
 	
@@ -59,6 +60,11 @@ class VariableCollector {
 	
 	def dispatch Map<String, JvmTypeReference> collectDeclaredVariablesTypeMap(AssertionTestStep testStep) {
 		// Assertion test steps cannot contain variable declarations
+		return emptyMap
+	}
+	
+	def dispatch Map<String, JvmTypeReference> collectDeclaredVariablesTypeMap(ExpressionReturnTestStep testStep) {
+		// Return test steps cannot contain variable declarations
 		return emptyMap
 	}
 	

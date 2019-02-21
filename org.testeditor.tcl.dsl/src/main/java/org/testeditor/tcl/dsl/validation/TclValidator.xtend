@@ -245,6 +245,16 @@ class TclValidator extends AbstractTclValidator {
 			error(errorMessage, step.assertExpression.eContainer, step.assertExpression.eContainingFeature, INVALID_VAR_DEREF)
 		]		
 	}
+	
+	private def dispatch void checkAllReferencedVariablesAreKnown(ExpressionReturnTestStep step, Set<String> knownVariableNames,
+		String errorMessage) {
+		val erroneousContents = step.returnExpression.eAllContents.filter(VariableReference).filter [
+			!knownVariableNames.contains(variable.name)
+		]
+		erroneousContents.forEach [
+			error(errorMessage, step.returnExpression.eContainer, step.returnExpression.eContainingFeature, INVALID_VAR_DEREF)
+		]	
+		}
 
 	@Check
 	def void checkValueInValueSpace(StepContentVariable stepContentVariable) {
@@ -451,6 +461,16 @@ class TclValidator extends AbstractTclValidator {
 		Map<String, JvmTypeReference> declaredVariablesTypeMap, TestStepContext context,
 		Set<String> excludedVariableNames) {
 		step.assertExpression.eAllContents.filter(VariableReference).filter [
+			!excludedVariableNames.contains(variable.name)
+		].forEach [
+			checkVariableReferenceIsUsedWellTyped(declaredVariablesTypeMap, context, 0)
+		]
+	}
+	
+	private def dispatch void checkReferencedVariablesAreUsedWellTypedExcluding(ExpressionReturnTestStep step,
+		Map<String, JvmTypeReference> declaredVariablesTypeMap, TestStepContext context,
+		Set<String> excludedVariableNames) {
+		step.returnExpression.eAllContents.filter(VariableReference).filter [
 			!excludedVariableNames.contains(variable.name)
 		].forEach [
 			checkVariableReferenceIsUsedWellTyped(declaredVariablesTypeMap, context, 0)
