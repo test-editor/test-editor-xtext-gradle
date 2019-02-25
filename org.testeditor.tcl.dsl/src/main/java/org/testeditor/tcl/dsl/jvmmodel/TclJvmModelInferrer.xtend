@@ -56,6 +56,7 @@ import org.testeditor.tcl.AssertionTestStep
 import org.testeditor.tcl.AssignmentThroughPath
 import org.testeditor.tcl.ComponentTestStepContext
 import org.testeditor.tcl.EnvironmentVariable
+import org.testeditor.tcl.ExpressionReturnTestStep
 import org.testeditor.tcl.JsonValue
 import org.testeditor.tcl.Macro
 import org.testeditor.tcl.MacroCollection
@@ -81,12 +82,12 @@ import org.testeditor.tsl.StepContentValue
 import static org.testeditor.tcl.TclPackage.Literals.*
 
 import static extension org.apache.commons.lang3.StringEscapeUtils.escapeJava
-import org.testeditor.tcl.ExpressionReturnTestStep
 
 class TclJvmModelInferrer extends AbstractModelInferrer {
 
 	static val logger = LoggerFactory.getLogger(TclJvmModelInferrer)
 	var int variableIdRunningNumber = 0
+	static val MACRO_RESULT_VAR_SUFFIX = '_result'
 	
 	public static val ID_PREFIX_CONFIG_SETUP = 'ID-0'
 	public static val ID_PREFIX_TEST = 'ID-1'
@@ -273,7 +274,8 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 		// Create methods for macros
 		val macros = macroHelper.getAllTransitiveMacros(element)
 		result.members += macros.map [ macro |
-			element.toMethod(macroHelper.getMethodName(macro), macro.getType) [
+			val macroType = macro.type
+			element.toMethod(macroHelper.getMethodName(macro), macroType) [
 				exceptions += typeRef(Exception)
 				visibility = JvmVisibility.PRIVATE
 				val variablesWithTypes = typeComputer.getVariablesWithTypes(macro)
@@ -282,7 +284,7 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 				val macroParameters = parameters
 				body = [
 					idPrefix='id'
-					macro.generateMethodBody(trace(macro), macroParameters)
+					macro.generateMethodBody(trace(macro), macroParameters, macroType)
 					idPrefix='''"«ID_PREFIX_TEST»"'''
 				]
 			]
@@ -404,6 +406,18 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 			output.increaseIndentation
 		]
 	}
+	
+	private def void wrapWithMacroReturn(ITreeAppendable output, Macro macro, Procedures.Procedure1<ITreeAppendable> strategy) {
+		if (macro.hasReturn) {
+			val resultVarName = macro.resultVariableName
+			val macroTypeRef = macro.type
+			output.append('''«macroTypeRef.identifier» «resultVarName» = «typeReferenceUtil.defaultValue(macroTypeRef)»;''').newLine
+			strategy.apply(output)
+			output.newLine.append('''return «resultVarName»;''')
+		} else {
+			strategy.apply(output)
+		}
+	}
 
 	private def appendTestRunReporterType(ITreeAppendable output) {
 		output.append(typeReferenceUtil.buildFrom(TestRunReporter).type)
@@ -436,12 +450,14 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 }''')
 	}
 
-	def void generateMethodBody(Macro macro, ITreeAppendable output, EList<JvmFormalParameter> parameters) {
+	def void generateMethodBody(Macro macro, ITreeAppendable output, EList<JvmFormalParameter> parameters, JvmTypeReference returnType) {
 		val id = generateNewIDVar
-		output.wrapWithAssertionErrorHandler(macro.contexts) [
-			output.appendReporterEnterCall(SemanticUnit.MACRO, macro.stringify, id, Status.STARTED, output.traceRegion)
-			macro.contexts.forEach[generateContext(output.trace(it))]
-			output.appendReporterLeaveCall(SemanticUnit.MACRO, macro.stringify, id, Status.OK, output.traceRegion)
+		output.wrapWithMacroReturn(macro) [
+			output.wrapWithAssertionErrorHandler(macro.contexts) [		
+				output.appendReporterEnterCall(SemanticUnit.MACRO, macro.stringify, id, Status.STARTED, output.traceRegion)
+				macro.contexts.forEach[generateContext(output.trace(it))]
+				output.appendReporterLeaveCall(SemanticUnit.MACRO, macro.stringify, id, Status.OK, output.traceRegion)
+			]
 		]
 	}
 
@@ -593,7 +609,7 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 		val amlElements = EcoreUtil2.getAllContentsOfType(step, StepContentElement)
 		val id = generateNewIDVar
 		output.appendReporterCall(SemanticUnit.STEP, Action.ENTER, '''return «assertionText(step.returnExpression)»''', id, Status.STARTED, output.traceRegion, variables, amlElements)
-		output.newLine.append('''return «expressionBuilder.buildReadExpression(step.returnExpression)»;''')
+		output.newLine.append('''«step.enclosingMacroDefinition.resultVariableName» = «expressionBuilder.buildReadExpression(step.returnExpression)»;''')
 		output.appendReporterCall(SemanticUnit.STEP, Action.LEAVE, '''return «assertionText(step.returnExpression)»''', id, Status.OK, output.traceRegion, variables, amlElements)
 	}
 
@@ -816,6 +832,9 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 	private def void appendReporterLeaveCall(ITreeAppendable output, SemanticUnit unit, String message, String id, Status status, AbstractTraceRegion traceRegion) {
 		appendReporterCall(output, unit, Action.LEAVE, message, id, status, traceRegion, #[], #[])
 	}
-
+	
+	private def String resultVariableName(Macro macro) {
+		return macroHelper.getMethodName(macro) + MACRO_RESULT_VAR_SUFFIX
+	}
 
 }

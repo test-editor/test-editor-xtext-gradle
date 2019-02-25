@@ -85,7 +85,7 @@ class TclJvmModelInferrerTest extends AbstractTclGeneratorIntegrationTest {
 	}
 	
 	@Test
-	def void testGenerationForMacroWithReturn() {
+	def void testGeneratTionForMacroWithReturn() {
 		//given
 		parseTcl('''
 			package com.example
@@ -110,7 +110,10 @@ class TclJvmModelInferrerTest extends AbstractTclGeneratorIntegrationTest {
 
 		//then
 		tclModelCode.assertContains('private long macro_MyMacroCollection_ReturnLongFromInteraction(final String id)')
-		tclModelCode.assertContains('return result;')
+		tclModelCode.assertContains('long macro_MyMacroCollection_ReturnLongFromInteraction_result = 0;')
+		tclModelCode.assertContains('macro_MyMacroCollection_ReturnLongFromInteraction_result = result;')
+		tclModelCode.assertContains('return macro_MyMacroCollection_ReturnLongFromInteraction_result;')
+		
 		tclModelCode.assertContains('longFromMacro = macro_MyMacroCollection_ReturnLongFromInteraction(')
 	}
 	
