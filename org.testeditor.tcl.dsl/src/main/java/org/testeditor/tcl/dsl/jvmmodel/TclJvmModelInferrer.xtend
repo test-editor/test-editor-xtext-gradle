@@ -81,6 +81,7 @@ import org.testeditor.tsl.StepContentValue
 import static org.testeditor.tcl.TclPackage.Literals.*
 
 import static extension org.apache.commons.lang3.StringEscapeUtils.escapeJava
+import org.testeditor.tcl.ExpressionReturnTestStep
 
 class TclJvmModelInferrer extends AbstractModelInferrer {
 
@@ -272,7 +273,7 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 		// Create methods for macros
 		val macros = macroHelper.getAllTransitiveMacros(element)
 		result.members += macros.map [ macro |
-			element.toMethod(macroHelper.getMethodName(macro), typeRef(Void.TYPE)) [
+			element.toMethod(macroHelper.getMethodName(macro), macro.getType) [
 				exceptions += typeRef(Exception)
 				visibility = JvmVisibility.PRIVATE
 				val variablesWithTypes = typeComputer.getVariablesWithTypes(macro)
@@ -286,6 +287,14 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 				]
 			]
 		]
+	}
+	
+	private def JvmTypeReference getType(Macro macro) {
+		return if (macro.hasReturn) {
+			expressionTypeComputer.determineType(macro.^return, Optional.empty)
+		} else {
+			typeRef(Void.TYPE)
+		}
 	}
 
 	/**
@@ -577,6 +586,16 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 			}
 		]
 	}
+	
+	private def dispatch void toUnitTestCodeLine(ExpressionReturnTestStep step, ITreeAppendable output) {
+		logger.debug('''generating code line for return test step '«step.stringify»' at «jvmModelHelper.toLocationString(output.traceRegion)».''')
+		val variables = EcoreUtil2.getAllContentsOfType(step.returnExpression, VariableReference)
+		val amlElements = EcoreUtil2.getAllContentsOfType(step, StepContentElement)
+		val id = generateNewIDVar
+		output.appendReporterCall(SemanticUnit.STEP, Action.ENTER, '''return «assertionText(step.returnExpression)»''', id, Status.STARTED, output.traceRegion, variables, amlElements)
+		output.newLine.append('''return «expressionBuilder.buildReadExpression(step.returnExpression)»;''')
+		output.appendReporterCall(SemanticUnit.STEP, Action.LEAVE, '''return «assertionText(step.returnExpression)»''', id, Status.OK, output.traceRegion, variables, amlElements)
+	}
 
 	private def dispatch void toUnitTestCodeLine(TestStep step, ITreeAppendable output) {
 		val stepLog = step.stringify
@@ -671,6 +690,13 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 					}
 				}
 			]
+			if (step instanceof TestStepWithAssignment) {
+				output.trace(step, TEST_STEP_WITH_ASSIGNMENT__VARIABLE, 0) => [
+					val partialCodeLine = '''«macro.type.identifier» «step.variable.name» = '''
+					output.append(partialCodeLine) // please call with string, since tests checks against expected string which fails for passing ''' directly
+				]
+				variables += tclFactory.createVariableReference => [variable = step.variable]
+			}
 			val parameters = generateCallParameters(step, macro)
 			output.append('''«macroHelper.getMethodName(macro)»(«parameters»«if (parameters.length () > 0) ', ' else ''»«id»);''')
 		} else {
