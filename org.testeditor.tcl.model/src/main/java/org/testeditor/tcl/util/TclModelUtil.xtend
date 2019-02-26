@@ -42,6 +42,7 @@ import org.testeditor.tcl.MacroCollection
 import org.testeditor.tcl.MacroTestStepContext
 import org.testeditor.tcl.SpecificationStepImplementation
 import org.testeditor.tcl.StepContentElement
+import org.testeditor.tcl.StepContentElementReference
 import org.testeditor.tcl.TclModel
 import org.testeditor.tcl.TestCase
 import org.testeditor.tcl.TestConfiguration
@@ -93,7 +94,9 @@ class TclModelUtil extends TslModelUtil {
 				StepContentVariable: '''"«value»"'''
 				StepContentElement: '''<«value»>'''
 				VariableReferencePathAccess: '''@«restoreString»'''
-				VariableReference: '''@«variable?.name»'''
+				VariableReference: if (it instanceof StepContentElementReference) {
+					'''<@«variable?.name»>'''} else {
+					'''@«variable?.name»''' }
 				StepContentValue:
 					value
 				default:
