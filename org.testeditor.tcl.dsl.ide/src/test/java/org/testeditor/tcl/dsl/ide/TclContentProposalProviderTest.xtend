@@ -251,7 +251,7 @@ class TclContentProposalProviderTest extends AbstractContentAssistTest {
 		val proposals = tclSnippet.proposals
 
 		// then
-		proposals.expectOnly(#['Input', 'bar'] + value + elementPunctuation)
+		proposals.expectOnly(#['Input', 'bar', '@'] + value + elementPunctuation)
 	}
 
 	@Test
@@ -269,7 +269,7 @@ class TclContentProposalProviderTest extends AbstractContentAssistTest {
 		val proposals = tclSnippet.proposals
 
 		// then
-		proposals.expectOnly(#['Input>', 'bar>'] + value + elementPunctuation)
+		proposals.expectOnly(#['Input>', 'bar>', '@'] + value + elementPunctuation)
 		proposals.expect('Input>').prefix.assertEquals('<')
 	}
 
