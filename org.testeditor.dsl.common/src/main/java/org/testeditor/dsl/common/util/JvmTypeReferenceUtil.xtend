@@ -23,13 +23,14 @@ import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.emf.ecore.resource.ResourceSet
 import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtext.common.types.JvmEnumerationType
+import org.eclipse.xtext.common.types.JvmPrimitiveType
 import org.eclipse.xtext.common.types.JvmTypeReference
 import org.eclipse.xtext.xbase.jvmmodel.JvmTypeReferenceBuilder
 import org.eclipse.xtext.xbase.typesystem.conformance.TypeConformanceComputationArgument
 import org.eclipse.xtext.xbase.typesystem.references.StandardTypeReferenceOwner
 import org.eclipse.xtext.xbase.typesystem.util.CommonTypeComputationServices
-import org.testeditor.fixture.core.MaskingString
 import org.slf4j.LoggerFactory
+import org.testeditor.fixture.core.MaskingString
 
 /**
  * provide basic utility functions for JvmTypeReference(s)
@@ -237,6 +238,20 @@ class JvmTypeReferenceUtil {
 	def Iterable<String> getEnumValues(JvmTypeReference reference) {
 		val enumType = reference.type as JvmEnumerationType
 		return enumType.literals.map[simpleName]
+	}
+	
+	def String defaultValue(JvmTypeReference typeRef) {
+		return switch (typeRef.simpleName) {
+			case Boolean.TYPE.name: 'false'
+			case Character.TYPE.name: '\u0000'
+			case Byte.TYPE.name,
+			case Double.TYPE.name,
+			case Float.TYPE.name,
+			case Integer.TYPE.name,
+			case Long.TYPE.name,
+			case Short.TYPE.name: '0'
+			default: 'null'
+		}
 	}
 
 }

@@ -116,6 +116,10 @@ class TclModelUtil extends TslModelUtil {
 			template.normalize == normalizedMacroCallStep
 		]
 	}
+
+	def Expression getReturn(Macro macro) {
+		return (macro.contexts?.last?.steps?.last as ExpressionReturnTestStep).returnExpression
+	}
 	
 	def boolean hasReturn(Macro macro) {
 		return macro.contexts?.last?.steps?.last instanceof ExpressionReturnTestStep
@@ -361,6 +365,11 @@ class TclModelUtil extends TslModelUtil {
 			Macro: return container.contexts.throwsFixtureException
 			default: return false
 		}
+	}
+	
+
+	def dispatch boolean throwsFixtureException(ExpressionReturnTestStep testStep) {
+		return throwsFixtureException(testStep.returnExpression)
 	}
 
 	def dispatch boolean throwsFixtureException(Iterable<TestStepContext> contexts) {
