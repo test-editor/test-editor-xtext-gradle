@@ -197,9 +197,22 @@ class TclModelUtil extends TslModelUtil {
 	}
 	
 	def ComponentElement getComponentElement(StepContentElement contentElement, TestStep containingTestStep) {
+		return getComponentElement(contentElement.value, containingTestStep)
+	}
+	
+	def Iterable<ComponentElement> getAllComponentElements(StepContentElementReference contentElementRef) {
+		val containingTestStep = EcoreUtil2.getContainerOfType(contentElementRef, TestStep)
+		return contentElementRef.getAllComponentElements(containingTestStep)
+	}
+	
+	def Iterable<ComponentElement> getAllComponentElements(StepContentElementReference contentElementRef, TestStep containingTestStep) {
+		return containingTestStep?.componentContext?.component?.elements
+	}
+	
+	def ComponentElement getComponentElement(String componentElementName, TestStep containingTestStep) {
 		if (containingTestStep !== null) {
 			val component = containingTestStep.componentContext?.component
-			return component?.elements?.findFirst[name == contentElement.value]
+			return component?.elements?.findFirst[name == componentElementName]
 		}
 		return null
 	}

@@ -117,5 +117,44 @@ class TclJvmModelInferrerTest extends AbstractTclGeneratorIntegrationTest {
 		tclModelCode.assertContains('longFromMacro = macro_MyMacroCollection_ReturnLongFromInteraction(')
 	}
 	
+	
+	// TODO code generation for runtime lookup of AML elements needs to be factored out of fixture call (because its super-ugly) 
+	@Test
+	def void testGeneratTionForMacroWithAmlElementParams() {
+		//given
+		'''
+			package com.example
+			
+			# MyMacroCollection
+			
+			## MyMacro
+			template = "send greetings to" ${field}
+			Component: GreetingApplication
+			- Type "Hello, World!" into <@field>
+		'''.toString.parseTcl("MyMacroCollection.tml").assertNoSyntaxErrors
+
+		val tclModel = '''
+			package com.example
+			
+			# SampleTest
+			* Sample Step
+			Macro: MyMacroCollection
+			- send greetings to "Input"
+		'''.toString.parseTcl
+		tclModel.addToResourceSet
+
+		//when
+		val tclModelCode = tclModel.generate
+
+		//then
+		tclModelCode.assertContains(
+			'dummyFixture.typeInto(new java.util.HashMap<String, String>() {{ put("Input","text.input");put("Ok","button.ok"); }}.get(field), ' +
+			'new java.util.HashMap<String, org.testeditor.dsl.common.testing.DummyLocatorStrategy>() {{ ' +
+				'put("Input",org.testeditor.dsl.common.testing.DummyLocatorStrategy.ID);' +
+				'put("Ok",org.testeditor.dsl.common.testing.DummyLocatorStrategy.ID); ' +
+			'}}.get(field), "Hello, World!");'
+		)
+	}
+	
 }
 		

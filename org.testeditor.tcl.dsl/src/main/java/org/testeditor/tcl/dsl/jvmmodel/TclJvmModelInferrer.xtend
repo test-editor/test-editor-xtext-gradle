@@ -38,6 +38,7 @@ import org.eclipse.xtext.xbase.jvmmodel.AbstractModelInferrer
 import org.eclipse.xtext.xbase.jvmmodel.IJvmDeclaredTypeAcceptor
 import org.eclipse.xtext.xbase.jvmmodel.JvmTypesBuilder
 import org.slf4j.LoggerFactory
+import org.testeditor.aml.ComponentElement
 import org.testeditor.aml.InteractionType
 import org.testeditor.aml.ModelUtil
 import org.testeditor.aml.TemplateContainer
@@ -64,6 +65,7 @@ import org.testeditor.tcl.MacroTestStepContext
 import org.testeditor.tcl.SetupAndCleanupProvider
 import org.testeditor.tcl.SpecificationStepImplementation
 import org.testeditor.tcl.StepContentElement
+import org.testeditor.tcl.StepContentElementReference
 import org.testeditor.tcl.TclModel
 import org.testeditor.tcl.TestCase
 import org.testeditor.tcl.TestConfiguration
@@ -752,7 +754,7 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 
 		// in case the parameter is an aml element, the locator + (optional) the locator strategy must be generated
 		if (templateContainer instanceof InteractionType) {
-			if (stepContent instanceof StepContentElement) {
+			if (stepContent instanceof StepContentElement || stepContent instanceof StepContentElementReference) {
 				return toLocatorParameterString(stepContent, templateContainer)
 			}
 		}
@@ -790,16 +792,42 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 		}
 	}
 
-	private def Iterable<String> toLocatorParameterString(StepContentElement stepContent, InteractionType interaction) {
-		val element = stepContent.componentElement
+	private def dispatch Iterable<String> toLocatorParameterString(StepContentElement stepContent, InteractionType interaction) {
+		return toLocatorParameterString(stepContent.componentElement, stepContent.value, interaction)
+	}
+	
+	private def dispatch Iterable<String> toLocatorParameterString(StepContentElementReference stepContentRef, InteractionType interaction) {
+		return toLocatorRuntimeSelectionString(stepContentRef.allComponentElements, stepContentRef.variable.name, interaction)
+	}
+
+	private def Iterable<String> toLocatorParameterString(ComponentElement element, String parameterName, InteractionType interaction) {
 		val locator = '''"«element.locator.escapeJava»"'''
 		if (interaction.defaultMethod.locatorStrategyParameters.size > 0) {
 			// use element locator strategy if present, else use default of interaction
-			logger.debug("resolved interaction='{}' to expect locator strategy for parameter='{}'", interaction.defaultMethod.operation.qualifiedName, stepContent.value)
+			logger.debug("resolved interaction='{}' to expect locator strategy for parameter='{}'", interaction.defaultMethod.operation.qualifiedName, parameterName)
 			val locatorStrategy = element.locatorStrategy ?: interaction.locatorStrategy
 			return #[locator, locatorStrategy.qualifiedName] // locatorStrategy is the parameter right after locator (convention)
 		} else {
 			return #[locator]
+		}
+	}
+
+	// TODO generates code that is ugly as hell. Generate fields to lookup locator at runtime instead of doing it "inline".
+	private def Iterable<String> toLocatorRuntimeSelectionString(Iterable<ComponentElement> elements, String parameterName, InteractionType interaction) {
+		val relevantElements = if (interaction.locatorStrategy === null) { elements.filter[locatorStrategy !== null] } else { elements }
+		val elementsWithLocators = relevantElements.map['''put("«name»","«locator.escapeJava»");'''].join
+		val locators = '''new java.util.HashMap<String, String>() {{ «elementsWithLocators» }}.get(«parameterName»)'''
+		
+		if (interaction.defaultMethod.locatorStrategyParameters.size > 0) {
+			// use element locator strategy if present, else use default of interaction
+			logger.debug("resolved interaction='{}' to expect locator strategy for parameter='{}'", interaction.defaultMethod.operation.qualifiedName, parameterName)
+			val elementsWithStrategies = relevantElements.map['''put("«name»",«(locatorStrategy ?: interaction.locatorStrategy).qualifiedName»);'''].join
+			val locatorStrategyFQN = (interaction.locatorStrategy ?: relevantElements.findFirst[locatorStrategy !== null].locatorStrategy).qualifiedName
+			val locatorStrategyType = locatorStrategyFQN.substring(0, locatorStrategyFQN.lastIndexOf('.'))
+			val locatorStrategies = '''new java.util.HashMap<String, «locatorStrategyType»>() {{ «elementsWithStrategies» }}.get(«parameterName»)''' 
+			return #[locators, locatorStrategies] // locatorStrategy is the parameter right after locator (convention)
+		} else {
+			return #[locators]
 		}
 	}
 
