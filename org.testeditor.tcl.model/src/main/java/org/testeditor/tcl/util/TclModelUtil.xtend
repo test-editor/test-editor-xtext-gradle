@@ -152,7 +152,7 @@ class TclModelUtil extends TslModelUtil {
 	def String normalize(TestStep step) {
 		val normalizedStepContent = step.contents.map [
 			switch (it) {
-				StepContentElement: '<>'
+				StepContentElement | StepContentElementReference: '<>'
 				StepContentVariable: '""'
 				VariableReference: '""'
 				StepContentValue: value.trim
