@@ -13,7 +13,6 @@
 package org.testeditor.tcl.dsl.validation
 
 import javax.inject.Inject
-import static org.eclipse.xtext.diagnostics.Severity.*
 import org.eclipse.xtext.resource.XtextResourceSet
 import org.eclipse.xtext.testing.validation.ValidationTestHelper
 import org.eclipse.xtext.validation.Issue
@@ -23,6 +22,8 @@ import org.junit.Test
 import org.testeditor.tcl.TclModel
 import org.testeditor.tcl.dsl.tests.parser.AbstractParserTest
 import org.testeditor.tcl.util.ExampleAmlModel
+
+import static org.eclipse.xtext.diagnostics.Severity.*
 
 class TclValidatorTest extends AbstractParserTest {
 
