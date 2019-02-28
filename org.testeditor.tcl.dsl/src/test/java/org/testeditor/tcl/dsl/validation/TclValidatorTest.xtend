@@ -13,7 +13,6 @@
 package org.testeditor.tcl.dsl.validation
 
 import javax.inject.Inject
-import org.eclipse.xtext.diagnostics.Severity
 import org.eclipse.xtext.resource.XtextResourceSet
 import org.eclipse.xtext.testing.validation.ValidationTestHelper
 import org.eclipse.xtext.validation.Issue
@@ -23,6 +22,8 @@ import org.junit.Test
 import org.testeditor.tcl.TclModel
 import org.testeditor.tcl.dsl.tests.parser.AbstractParserTest
 import org.testeditor.tcl.util.ExampleAmlModel
+
+import static org.eclipse.xtext.diagnostics.Severity.*
 
 class TclValidatorTest extends AbstractParserTest {
 
@@ -40,7 +41,7 @@ class TclValidatorTest extends AbstractParserTest {
 	def void validateStringArray() {
 		// given
 		val Function1<Issue, Boolean> warningPredicate = [
-			message.matches(".*Allowed values: '\\[New, Open\\]'.*") && severity == Severity.WARNING
+			message.matches(".*Allowed values: '\\[New, Open\\]'.*") && severity == WARNING
 		]
 		getAMLWithValueSpace('''#[ "New", "Open" ]''').parseAml
 
@@ -60,7 +61,7 @@ class TclValidatorTest extends AbstractParserTest {
 	def void validateNumberRange() {
 		// given
 		val Function1<Issue, Boolean> warningPredicate = [
-			message.matches(".*Allowed values: '2 <= x <= 5'.*") && severity == Severity.WARNING
+			message.matches(".*Allowed values: '2 <= x <= 5'.*") && severity == WARNING
 		]
 		getAMLWithValueSpace("2 ... 5").parseAml
 
@@ -80,7 +81,7 @@ class TclValidatorTest extends AbstractParserTest {
 	def void validateRegEx() {
 		// given
 		val Function1<Issue, Boolean> warningPredicate = [
-			message.matches(".*Allowed values: 'Regular expression: \\^\\[a-zA-Z_0-9\\]'.*") && severity == Severity.WARNING
+			message.matches(".*Allowed values: 'Regular expression: \\^\\[a-zA-Z_0-9\\]'.*") && severity == WARNING
 		]
 		getAMLWithValueSpace('''"^[a-zA-Z_0-9]"''').parseAml
 
@@ -100,7 +101,7 @@ class TclValidatorTest extends AbstractParserTest {
 	def void testValidateFieldsWithManyValueSpaces() {
 		// given
 		val Function1<Issue, Boolean> warningPredicate = [
-			message.matches(".*Allowed values: '\\[foo, bar\\]'.*") && severity == Severity.WARNING
+			message.matches(".*Allowed values: '\\[foo, bar\\]'.*") && severity == WARNING
 		]
 		getAMLWithValueSpace('''#["foo", "bar"]''').parseAml
 
@@ -120,7 +121,7 @@ class TclValidatorTest extends AbstractParserTest {
 	def void testValidateMacroReturnCorrectUsage() {
 		// given
 		val Function1<Issue, Boolean> errorPredicate = [
-			message.matches(".*'return' is only allowed as last step of a macro definition.*") && severity == Severity.ERROR
+			message.matches(".*'return' is only allowed as last step of a macro definition.*") && severity == ERROR
 		]
 
 		val model = '''
@@ -145,7 +146,7 @@ class TclValidatorTest extends AbstractParserTest {
 	def void testValidateMacroReturnNotLastStep() {
 		// given
 		val Function1<Issue, Boolean> errorPredicate = [
-			message.matches(".*'return' is only allowed as last step of a macro definition.*") && severity == Severity.ERROR
+			message.matches(".*'return' is only allowed as last step of a macro definition.*") && severity == ERROR
 		]
 
 		val model = '''
@@ -175,7 +176,7 @@ class TclValidatorTest extends AbstractParserTest {
 	def void testValidateMacroReturnNotLastContext() {
 		// given
 		val Function1<Issue, Boolean> errorPredicate = [
-			message.matches(".*'return' is only allowed as last step of a macro definition.*") && severity == Severity.ERROR
+			message.matches(".*'return' is only allowed as last step of a macro definition.*") && severity == ERROR
 		]
 
 		val model = '''
@@ -206,7 +207,7 @@ class TclValidatorTest extends AbstractParserTest {
 	def void testValidateMacroReturnNotInsideMacroDefinition() {
 		// given
 		val Function1<Issue, Boolean> errorPredicate = [
-			message.matches(".*'return' is only allowed as last step of a macro definition.*") && severity == Severity.ERROR
+			message.matches(".*'return' is only allowed as last step of a macro definition.*") && severity == ERROR
 		]
 
 		val model = '''
@@ -233,7 +234,7 @@ class TclValidatorTest extends AbstractParserTest {
 	def void testValidateMacroWithoutReturnAssignedToVariable() {
 		// given
 		val Function1<Issue, Boolean> errorPredicate = [
-			message.matches(".*macro cannot be assigned to 'value' since it does not return anything.*") && severity == Severity.ERROR
+			message.matches(".*macro cannot be assigned to 'value' since it does not return anything.*") && severity == ERROR
 		]
 		
 		val tmlModel = '''
@@ -267,6 +268,39 @@ class TclValidatorTest extends AbstractParserTest {
 			lineNumber.assertEquals(6)
 			uriToProblem.fragment.assertEquals('/0/@test/@steps.0/@contexts.0/@steps.0')
 		]
+	}
+	
+	@Test
+	def void testReferencesComponentElementIgnoresMacroCalls() {
+		// given
+		val tmlModel = '''
+			package com.example
+			
+			# MyMacroCollection
+			
+			## MyMacro
+			template = "indirectly enter month" ${m} "and year" ${y} "into" ${field}
+			Component: com.example.MyDialog
+			 - Enter month @m and year @y into <@field>
+		'''.toString.parseTcl("MyMacroCollection.tml")
+			
+		tmlModel.assertNoErrors
+
+		val tclModel = '''
+			package com.example
+			
+			# SampleTest
+			* Sample Step
+			Macro: MyMacroCollection
+			- indirectly enter month "10" and year "2000" into "Date"
+		'''.toString.parseTcl("SampleTest.tcl")
+
+		// when
+		val validations = validator.validate(tclModel)
+
+		// then
+		validations.assertNotExists([message.matches(".*No ComponentElement found.*") && severity == ERROR], tclModel.reportableValidations)
+		validations.assertNotExists([message.matches(".*test step could not resolve macro usage.*") && severity == WARNING], tclModel.reportableValidations)
 	}
 
 	def getTCLWithTwoValueSpaces(String testName, String value1, String value2) {

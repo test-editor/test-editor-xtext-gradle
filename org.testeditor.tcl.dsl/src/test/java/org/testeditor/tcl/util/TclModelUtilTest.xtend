@@ -218,6 +218,19 @@ class TclModelUtilTest extends AbstractParserTest {
 	}
 
 	@Test
+	def void testNormalizeTestStepWithElementVar() {
+		// given
+		val testStep = parse('''
+		- enter "Hello, World!" into <@field>''', grammarAccess.testStepRule, TestStep)
+
+		// when
+		val normalizedTestStep = tclModelUtil.normalize(testStep)
+
+		// then
+		normalizedTestStep.assertEquals('enter "" into <>')
+	}
+	
+	@Test
 	def void testNormalizeTestStep() {
 		// given
 		val testStep = parse('''

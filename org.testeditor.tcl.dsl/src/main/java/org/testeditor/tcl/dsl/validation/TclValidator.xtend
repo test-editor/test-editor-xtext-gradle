@@ -111,9 +111,12 @@ class TclValidator extends AbstractTclValidator {
 	
 	@Check
 	def void referencesComponentElement(StepContentElement contentElement) {
-		val component = contentElement.componentElement
-		if (component === null) {
-			error('No ComponentElement found.', contentElement, null)
+		val containingTestStep = EcoreUtil2.getContainerOfType(contentElement, TestStep)
+		if (containingTestStep.hasComponentContext) {
+			val component = contentElement.getComponentElement(containingTestStep)
+			if (component === null) {
+				error('No ComponentElement found.', contentElement, null)
+			}
 		}
 	}
 

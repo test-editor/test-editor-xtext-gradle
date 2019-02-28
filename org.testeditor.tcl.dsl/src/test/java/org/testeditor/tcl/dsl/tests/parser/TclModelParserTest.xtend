@@ -14,11 +14,15 @@ package org.testeditor.tcl.dsl.tests.parser
 
 import javax.inject.Inject
 import org.junit.Test
+import org.testeditor.aml.TemplateText
+import org.testeditor.aml.TemplateVariable
 import org.testeditor.dsl.common.testing.DslParseHelper
 import org.testeditor.tcl.AssertionTestStep
 import org.testeditor.tcl.ComparatorMatches
 import org.testeditor.tcl.Comparison
 import org.testeditor.tcl.ComponentTestStepContext
+import org.testeditor.tcl.ExpressionReturnTestStep
+import org.testeditor.tcl.JsonNumber
 import org.testeditor.tcl.JsonString
 import org.testeditor.tcl.MacroTestStepContext
 import org.testeditor.tcl.NullOrBoolCheck
@@ -33,8 +37,6 @@ import org.testeditor.tcl.util.TclModelUtil
 import org.testeditor.tsl.StepContentVariable
 
 import static extension org.eclipse.xtext.nodemodel.util.NodeModelUtils.*
-import org.testeditor.tcl.ExpressionReturnTestStep
-import org.testeditor.tcl.JsonNumber
 
 class TclModelParserTest extends AbstractTclTest {
 	
@@ -425,6 +427,61 @@ class TclModelParserTest extends AbstractTclTest {
 		model.macroCollection.macros.assertSingleElement.contexts.assertSingleElement.assertInstanceOf(ComponentTestStepContext)
 				.steps.assertSingleElement.assertInstanceOf(ExpressionReturnTestStep)
 				.returnExpression.assertInstanceOf(Comparison).left.assertInstanceOf(JsonNumber).value.assertEquals('42')
+	}
+	
+	@Test
+	def void parseMacroCallWithAmlElementParameter() {
+		// given
+		val input = '''
+			package com.example
+
+			# TestThatUsesMacroWithReturnValue
+
+			* Test step
+			Macro: MyMacroCollection
+			- macro using <Input>
+		'''
+
+		// when
+		val model = parseTcl(input).assertNoSyntaxErrors
+
+		// then
+		model.test.steps.assertSingleElement.contexts.assertSingleElement.assertInstanceOf(MacroTestStepContext)
+		.steps.assertSingleElement.assertInstanceOf(TestStep).contents => [
+			restoreString.assertEquals('macro using <Input>')
+			get(2).assertInstanceOf(StepContentElement)
+		]
+	}
+	
+	@Test
+	def void parseMacroDefinitionWithAmlElementParameter() {
+		// given
+		val input = '''
+			package com.example
+
+			# MyMacroCollection
+
+			## MacroStartWith
+			template = "start with" ${startparam} "in" ${field}
+			Component: MyComponent
+			- put @startparam into <@field>
+		'''
+
+		// when
+		val model = parseTcl(input).assertNoSyntaxErrors
+
+		// then
+		model.macroCollection.macros.assertSingleElement => [
+			template.contents => [
+				get(0).assertInstanceOf(TemplateText)
+				get(1).assertInstanceOf(TemplateVariable)
+				get(2).assertInstanceOf(TemplateText)
+				get(3).assertInstanceOf(TemplateVariable)
+			]
+			contexts.assertSingleElement.assertInstanceOf(ComponentTestStepContext)
+				.steps.assertSingleElement.assertInstanceOf(TestStep)
+				.contents.restoreString.assertEquals('put @startparam into <@field>')
+		]
 	}
 
 	@Test

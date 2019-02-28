@@ -42,6 +42,7 @@ import org.testeditor.tcl.MacroCollection
 import org.testeditor.tcl.MacroTestStepContext
 import org.testeditor.tcl.SpecificationStepImplementation
 import org.testeditor.tcl.StepContentElement
+import org.testeditor.tcl.StepContentElementReference
 import org.testeditor.tcl.TclModel
 import org.testeditor.tcl.TestCase
 import org.testeditor.tcl.TestConfiguration
@@ -93,7 +94,9 @@ class TclModelUtil extends TslModelUtil {
 				StepContentVariable: '''"«value»"'''
 				StepContentElement: '''<«value»>'''
 				VariableReferencePathAccess: '''@«restoreString»'''
-				VariableReference: '''@«variable?.name»'''
+				VariableReference: if (it instanceof StepContentElementReference) {
+					'''<@«variable?.name»>'''} else {
+					'''@«variable?.name»''' }
 				StepContentValue:
 					value
 				default:
@@ -149,7 +152,7 @@ class TclModelUtil extends TslModelUtil {
 	def String normalize(TestStep step) {
 		val normalizedStepContent = step.contents.map [
 			switch (it) {
-				StepContentElement: '<>'
+				StepContentElement | StepContentElementReference: '<>'
 				StepContentVariable: '""'
 				VariableReference: '""'
 				StepContentValue: value.trim
@@ -190,9 +193,26 @@ class TclModelUtil extends TslModelUtil {
 
 	def ComponentElement getComponentElement(StepContentElement contentElement) {
 		val containingTestStep = EcoreUtil2.getContainerOfType(contentElement, TestStep)
+		return contentElement.getComponentElement(containingTestStep)
+	}
+	
+	def ComponentElement getComponentElement(StepContentElement contentElement, TestStep containingTestStep) {
+		return getComponentElement(contentElement.value, containingTestStep)
+	}
+	
+	def Iterable<ComponentElement> getAllComponentElements(StepContentElementReference contentElementRef) {
+		val containingTestStep = EcoreUtil2.getContainerOfType(contentElementRef, TestStep)
+		return contentElementRef.getAllComponentElements(containingTestStep)
+	}
+	
+	def Iterable<ComponentElement> getAllComponentElements(StepContentElementReference contentElementRef, TestStep containingTestStep) {
+		return containingTestStep?.componentContext?.component?.elements
+	}
+	
+	def ComponentElement getComponentElement(String componentElementName, TestStep containingTestStep) {
 		if (containingTestStep !== null) {
 			val component = containingTestStep.componentContext?.component
-			return component?.elements?.findFirst[name == contentElement.value]
+			return component?.elements?.findFirst[name == componentElementName]
 		}
 		return null
 	}

@@ -257,7 +257,6 @@ AssignmentVariable:
 InnerStepContent returns tsl::StepContent:
 	InnerStepContentText | StepContentElement | StepContentVariable | '@' VariableReference | '@' VariableReferencePathAccess;
 
-
 StepContent returns tsl::StepContent:
 	StepContentText | StepContentElement | StepContentVariable | '@' VariableReference | '@' VariableReferencePathAccess;
 
@@ -286,9 +285,13 @@ InnerStepContentTextOperator returns ecore::EString:
 StepContentVariable returns tsl::StepContentVariable:
 	value=STRING;
 
-StepContentElement hidden():
-	('<' value=ID '>') |
+StepContentElement returns tsl::StepContent hidden():
+	{StepContentElement} ('<' value=ID '>') |
+	StepContentElementReference |
 	{StepContentElement} ('<>' | '<' (SPACES | XL ) '>');
+
+StepContentElementReference hidden():
+	('<' '@' variable=[aml::Variable] '>');
 
 StepContentPunctuation hidden():
 	value=('.'|'?')
