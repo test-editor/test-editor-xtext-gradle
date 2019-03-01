@@ -242,6 +242,26 @@ class SimpleTypeComputerTest extends AbstractParserTest {
 			value.assertEquals(empty)
 		]
 	}
+	
+
+	@Test
+	def void macroWithAMLElementParameter() {
+		// given
+		val macro = parseMacro('''
+			template = "Set value of" ${x}
+			Component: GreetingApplication
+			- Set value of <@x> to "42"
+		''')
+
+		// when
+		val variablesWithTypes = typeComputer.getVariablesWithTypes(macro)
+
+		// then
+		variablesWithTypes.entrySet.assertSingleElement => [
+			key.name.assertEquals('x')
+			value.get.qualifiedName.assertEquals(String.name)
+		]
+	}
 
 	@Test
 	def void interactionWithLocatorStrategyInNonLastPosition() {
