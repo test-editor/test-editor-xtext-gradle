@@ -395,5 +395,62 @@ class TclModelUtil extends TslModelUtil {
 	def dispatch boolean throwsFixtureException(Iterable<TestStepContext> contexts) {
 		return contexts.exists[steps.exists[throwsFixtureException]]
 	}
+	
+	def Iterable<ComponentElement> getValidElementsFor(Macro macro, TemplateVariable variable) {
+		for(context : macro.contexts) {
+			for(step : context.steps.filter(TestStep)) {
+				val passedParam = step.contents.filter(VariableReference).indexed.findFirst[value.variable == variable]
+				if (passedParam !== null) {
+					switch (context) {
+						ComponentTestStepContext: {
+							val interaction = step.interaction
+							return context.component.elements.filter[componentElementInteractionTypes.contains(interaction)]
+						}
+						MacroTestStepContext: {
+							val calledMacro = step.findMacroDefinition(context)
+							val param = calledMacro.template.contents.filter(TemplateVariable).toList.get(passedParam.key)
+							return calledMacro.getValidElementsFor(param)
+						}
+						default: return #[]
+					}
+				}
+			}
+		}
+		return #[]
+	}
+	
+	def Iterable<TemplateVariable> getAmlElementParameters(Macro macro) {
+		return macro.template.contents.filter(TemplateVariable).filter[isAmlElementVariable(macro)]
+	}
+	
+	private def boolean isAmlElementVariable(TemplateVariable variable, Macro macro) {
+		return	variable.isUsedAsElementInComponentInteractionCall(macro) || 
+				variable.isUsedAsElementInMacroCall(macro)
+	}
 
+	private def boolean isUsedAsElementInComponentInteractionCall(TemplateVariable variable, Macro macro) {
+		return macro.contexts.filter(ComponentTestStepContext)
+			.exists[steps.filter(TestStep)
+				.exists[contents.filter(StepContentElementReference)
+					.exists[it.variable == variable]
+			]
+		]
+	}
+
+	private def boolean isUsedAsElementInMacroCall(TemplateVariable variable, Macro macro) {
+		return macro.contexts.filter(MacroTestStepContext)
+			.exists[context| context.steps.filter(TestStep)
+				.exists[step | step.contents.filter(VariableReference).indexed
+					.exists[
+						if (value.variable == variable) { 
+							val calledMacro = step.findMacroDefinition(context)
+							val passedParam = calledMacro.template.contents.filter(TemplateVariable).toList.get(key)
+							passedParam.isAmlElementVariable(calledMacro)
+						} else {
+							false
+						}
+					]
+				]
+			]
+	}
 }
