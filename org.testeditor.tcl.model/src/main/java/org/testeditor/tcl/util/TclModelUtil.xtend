@@ -423,7 +423,7 @@ class TclModelUtil extends TslModelUtil {
 		return macro.template.contents.filter(TemplateVariable).filter[isAmlElementVariable(macro)]
 	}
 	
-	private def boolean isAmlElementVariable(TemplateVariable variable, Macro macro) {
+	def boolean isAmlElementVariable(TemplateVariable variable, Macro macro) {
 		return	variable.isUsedAsElementInComponentInteractionCall(macro) || 
 				variable.isUsedAsElementInMacroCall(macro)
 	}

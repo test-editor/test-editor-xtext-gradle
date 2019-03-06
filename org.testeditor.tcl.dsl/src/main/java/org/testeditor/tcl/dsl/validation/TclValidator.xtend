@@ -275,6 +275,28 @@ class TclValidator extends AbstractTclValidator {
 			warning(message, TslPackage.Literals.STEP_CONTENT_VALUE__VALUE, UNALLOWED_VALUE);
 		}
 	}
+	
+	@Check
+	def void checkAmlElementParameters(MacroTestStepContext context) {
+		context.steps.filter(TestStep).forEach[step|
+			val macro = step.findMacroDefinition(context)
+			val amlElementParams = step.getStepContentToTemplateVariablesMapping(macro.template)
+									.filter[__,it|isAmlElementVariable(macro)]
+			amlElementParams.forEach[passedValue, macroParam|
+				switch (passedValue) {
+					StepContentVariable: {
+						val validElements = macro.getValidElementsFor(macroParam)
+						if (!validElements.exists[name.equals(passedValue.value)]) {
+							error('''"«passedValue.value»" does not match any of the allowed elements («
+								validElements.map['''"«name»"'''].join(', ')»).''', 
+								passedValue, null)
+						}
+					}
+					// TODO handle other types, e.g. variable references. At a minimum, issue an info that the element validity cannot be confirmed at design time
+				}
+			]
+		]
+	}
 
 	@Check
 	def void checkSpec(TestCase testCase) {
