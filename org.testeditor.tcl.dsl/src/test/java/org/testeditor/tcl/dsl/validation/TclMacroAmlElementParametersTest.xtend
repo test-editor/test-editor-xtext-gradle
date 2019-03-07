@@ -53,7 +53,8 @@ class TclMacroAmlElementParametersTest extends AbstractParserTest {
 	}
 	
 	@Test
-	def void testAmlElementParameterRequiresStringType() {
+	def void testValidateAmlElementParameterConsistency() {
+		
 		// given
 		val tmlModel = '''
 			package com.example
@@ -61,29 +62,18 @@ class TclMacroAmlElementParametersTest extends AbstractParserTest {
 			# MyMacroCollection
 			
 			## MyMacro
-			template = "indirectly type" ${value} "into" ${field}
+			template = "send greetings to" ${field}
 			Component: GreetingApplication
-			 -  TypeLong @value into <@field>
+			- Type "Hello, World!" into <@field>
+			- Click on <@field>
 		'''.toString.parseTcl("MyMacroCollection.tml")
-			
-		tmlModel.assertNoErrors
-
-		val tclModel = '''
-			package com.example
-			
-			# SampleTest
-			* Sample Step
-			Component: GreetingApplication
-			- myElementVar = Read long from <Input>
-			Macro: MyMacroCollection
-			- indirectly type "42" into @myElementVar
-		'''.toString.parseTcl("SampleTest.tcl")
-
+		
 		// when
-		val validations = validator.validate(tclModel)
-
+		val validations = validator.validate(tmlModel)
+		
 		// then
-		validations.assertNotEmpty
+		val inconsistencyErrors = validations.filter[message.startsWith('variable "field" is used inconsistently.') && severity.equals(ERROR)]
+		inconsistencyErrors.assertSize(2)
 	}
 	
 }

@@ -18,10 +18,12 @@ import java.util.Map
 import java.util.Optional
 import java.util.Set
 import javax.inject.Inject
+import org.eclipse.xtend.lib.annotations.Data
 import org.eclipse.xtext.EcoreUtil2
 import org.eclipse.xtext.common.types.JvmTypeReference
 import org.eclipse.xtext.validation.Check
 import org.eclipse.xtext.xtype.XImportSection
+import org.testeditor.aml.ComponentElement
 import org.testeditor.aml.InteractionType
 import org.testeditor.aml.ModelUtil
 import org.testeditor.aml.Template
@@ -60,6 +62,7 @@ import org.testeditor.tcl.dsl.jvmmodel.TclJsonUtil
 import org.testeditor.tcl.dsl.jvmmodel.TclTypeUsageComputer
 import org.testeditor.tcl.dsl.jvmmodel.VariableCollector
 import org.testeditor.tcl.util.TclModelUtil
+import org.testeditor.tcl.util.TclModelUtil.VariableOccurence
 import org.testeditor.tcl.util.ValueSpaceHelper
 import org.testeditor.tsl.SpecificationStep
 import org.testeditor.tsl.StepContent
@@ -296,6 +299,37 @@ class TclValidator extends AbstractTclValidator {
 				}
 			]
 		]
+	}
+	
+	@Data private static class UsageWithElements {
+		VariableOccurence usage
+		Iterable<ComponentElement> validElements
+	}
+	
+	@Check
+	def void checkAmlElementParameterConsistency(Macro macro) {
+		val parameters = macro.template.contents.filter(TemplateVariable).filter[isAmlElementVariable(macro)]
+		val usageMap = parameters.toMap([it], [macro.getUsagesOf(it)])
+		usageMap.forEach[parameter, usages|
+			val usagesWithValidElements = usages.map[new UsageWithElements(it,validElements)]
+			usagesWithValidElements.flatMap[usageA|usagesWithValidElements.map[usageB|usageA -> usageB]]
+				.filter[key !== value]
+				.filter[key.validElements.forall[elementA|value.validElements.forall[elementB|elementA !== elementB]]]
+				.forEach[
+					error('''
+					variable "«parameter.name»" is used inconsistently.
+					This usage expects «validElementsString(key.validElements)».
+					Another usage expects «validElementsString(value.validElements)».''', key.usage.reference, null)
+				]
+		]
+	}
+	
+	private def validElementsString(Iterable<ComponentElement> elements) {
+		return switch (elements.size) {
+			case 0: 'nothing (no valid elements found)'
+			case 1: '''"«elements.head.name»"'''
+			default: '''one of «elements.map['''"«name»"'''].join(', ')»'''
+		}
 	}
 
 	@Check

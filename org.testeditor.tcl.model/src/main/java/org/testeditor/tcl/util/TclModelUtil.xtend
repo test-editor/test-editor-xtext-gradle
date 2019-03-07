@@ -17,6 +17,7 @@ import java.util.Set
 import javax.inject.Inject
 import javax.inject.Singleton
 import org.eclipse.emf.ecore.EObject
+import org.eclipse.xtend.lib.annotations.Data
 import org.eclipse.xtext.EcoreUtil2
 import org.testeditor.aml.ComponentElement
 import org.testeditor.aml.InteractionType
@@ -396,33 +397,54 @@ class TclModelUtil extends TslModelUtil {
 		return contexts.exists[steps.exists[throwsFixtureException]]
 	}
 	
+	def Iterable<VariableOccurence> getUsagesOf(Macro macro, TemplateVariable variable) {
+		return macro.contexts.flatMap[context|
+			context.steps.filter(TestStep).flatMap[step|
+				step.contents.filter(VariableReference).indexed
+				.filter[value.variable == variable].map[
+					new VariableOccurence(context, step, value, key)
+			]]]
+	}
+
 	def Iterable<ComponentElement> getValidElementsFor(Macro macro, TemplateVariable variable) {
-		for(context : macro.contexts) {
+		return macro.contexts.getValidElementsFor(variable)
+	}
+
+	def Iterable<ComponentElement> getValidElementsFor(Iterable<TestStepContext> contexts, TemplateVariable variable) {
+		for(context : contexts) {
 			for(step : context.steps.filter(TestStep)) {
 				val passedParam = step.contents.filter(VariableReference).indexed.findFirst[value.variable == variable]
 				if (passedParam !== null) {
-					switch (context) {
-						ComponentTestStepContext: {
-							val interaction = step.interaction
-							return context.component.elements.filter[componentElementInteractionTypes.contains(interaction)]
-						}
-						MacroTestStepContext: {
-							val calledMacro = step.findMacroDefinition(context)
-							val param = calledMacro.template.contents.filter(TemplateVariable).toList.get(passedParam.key)
-							return calledMacro.getValidElementsFor(param)
-						}
-						default: return #[]
-					}
+					return context.getValidElementsFor(step, passedParam.key)
 				}
 			}
 		}
 		return #[]
 	}
-	
+
+	def Iterable<ComponentElement> getValidElements(VariableOccurence it) {
+		return getValidElementsFor(context, step, parameterPosition)
+	}
+
+	def Iterable<ComponentElement> getValidElementsFor(TestStepContext context, TestStep step, int parameterPosition) {
+		return switch (context) {
+			ComponentTestStepContext: {
+				val interaction = step.interaction
+				context.component.elements.filter[componentElementInteractionTypes.contains(interaction)]
+			}
+			MacroTestStepContext: {
+				val calledMacro = step.findMacroDefinition(context)
+				val param = calledMacro.template.contents.filter(TemplateVariable).toList.get(parameterPosition)
+				calledMacro.getValidElementsFor(param)
+			}
+			default: #[]
+		}
+	}
+
 	def Iterable<TemplateVariable> getAmlElementParameters(Macro macro) {
 		return macro.template.contents.filter(TemplateVariable).filter[isAmlElementVariable(macro)]
 	}
-	
+
 	def boolean isAmlElementVariable(TemplateVariable variable, Macro macro) {
 		return	variable.isUsedAsElementInComponentInteractionCall(macro) || 
 				variable.isUsedAsElementInMacroCall(macro)
@@ -452,5 +474,12 @@ class TclModelUtil extends TslModelUtil {
 					]
 				]
 			]
+	}
+	
+	@Data static class VariableOccurence {
+		TestStepContext context
+		TestStep step
+		VariableReference reference
+		int parameterPosition
 	}
 }
