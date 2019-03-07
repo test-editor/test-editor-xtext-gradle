@@ -16,7 +16,12 @@ class TclMacroAmlElementParametersTest extends AbstractParserTest {
 
 	@Before
 	def void setup() {
-		parseAml(DummyFixture.amlModel)
+		parseAml(DummyFixture.amlModel + '''
+		
+		interaction type noValidElement {
+			template = "This interaction is not valid on" ${element} "or any other element"
+			method = «DummyFixture.simpleName».getValue(element)
+		}''')
 	}
 	
 	@Test
@@ -74,6 +79,28 @@ class TclMacroAmlElementParametersTest extends AbstractParserTest {
 		// then
 		val inconsistencyErrors = validations.filter[message.startsWith('variable "field" is used inconsistently.') && severity.equals(ERROR)]
 		inconsistencyErrors.assertSize(2)
+	}
+	
+	@Test
+	def void testNoConsistencyCheckOnSingleUsageWithoutValidElements() {
+		
+		// given
+		val tmlModel = '''
+			package com.example
+			
+			# MyMacroCollection
+			
+			## MyMacro
+			template = "send greetings to" ${field}
+			Component: GreetingApplication
+			- This interaction is not valid on <@field> or any other element
+		'''.toString.parseTcl("MyMacroCollection.tml")
+		
+		// when
+		val validations = validator.validate(tmlModel)
+		
+		// then
+		validations.assertNotExists[message.startsWith('variable "field" is used inconsistently.') && severity.equals(ERROR)]
 	}
 	
 }

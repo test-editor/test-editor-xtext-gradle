@@ -310,7 +310,7 @@ class TclValidator extends AbstractTclValidator {
 	def void checkAmlElementParameterConsistency(Macro macro) {
 		val parameters = macro.template.contents.filter(TemplateVariable).filter[isAmlElementVariable(macro)]
 		val usageMap = parameters.toMap([it], [macro.getUsagesOf(it)])
-		usageMap.forEach[parameter, usages|
+		usageMap.filter[__, usages|usages.size > 1].forEach[parameter, usages|
 			val usagesWithValidElements = usages.map[new UsageWithElements(it,validElements)]
 			usagesWithValidElements.flatMap[usageA|usagesWithValidElements.map[usageB|usageA -> usageB]]
 				.filter[key !== value]
