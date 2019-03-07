@@ -203,6 +203,138 @@ class TclModelUtilTest extends AbstractParserTest {
 		// then
 		actualResult.assertFalse
 	}
+	
+	@Test
+	def void testGetSingleAmlElementParameter() {
+		// given
+		val tmlModel = parseTcl( '''
+			package com.example
+			
+			# MyMacroCollection
+			
+			## MyMacro
+			template = "use AMLElement " ${field}
+			Component: MyComponent
+			- put "42" into <@field>
+		''')
+		val macro = tmlModel.macroCollection.macros.head
+		
+		// when
+		val actualResult = tclModelUtil.getAmlElementParameters(macro)
+		
+		// then
+		actualResult.assertSingleElement => [
+			name.assertEquals('field')
+		]
+	}
+
+	@Test
+	def void testGetOnlyAmlElementParameter() {
+		// given
+		val tmlModel = parseTcl( '''
+			package com.example
+			
+			# MyMacroCollection
+			
+			## MyMacro
+			template = "enter" ${value} "into" ${field}
+			Component: MyComponent
+			- put @value into <@field>
+		''')
+		val macro = tmlModel.macroCollection.macros.head
+		
+		// when
+		val actualResult = tclModelUtil.getAmlElementParameters(macro)
+		
+		// then
+		actualResult.assertSingleElement => [
+			name.assertEquals('field')
+		]
+	}
+	
+	@Test
+	def void testGetAmlElementParameterRecursively() {
+		// given
+		val tmlModel = parseTcl( '''
+			package com.example
+			
+			# MyMacroCollection
+			
+			## MyMacro
+			template = "enter" ${value} "into" ${field}
+			Component: MyComponent
+			- put @value into <@field>
+			
+			## MySecondMacro
+			template "indirectly enter" ${value} "into" ${field}
+			Macro: MyMacroCollection
+			- enter @value into @field
+		''')
+		val macro = tmlModel.macroCollection.macros.last
+		
+		// when
+		val actualResult = tclModelUtil.getAmlElementParameters(macro)
+		
+		// then
+		actualResult.assertSingleElement => [
+			name.assertEquals('field')
+		]
+	}
+	
+	@Test
+	def void testGetValidAmlElementsForMacroParameter() {
+		// given
+		DummyFixture.amlModel.parseAml
+		val tmlModel = parseTcl( '''
+			package com.example
+			
+			# MyMacroCollection
+			
+			## MyMacro
+			template = "enter" ${value} "into" ${field}
+			Component: GreetingApplication
+			- Set value of <@field> to @value
+		''')
+		val macro = tmlModel.macroCollection.macros.head
+		
+		// when
+		val actualResult = tclModelUtil.getValidElementsFor(macro, tclModelUtil.getAmlElementParameters(macro).assertSingleElement)
+		
+		// then
+		actualResult.assertSingleElement => [
+			name.assertEquals('Input')
+		]
+	}
+	
+	@Test
+	def void testGetValidAmlElementsForMacroParameterRecursively() {
+		// given
+		DummyFixture.amlModel.parseAml
+		val tmlModel = parseTcl( '''
+			package com.example
+			
+			# MyMacroCollection
+			
+			## MyMacro
+			template = "enter" ${value} "into" ${field}
+			Component: GreetingApplication
+			- Set value of <@field> to @value
+			
+			## MySecondMacro
+			template "indirectly enter" ${value} "into" ${field}
+			Macro: MyMacroCollection
+			- enter @value into @field
+		''')
+		val macro = tmlModel.macroCollection.macros.last
+		
+		// when
+		val actualResult = tclModelUtil.getValidElementsFor(macro, tclModelUtil.getAmlElementParameters(macro).assertSingleElement)
+		
+		// then
+		actualResult.assertSingleElement => [
+			name.assertEquals('Input')
+		]
+	}
 
 	@Test
 	def void testNormalizeTemplate() {
