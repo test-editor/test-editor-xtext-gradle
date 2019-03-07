@@ -307,6 +307,32 @@ class TclModelUtilTest extends AbstractParserTest {
 	}
 	
 	@Test
+	def void testGetMultipleValidAmlElementsForMacroParameter() {
+		// given
+		DummyFixture.amlModel.parseAml
+		val tmlModel = parseTcl('''
+			package com.example
+			
+			# MyMacroCollection
+			
+			## MyMacro
+			template = "check visibility of" ${field}
+			Component: GreetingApplication
+			- Is <@field> visible?
+		''')
+		val macro = tmlModel.macroCollection.macros.head
+		
+		// when
+		val actualResult = tclModelUtil.getValidElementsFor(macro, tclModelUtil.getAmlElementParameters(macro).assertSingleElement)
+		
+		// then
+		actualResult.assertExists[name.equals('Input')]
+		actualResult.assertExists[name.equals('bar')]
+		actualResult.assertExists[name.equals('Ok')]
+		actualResult.assertSize(3)
+	}
+	
+	@Test
 	def void testGetValidAmlElementsForMacroParameterRecursively() {
 		// given
 		DummyFixture.amlModel.parseAml
@@ -334,6 +360,69 @@ class TclModelUtilTest extends AbstractParserTest {
 		actualResult.assertSingleElement => [
 			name.assertEquals('Input')
 		]
+	}
+
+	/**
+	 * AML element parameter is used in more than one interaction, but
+	 * inconsistently, i.e. without any intersection of valid elements.
+	 * The overall result of valid elements should therefore be empty.
+	 */
+	@Test
+	def void testGetValidAmlElementsForMacroParameterInconsistentUsages() {
+		// given
+		DummyFixture.amlModel.parseAml
+		val tmlModel = parseTcl( '''
+			package com.example
+			
+			# MyMacroCollection
+			
+			## MyMacro
+			template = "enter" ${value} "into" ${field}
+			Component: GreetingApplication
+			- Type "Hello, World!" into <@field>
+			- Click on <@field>
+		''')
+		val macro = tmlModel.macroCollection.macros.head
+		
+		// when
+		val actualResult = tclModelUtil.getValidElementsFor(macro, tclModelUtil.getAmlElementParameters(macro).assertSingleElement)
+		
+		// then
+		actualResult.assertEmpty
+	}
+	
+	
+	/**
+	 * AML element parameter is used in more than one interaction.
+	 * The sets of valid elements for each usage should be intersected to yield
+	 * the overall result.
+	 */
+	@Test
+	def void testGetValidAmlElementsForMacroParameterOverlappingUsages() {
+		// given
+		DummyFixture.amlModel.parseAml
+		val tmlModel = parseTcl( '''
+			package com.example
+			
+			# MyMacroCollection
+			
+			## MyMacro
+			template = "enter" ${value} "into" ${field}
+			Component: GreetingApplication
+			- Is <@field> visible?
+			- Read value from <@field>
+			- Is <@field> visible?
+
+		''')
+		val macro = tmlModel.macroCollection.macros.head
+		
+		// when
+		val actualResult = tclModelUtil.getValidElementsFor(macro, tclModelUtil.getAmlElementParameters(macro).assertSingleElement)
+		
+		// then
+		actualResult.assertExists[name.equals('Input')]
+		actualResult.assertExists[name.equals('bar')]
+		actualResult.assertSize(2)
 	}
 
 	@Test

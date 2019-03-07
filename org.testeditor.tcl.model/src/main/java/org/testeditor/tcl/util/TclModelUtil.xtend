@@ -57,6 +57,7 @@ import org.testeditor.tsl.StepContentText
 import org.testeditor.tsl.StepContentValue
 import org.testeditor.tsl.StepContentVariable
 import org.testeditor.tsl.util.TslModelUtil
+import java.util.HashSet
 
 @Singleton
 class TclModelUtil extends TslModelUtil {
@@ -406,38 +407,35 @@ class TclModelUtil extends TslModelUtil {
 			]]]
 	}
 
-	def Iterable<ComponentElement> getValidElementsFor(Macro macro, TemplateVariable variable) {
+	def Set<ComponentElement> getValidElementsFor(Macro macro, TemplateVariable variable) {
 		return macro.contexts.getValidElementsFor(variable)
 	}
 
-	def Iterable<ComponentElement> getValidElementsFor(Iterable<TestStepContext> contexts, TemplateVariable variable) {
-		for(context : contexts) {
-			for(step : context.steps.filter(TestStep)) {
-				val passedParam = step.contents.filter(VariableReference).indexed.findFirst[value.variable == variable]
-				if (passedParam !== null) {
-					return context.getValidElementsFor(step, passedParam.key)
-				}
-			}
-		}
-		return #[]
+	def Set<ComponentElement> getValidElementsFor(Iterable<TestStepContext> contexts, TemplateVariable variable) {
+		return contexts.flatMap[context|
+			context.steps.filter(TestStep).flatMap[step|
+				step.contents.filter(VariableReference).indexed.filter[value.variable == variable]
+				.map[context.getValidElementsFor(step, key)]
+			]
+		].reduce[setA, setB| (new HashSet(setA) as Set<ComponentElement>) => [retainAll(setB)]]
 	}
 
-	def Iterable<ComponentElement> getValidElements(VariableOccurence it) {
+	def Set<ComponentElement> getValidElements(VariableOccurence it) {
 		return getValidElementsFor(context, step, parameterPosition)
 	}
 
-	def Iterable<ComponentElement> getValidElementsFor(TestStepContext context, TestStep step, int parameterPosition) {
+	def Set<ComponentElement> getValidElementsFor(TestStepContext context, TestStep step, int parameterPosition) {
 		return switch (context) {
 			ComponentTestStepContext: {
 				val interaction = step.interaction
-				context.component.elements.filter[componentElementInteractionTypes.contains(interaction)]
+				context.component.elements.filter[componentElementInteractionTypes.contains(interaction)].toSet
 			}
 			MacroTestStepContext: {
 				val calledMacro = step.findMacroDefinition(context)
 				val param = calledMacro.template.contents.filter(TemplateVariable).toList.get(parameterPosition)
 				calledMacro.getValidElementsFor(param)
 			}
-			default: #[]
+			default: #{}
 		}
 	}
 

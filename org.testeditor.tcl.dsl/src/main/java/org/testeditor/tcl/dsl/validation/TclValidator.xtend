@@ -303,7 +303,7 @@ class TclValidator extends AbstractTclValidator {
 	
 	@Data private static class UsageWithElements {
 		VariableOccurence usage
-		Iterable<ComponentElement> validElements
+		Set<ComponentElement> validElements
 	}
 	
 	@Check
