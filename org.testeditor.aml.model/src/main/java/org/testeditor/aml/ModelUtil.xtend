@@ -120,16 +120,25 @@ class ModelUtil {
 	def JvmTypeReference getReturnType(InteractionType interaction) {
 		interaction.defaultMethod?.operation?.returnType
 	}
-
+	
 	def String normalize(Template template) {
-		val normalizedTemplate = template.contents.map [
-			switch (it) {
-				TemplateVariable case name == 'element': '<>'
-				TemplateVariable: '""'
-				TemplateText: value.trim
-			}
-		].join(' ').removeWhitespaceBeforePunctuation
+		return template.normalize[ content | content.normalize ]
+	}
+
+	def String normalize(Template template, (TemplateContent)=>String contentNormalizer) {
+		val normalizedTemplate = template.contents
+			.map[ contentNormalizer.apply(it) ]
+			.join(' ')
+			.removeWhitespaceBeforePunctuation
 		return normalizedTemplate
+	}
+	
+	def String normalize(TemplateContent it) {
+		switch (it) {
+			TemplateVariable case name == 'element': '<>'
+			TemplateVariable: '""'
+			TemplateText: value.trim
+		}
 	}
 
 	def String removeWhitespaceBeforePunctuation(String input) {

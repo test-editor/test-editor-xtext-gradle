@@ -7,6 +7,7 @@ import org.junit.Before
 import org.junit.Test
 import org.testeditor.aml.ModelUtil
 import org.testeditor.aml.Template
+import org.testeditor.aml.TemplateVariable
 import org.testeditor.aml.dsl.AmlStandaloneSetup
 import org.testeditor.aml.dsl.tests.AmlModelGenerator
 import org.testeditor.dsl.common.testing.DummyFixture
@@ -88,6 +89,44 @@ class TclModelUtilTest extends AbstractParserTest {
 
 		// then
 		macro.assertSame(macroCalled)
+	}
+	
+	@Test
+	def void testFindMacroDefinitionWithAmlParameter() {
+		// given
+		DummyFixture.amlModel.parseAml
+		val tmlModel = parseTcl( '''
+			package com.example
+			
+			# MyMacroCollection
+			
+			## MyMacro
+			template = "enter" ${value} "into" ${field}
+			Component: GreetingApplication
+			- Type @value into <@field>
+		''', 'MyMacroCollection.tml')
+		val tclModel = '''
+			package com.example
+			
+			# Test
+			
+			* Some spec
+			Macro: MyMacroCollection
+			- enter "42" into <Input>
+			- enter "42" into "Input"
+		'''.toString.parseTcl('Test.tcl')
+		
+		val expectedMacro = tmlModel.macroCollection.macros.head
+		val macroTestStepContext = tclModel.test.steps.head.contexts.head as MacroTestStepContext
+		val macroCalls = macroTestStepContext.steps.filter(TestStep)
+
+		// when
+		val actuallyFoundMacros = macroCalls.map[
+			tclModelUtil.findMacroDefinition(it, macroTestStepContext)]
+
+		// then
+		actuallyFoundMacros.head.assertSame(expectedMacro)
+		actuallyFoundMacros.last.assertNull
 	}
 	
 	@Test
@@ -436,6 +475,31 @@ class TclModelUtilTest extends AbstractParserTest {
 
 		// then
 		normalizedTemplate.assertEquals('start with "" and more ""?')
+	}
+	
+	@Test
+	def void testNormalizeAmlParameterInTemplate() {
+		// given
+		DummyFixture.amlModel.parseAml
+		val tmlModel = parseTcl( '''
+			package com.example
+			
+			# MyMacroCollection
+			
+			## MyMacro
+			template = "enter" ${value} "into" ${field}
+			Component: GreetingApplication
+			- Type @value into <@field>
+		''')
+		val macro = tmlModel.macroCollection.macros.head
+		val templateVariables = macro.template.contents.filter(TemplateVariable)
+		
+		// when
+		val normalizedVariables = templateVariables.map[tclModelUtil.normalize(macro, it)]
+
+		// then
+		normalizedVariables.head.assertEquals('""')
+		normalizedVariables.last.assertEquals('<>')
 	}
 
 	@Test

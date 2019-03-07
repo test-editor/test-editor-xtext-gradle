@@ -12,6 +12,7 @@
  *******************************************************************************/
 package org.testeditor.tcl.util
 
+import java.util.HashSet
 import java.util.LinkedHashMap
 import java.util.Set
 import javax.inject.Inject
@@ -24,6 +25,7 @@ import org.testeditor.aml.InteractionType
 import org.testeditor.aml.ModelUtil
 import org.testeditor.aml.Template
 import org.testeditor.aml.TemplateContainer
+import org.testeditor.aml.TemplateContent
 import org.testeditor.aml.TemplateVariable
 import org.testeditor.dsl.common.util.CollectionUtils
 import org.testeditor.fixture.core.FixtureException
@@ -117,8 +119,8 @@ class TclModelUtil extends TslModelUtil {
 
 	def Macro findMacroDefinition(TestStep macroCallStep, MacroTestStepContext macroCallSite) {
 		val normalizedMacroCallStep = macroCallStep.normalize
-		return macroCallSite.macroCollection?.macros?.findFirst [
-			template.normalize == normalizedMacroCallStep
+		return macroCallSite.macroCollection?.macros?.findFirst [macro|
+			macro.template.normalize[content|macro.normalize(content)] == normalizedMacroCallStep
 		]
 	}
 
@@ -162,6 +164,13 @@ class TclModelUtil extends TslModelUtil {
 			}
 		].join(' ').removeWhitespaceBeforePunctuation
 		return normalizedStepContent
+	}
+	
+	def String normalize(Macro macro, TemplateContent content) {
+		switch (content) {
+			TemplateVariable case content.isAmlElementVariable(macro): '<>'
+			default: content.normalize
+		}
 	}
 
 	/**
