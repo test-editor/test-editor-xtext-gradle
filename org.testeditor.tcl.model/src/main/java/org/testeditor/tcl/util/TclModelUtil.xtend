@@ -12,6 +12,7 @@
  *******************************************************************************/
 package org.testeditor.tcl.util
 
+import java.util.HashSet
 import java.util.LinkedHashMap
 import java.util.Set
 import javax.inject.Inject
@@ -19,6 +20,7 @@ import javax.inject.Singleton
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtend.lib.annotations.Data
 import org.eclipse.xtext.EcoreUtil2
+import org.slf4j.LoggerFactory
 import org.testeditor.aml.ComponentElement
 import org.testeditor.aml.InteractionType
 import org.testeditor.aml.ModelUtil
@@ -57,10 +59,11 @@ import org.testeditor.tsl.StepContentText
 import org.testeditor.tsl.StepContentValue
 import org.testeditor.tsl.StepContentVariable
 import org.testeditor.tsl.util.TslModelUtil
-import java.util.HashSet
 
 @Singleton
 class TclModelUtil extends TslModelUtil {
+
+	static val logger = LoggerFactory.getLogger(TclModelUtil)
 
 	@Inject public extension ModelUtil amlModelUtil
 	@Inject extension CollectionUtils
@@ -428,14 +431,17 @@ class TclModelUtil extends TslModelUtil {
 		return switch (context) {
 			ComponentTestStepContext: {
 				val interaction = step.interaction
-				context.component.elements.filter[componentElementInteractionTypes.contains(interaction)].toSet
+				context.component.elements/*.filter[componentElementInteractionTypes.contains(interaction)]*/.toSet
 			}
 			MacroTestStepContext: {
 				val calledMacro = step.findMacroDefinition(context)
 				val param = calledMacro.template.contents.filter(TemplateVariable).toList.get(parameterPosition)
 				calledMacro.getValidElementsFor(param)
 			}
-			default: #{}
+			default: {
+				logger.error('''unknown context type: «context?.class?.simpleName»''')
+				#{}
+			}
 		}
 	}
 
