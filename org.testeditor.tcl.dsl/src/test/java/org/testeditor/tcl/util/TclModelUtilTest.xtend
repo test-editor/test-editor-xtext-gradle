@@ -126,7 +126,8 @@ class TclModelUtilTest extends AbstractParserTest {
 
 		// then
 		actuallyFoundMacros.head.assertSame(expectedMacro)
-		actuallyFoundMacros.last.assertNull
+		actuallyFoundMacros.last.assertSame(expectedMacro)	// findMacroDefinition does not check if a parameter is an AML element, so normal quotes will match, too
+															// TODO a separate validation should check that angle brackets are used for AML element parameters
 	}
 	
 	@Test
@@ -388,7 +389,7 @@ class TclModelUtilTest extends AbstractParserTest {
 			## MySecondMacro
 			template "indirectly enter" ${value} "into" ${field}
 			Macro: MyMacroCollection
-			- enter @value into @field
+			- enter @value into <@field>
 		''')
 		val macro = tmlModel.macroCollection.macros.last
 		

@@ -20,6 +20,7 @@ import javax.inject.Singleton
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtend.lib.annotations.Data
 import org.eclipse.xtext.EcoreUtil2
+import org.eclipse.xtext.util.OnChangeEvictingCache
 import org.testeditor.aml.ComponentElement
 import org.testeditor.aml.InteractionType
 import org.testeditor.aml.ModelUtil
@@ -59,13 +60,21 @@ import org.testeditor.tsl.StepContentText
 import org.testeditor.tsl.StepContentValue
 import org.testeditor.tsl.StepContentVariable
 import org.testeditor.tsl.util.TslModelUtil
-import java.util.HashSet
+
+import static extension org.testeditor.tcl.util.MacroSignature.*
 
 @Singleton
 class TclModelUtil extends TslModelUtil {
-
+	
 	@Inject public extension ModelUtil amlModelUtil
 	@Inject extension CollectionUtils
+	@Inject OnChangeEvictingCache cache
+	// Wrapper class around a test step to serve as cache key for macro lookup.
+	// Since the cache adapter is resource-global, putting in TestStep objects
+	// as keys might lead to collisions.
+	@Data static class MacroCall {
+		val TestStep step
+	}
 
 	/**
 	 * Gets the name of the included element. Order of this operation:
@@ -118,9 +127,12 @@ class TclModelUtil extends TslModelUtil {
 	}
 
 	def Macro findMacroDefinition(TestStep macroCallStep, MacroTestStepContext macroCallSite) {
-		val normalizedMacroCallStep = macroCallStep.normalize
-		return macroCallSite.macroCollection?.macros?.findFirst [macro|
-			macro.template.normalize[content|macro.normalize(content)] == normalizedMacroCallStep
+		return cache.get(new MacroCall(macroCallStep), macroCallSite.eResource)[
+			val callSignature = macroCallStep.signature
+			return macroCallSite.macroCollection?.macros?.findFirst[macro|
+				val macroSignature = macro.signature[isAmlElementVariable(macro)]
+				macroSignature.matches(callSignature)
+			]
 		]
 	}
 
