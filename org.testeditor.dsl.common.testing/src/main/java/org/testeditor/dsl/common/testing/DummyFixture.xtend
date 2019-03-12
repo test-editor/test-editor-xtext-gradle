@@ -273,6 +273,11 @@ class DummyFixture {
 		template = "TypeConfidential" ${param} "into input field"
 		Component: GreetingApplication
 		- Type confidential @param into <Input>
+		
+		## TypeBoolIntoProvidedField
+		template = "TypeBoolean" ${boolParameter} "into" ${field}
+		Component: GreetingApplication
+		- Type boolean @boolParameter into <@field>
 	'''
 
 }

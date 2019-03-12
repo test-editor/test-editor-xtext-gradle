@@ -68,7 +68,8 @@ class TclContentProposalProviderTest extends AbstractContentAssistTest {
 	val macroTemplates = #[
 		'TypeBoolean "true" into input field',
 		'TypeLong "1" into input field',
-		'TypeConfidential "param" into input field'
+		'TypeConfidential "param" into input field',
+		'TypeBoolean "true" into <field>'
 	]
 
 	@Before

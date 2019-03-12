@@ -21,6 +21,7 @@ import org.testeditor.aml.InteractionType
 import org.testeditor.aml.ModelUtil
 import org.testeditor.aml.Template
 import org.testeditor.aml.TemplateContainer
+import org.testeditor.aml.TemplateContent
 import org.testeditor.aml.TemplateText
 import org.testeditor.aml.TemplateVariable
 import org.testeditor.dsl.common.util.JvmTypeReferenceUtil
@@ -119,17 +120,16 @@ class TclContentProposalProvider extends IdeContentProposalProvider {
 			val prevLeafNode = NodeModelUtils.findLeafNodeAtOffset(context.currentNode.previousSibling, context.lastCompleteNode.offset - 1)
 			var modelElement = NodeModelUtils.findActualSemanticObjectFor(prevLeafNode)
 			val testStepContext = modelElement.testStepContext
-			val templates = switch (testStepContext) {
-				ComponentTestStepContext: testStepContext.component?.allInteractionTypes.map[template]
-				MacroTestStepContext: testStepContext.macroCollection.macros.map[template]
+			val templates = switch (testStepContext) { // NOTE THAT - IS EXPLICITLY INCLUDED HERE
+				ComponentTestStepContext: testStepContext.component?.allInteractionTypes.map['''- «template.restoreString»''']
+				MacroTestStepContext: testStepContext.macroCollection.macros.map['''- «template.restoreString(it)»''']
 				default: #[]
 			}
 			templates.forEach[makeInitialTemplateProposalWithDash(context, acceptor)]
 		}
 	}
 
-	private def void makeInitialTemplateProposalWithDash(Template template, ContentAssistContext context, IIdeContentProposalAcceptor acceptor) {
-		val proposal = '''- «template.restoreString»''' // NOTE THAT - IS EXPLICITLY INCLUDED HERE
+	private def void makeInitialTemplateProposalWithDash(String proposal, ContentAssistContext context, IIdeContentProposalAcceptor acceptor) {
 		val templateEntry = proposalCreator.createProposal(proposal, context)
 		if (templateEntry !== null) {
 			acceptor.accept(templateEntry, proposalPriorities.getCrossRefPriority(null, templateEntry))
@@ -199,23 +199,22 @@ class TclContentProposalProvider extends IdeContentProposalProvider {
 
 	private def makeComponentTemplateProposal(Component component, ContentAssistContext context, IIdeContentProposalAcceptor acceptor) {
 		val interactions = component.allInteractionTypes
-		interactions.map[template].makeTemplateProposals(context, acceptor)
+		interactions.map[template.restoreString].makeTemplateProposals(context, acceptor)
 	}
 
 	private def makeMacroTemplateProposal(MacroCollection macroCollection, ContentAssistContext context, IIdeContentProposalAcceptor acceptor) {
 		val macros = macroCollection.macros
-		macros.map[template].makeTemplateProposals(context, acceptor)
+		macros.map[template.restoreString(it)].makeTemplateProposals(context, acceptor)
 	}
 
-	private def makeTemplateProposals(Iterable<Template> templates, ContentAssistContext context, IIdeContentProposalAcceptor acceptor) {
+	private def makeTemplateProposals(Iterable<String> elements, ContentAssistContext context, IIdeContentProposalAcceptor acceptor) {
 		val mandatoryPrefix = context.mandatoryPrefixForTemplate(true)
-		templates.forEach [
+		elements.forEach [
 			makeTemplateProposal(mandatoryPrefix, context, acceptor)
 		]
 	}
 
-	private def makeTemplateProposal(Template template, String mandatoryPrefix, ContentAssistContext context, IIdeContentProposalAcceptor acceptor) {
-		val element = template.restoreString
+	private def makeTemplateProposal(String element, String mandatoryPrefix, ContentAssistContext context, IIdeContentProposalAcceptor acceptor) {
 		if (element.startsWith(mandatoryPrefix)) {
 			val actualElement = context.prefix + element.substring(mandatoryPrefix.length).trim
 			val proposal = proposalCreator.createProposal(actualElement, context)
@@ -272,16 +271,27 @@ class TclContentProposalProvider extends IdeContentProposalProvider {
 		}
 	}
 
-	private def String restoreString(Template template) {
-		return template.contents.map [
+	private def String restoreString(Template template, Macro macro) {
+		return template.contents.map[
 			switch (it) {
-				TemplateVariable case name == ModelUtil.TEMPLATE_VARIABLE_ELEMENT: '''<«name»>'''
-				TemplateVariable:
-					typedProposalString(EcoreUtil2.getContainerOfType(template, TemplateContainer))
-				TemplateText:
-					value
+				TemplateVariable case isAmlElementVariable(macro): '''<«name»>'''
+				default: restoreString
 			}
 		].join(' ')
+	}
+
+	private def String restoreString(Template template) {
+		return template.contents.map[ restoreString ].join(' ')
+	}
+	
+	private def String restoreString(TemplateContent it) {
+		return switch (it) {
+			TemplateVariable case name == ModelUtil.TEMPLATE_VARIABLE_ELEMENT: '''<«name»>'''
+			TemplateVariable:
+				typedProposalString(EcoreUtil2.getContainerOfType(template, TemplateContainer))
+			TemplateText:
+				value
+		}
 	}
 
 	private def String typedProposalString(TemplateVariable templateVariable, TemplateContainer templateContainer) {
