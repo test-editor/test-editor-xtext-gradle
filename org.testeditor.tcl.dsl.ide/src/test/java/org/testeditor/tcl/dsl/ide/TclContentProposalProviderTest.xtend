@@ -69,7 +69,8 @@ class TclContentProposalProviderTest extends AbstractContentAssistTest {
 		'TypeBoolean "true" into input field',
 		'TypeLong "1" into input field',
 		'TypeConfidential "param" into input field',
-		'TypeBoolean "true" into <field>'
+		'TypeBoolean "true" into <field>',
+		'Read <field>'
 	]
 
 	@Before
@@ -302,6 +303,81 @@ class TclContentProposalProviderTest extends AbstractContentAssistTest {
 			* some step
 			Component: GreetingApplication
 			- Read value from <Input> |
+		'''.withPackage
+
+		// when
+		val proposals = tclSnippet.proposals
+
+		// then
+		proposals.expectOnly(stepValueOrPunctuation + elementPunctuation + value)
+		proposals.expectNoneOf(#[ 'Input', 'bar' ]) // 
+	}
+
+	@Test
+	def void testMacroElementProposal() {
+		// given
+		var tclSnippet = '''
+			# Some
+			
+			* some step
+			Macro: MacroLibrary
+			- Read <|>
+		'''.withPackage
+
+		// when
+		val proposals = tclSnippet.proposals
+
+		// then
+		proposals.expectOnly(#['Input', 'bar', '@'] + value + elementPunctuation)
+	}
+
+	@Test
+	def void testMacroElementProposalNoClosingBracket() {
+		// given
+		var tclSnippet = '''
+			# Some
+			
+			* some step
+			Macro: MacroLibrary
+			- Read <|
+		'''.withPackage
+
+		// when
+		val proposals = tclSnippet.proposals
+
+		// then
+		proposals.expectOnly(#['Input>', 'bar>', '@'] + value + elementPunctuation)
+		proposals.expect('Input>').prefix.assertEquals('<')
+	}
+
+	@Test
+	def void testIncompleteMacroElementProposal() {
+		// given
+		var tclSnippet = '''
+			# Some
+			
+			* some step
+			Macro: MacroLibrary
+			- Read <b|>
+		'''.withPackage
+
+		// when
+		val proposals = tclSnippet.proposals
+
+		// then
+		proposals.expectOnly(#['bar', '>'])
+		proposals.expect('bar').prefix.assertEquals('b')
+	}
+
+	@Test
+	def void testTrailingMacroElementProposal() {
+		// given
+		var tclSnippet = '''
+			# Some
+			
+			* some step
+			Macro: MacroLibrary
+			- Read <Input> |
 		'''.withPackage
 
 		// when

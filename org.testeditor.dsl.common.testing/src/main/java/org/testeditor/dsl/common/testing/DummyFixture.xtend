@@ -278,6 +278,11 @@ class DummyFixture {
 		template = "TypeBoolean" ${boolParameter} "into" ${field}
 		Component: GreetingApplication
 		- Type boolean @boolParameter into <@field>
+		
+		## Read
+		template = "Read" ${field}
+		Component: GreetingApplication
+		- Read value from <@field>
 	'''
 
 }

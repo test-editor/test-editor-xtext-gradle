@@ -37,6 +37,7 @@ import org.testeditor.tcl.VariableReferencePathAccess
 import org.testeditor.tcl.dsl.jvmmodel.SimpleTypeComputer
 import org.testeditor.tcl.dsl.services.TclGrammarAccess
 import org.testeditor.tcl.util.TclModelUtil
+import org.testeditor.tsl.StepContentText
 
 class TclContentProposalProvider extends IdeContentProposalProvider {
 
@@ -152,9 +153,7 @@ class TclContentProposalProvider extends IdeContentProposalProvider {
 		} else if (model instanceof TestStep) {
 			model.envParams.forEach[makeEnvParamProposal(context, acceptor)]
 			model.enclosingMacroParameters.forEach[makeMacroParameterProposal(context, acceptor)]
-			if (model.componentContext !== null) { // since the macro context does not allow for element parameter, yet, only component contexts are relevant here
-				model.makeElementParamsProposal('', context, acceptor)
-			}
+			model.makeElementParamsProposal('', context, acceptor)
 			if (context.previousModel.isIncompleteTestStep) {
 				model.componentContext?.component?.makeComponentTemplateProposal(context, acceptor)
 				model.macroContext?.macroCollection?.makeMacroTemplateProposal(context, acceptor)
@@ -248,10 +247,8 @@ class TclContentProposalProvider extends IdeContentProposalProvider {
 
 	private def makeElementParamsProposal(TestStep model, String prefix, ContentAssistContext context, IIdeContentProposalAcceptor acceptor) {
 		if (!context.prefix.isNullOrEmpty) {
-			val componentContext = EcoreUtil2.getContainerOfType(model, ComponentTestStepContext)
-			val component = componentContext.component
-			val interaction = model.interaction
-			val applicableElements = component.elements.filterElementsApplicable(interaction, prefix)
+			val applicableElements = getApplicableElements(model, prefix, context)
+			
 			val currentNode = context.currentNode
 			val includeClosingBracket = !currentNode.text.contains('>') && (currentNode.nextSibling === null || !currentNode.nextSibling.text.contains('>'))
 			applicableElements.forEach [ el |
@@ -268,6 +265,38 @@ class TclContentProposalProvider extends IdeContentProposalProvider {
 					], proposalPriorities.getCrossRefPriority(null, proposal))
 				}
 			]
+		}
+	}
+	
+	private def Iterable<ComponentElement> getApplicableElements(TestStep model, String prefix, ContentAssistContext context) {
+		return if (model.hasComponentContext) {
+				val componentContext = EcoreUtil2.getContainerOfType(model, ComponentTestStepContext)
+				val component = componentContext.component
+				val interaction = model.interaction
+				component.elements.filterElementsApplicable(interaction, prefix)
+			} else if (model.hasMacroContext) {
+				val index = if (context.currentModel instanceof TestStep) {
+					model.contents.indexOf(context.previousModel) + 1
+				} else {
+					model.contents.indexOf(context.currentModel)
+				}
+				getApplicableElements(model, index)
+			} else {
+				#[]
+			}
+	}
+	
+	private def Iterable<ComponentElement> getApplicableElements(TestStep model, int contentIndex) {
+		return if (model.contents.size > contentIndex) {
+			val elementParameter = model.contents.get(contentIndex)
+			val parameterIndex = model.contents.reject(StepContentText).indexed.findFirst[value === elementParameter]?.key
+			if (parameterIndex !== null) {
+				getValidElementsFor(model.macroContext, model, parameterIndex)
+			} else {
+				#[]
+			}
+		} else {
+			#[]
 		}
 	}
 
