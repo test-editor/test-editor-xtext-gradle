@@ -12,6 +12,7 @@
  *******************************************************************************/
 package org.testeditor.tcl.util
 
+import java.util.HashSet
 import java.util.LinkedHashMap
 import java.util.Set
 import javax.inject.Inject
@@ -19,11 +20,13 @@ import javax.inject.Singleton
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtend.lib.annotations.Data
 import org.eclipse.xtext.EcoreUtil2
+import org.eclipse.xtext.util.OnChangeEvictingCache
 import org.testeditor.aml.ComponentElement
 import org.testeditor.aml.InteractionType
 import org.testeditor.aml.ModelUtil
 import org.testeditor.aml.Template
 import org.testeditor.aml.TemplateContainer
+import org.testeditor.aml.TemplateContent
 import org.testeditor.aml.TemplateVariable
 import org.testeditor.dsl.common.util.CollectionUtils
 import org.testeditor.fixture.core.FixtureException
@@ -58,11 +61,20 @@ import org.testeditor.tsl.StepContentValue
 import org.testeditor.tsl.StepContentVariable
 import org.testeditor.tsl.util.TslModelUtil
 
+import static extension org.testeditor.tcl.util.MacroSignature.*
+
 @Singleton
 class TclModelUtil extends TslModelUtil {
-
+	
 	@Inject public extension ModelUtil amlModelUtil
 	@Inject extension CollectionUtils
+	@Inject OnChangeEvictingCache cache
+	// Wrapper class around a test step to serve as cache key for macro lookup.
+	// Since the cache adapter is resource-global, putting in TestStep objects
+	// as keys might lead to collisions.
+	@Data static class MacroCall {
+		val TestStep step
+	}
 
 	/**
 	 * Gets the name of the included element. Order of this operation:
@@ -115,9 +127,12 @@ class TclModelUtil extends TslModelUtil {
 	}
 
 	def Macro findMacroDefinition(TestStep macroCallStep, MacroTestStepContext macroCallSite) {
-		val normalizedMacroCallStep = macroCallStep.normalize
-		return macroCallSite.macroCollection?.macros?.findFirst [
-			template.normalize == normalizedMacroCallStep
+		return cache.get(new MacroCall(macroCallStep), macroCallSite.eResource)[
+			val callSignature = macroCallStep.signature
+			return macroCallSite.macroCollection?.macros?.findFirst[macro|
+				val macroSignature = macro.signature[isAmlElementVariable(macro)]
+				macroSignature.matches(callSignature)
+			]
 		]
 	}
 
@@ -161,6 +176,13 @@ class TclModelUtil extends TslModelUtil {
 			}
 		].join(' ').removeWhitespaceBeforePunctuation
 		return normalizedStepContent
+	}
+	
+	def String normalize(Macro macro, TemplateContent content) {
+		switch (content) {
+			TemplateVariable case content.isAmlElementVariable(macro): '<>'
+			default: content.normalize
+		}
 	}
 
 	/**
@@ -314,6 +336,7 @@ class TclModelUtil extends TslModelUtil {
 				TestStep: contents.exists[makesUseOfVariablesViaReference(variables)]
 				AssertionTestStep: assertExpression.makesUseOfVariablesViaReference(variables)
 				AssignmentThroughPath: expression.makesUseOfVariablesViaReference(variables)
+				ExpressionReturnTestStep: returnExpression.makesUseOfVariablesViaReference(variables)
 				default: throw new RuntimeException('''Unknown TestStep type='«class.canonicalName»'.''')
 			}
 		]
@@ -406,38 +429,35 @@ class TclModelUtil extends TslModelUtil {
 			]]]
 	}
 
-	def Iterable<ComponentElement> getValidElementsFor(Macro macro, TemplateVariable variable) {
+	def Set<ComponentElement> getValidElementsFor(Macro macro, TemplateVariable variable) {
 		return macro.contexts.getValidElementsFor(variable)
 	}
 
-	def Iterable<ComponentElement> getValidElementsFor(Iterable<TestStepContext> contexts, TemplateVariable variable) {
-		for(context : contexts) {
-			for(step : context.steps.filter(TestStep)) {
-				val passedParam = step.contents.filter(VariableReference).indexed.findFirst[value.variable == variable]
-				if (passedParam !== null) {
-					return context.getValidElementsFor(step, passedParam.key)
-				}
-			}
-		}
-		return #[]
+	def Set<ComponentElement> getValidElementsFor(Iterable<TestStepContext> contexts, TemplateVariable variable) {
+		return contexts.flatMap[context|
+			context.steps.filter(TestStep).flatMap[step|
+				step.contents.filter(VariableReference).indexed.filter[value.variable == variable]
+				.map[context.getValidElementsFor(step, key)]
+			]
+		].reduce[setA, setB| (new HashSet(setA) as Set<ComponentElement>) => [retainAll(setB)]]
 	}
 
-	def Iterable<ComponentElement> getValidElements(VariableOccurence it) {
+	def Set<ComponentElement> getValidElements(VariableOccurence it) {
 		return getValidElementsFor(context, step, parameterPosition)
 	}
 
-	def Iterable<ComponentElement> getValidElementsFor(TestStepContext context, TestStep step, int parameterPosition) {
+	def Set<ComponentElement> getValidElementsFor(TestStepContext context, TestStep step, int parameterPosition) {
 		return switch (context) {
 			ComponentTestStepContext: {
 				val interaction = step.interaction
-				context.component.elements.filter[componentElementInteractionTypes.contains(interaction)]
+				context.component.elements.filter[componentElementInteractionTypes.contains(interaction)].toSet
 			}
 			MacroTestStepContext: {
 				val calledMacro = step.findMacroDefinition(context)
 				val param = calledMacro.template.contents.filter(TemplateVariable).toList.get(parameterPosition)
 				calledMacro.getValidElementsFor(param)
 			}
-			default: #[]
+			default: #{}
 		}
 	}
 

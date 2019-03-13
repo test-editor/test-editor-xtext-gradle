@@ -7,6 +7,7 @@ import org.junit.Before
 import org.junit.Test
 import org.testeditor.aml.ModelUtil
 import org.testeditor.aml.Template
+import org.testeditor.aml.TemplateVariable
 import org.testeditor.aml.dsl.AmlStandaloneSetup
 import org.testeditor.aml.dsl.tests.AmlModelGenerator
 import org.testeditor.dsl.common.testing.DummyFixture
@@ -88,6 +89,76 @@ class TclModelUtilTest extends AbstractParserTest {
 
 		// then
 		macro.assertSame(macroCalled)
+	}
+	
+	@Test
+	def void testFindMacroDefinitionWithPunctuation() {
+		// given
+		DummyFixture.amlModel.parseAml
+		val tmlModel = parseTcl( '''
+			package com.example
+			
+			# MyMacroCollection
+			
+			## LoginAufJiraTestSeite
+			template = "Browser starten und auf Seite" ${url} "navigieren."
+			Component: GreetingApplication
+			- Start application @url
+			
+			
+			## MacroUse
+			template = "Starten"
+			Macro: MyMacroCollection
+			- Browser starten und auf Seite "http://example.org" navigieren.
+		''')
+		val macroCalled = tmlModel.macroCollection.macros.head
+		val macroCall = tmlModel.macroCollection.macros.last
+		val macroTestStepContext = macroCall.contexts.head as MacroTestStepContext
+
+		// when
+		val macro = tclModelUtil.findMacroDefinition(macroTestStepContext.steps.filter(TestStep).head, macroTestStepContext)
+
+		// then
+		macro.assertSame(macroCalled)
+	}
+	
+	@Test
+	def void testFindMacroDefinitionWithAmlParameter() {
+		// given
+		DummyFixture.amlModel.parseAml
+		val tmlModel = parseTcl( '''
+			package com.example
+			
+			# MyMacroCollection
+			
+			## MyMacro
+			template = "enter" ${value} "into" ${field}
+			Component: GreetingApplication
+			- Type @value into <@field>
+		''', 'MyMacroCollection.tml')
+		val tclModel = '''
+			package com.example
+			
+			# Test
+			
+			* Some spec
+			Macro: MyMacroCollection
+			- enter "42" into <Input>
+			- enter "42" into "Input"
+		'''.toString.parseTcl('Test.tcl')
+		
+		val expectedMacro = tmlModel.macroCollection.macros.head
+		val macroTestStepContext = tclModel.test.steps.head.contexts.head as MacroTestStepContext
+		val macroCalls = macroTestStepContext.steps.filter(TestStep)
+
+		// when
+		val actuallyFoundMacros = macroCalls.map[
+			tclModelUtil.findMacroDefinition(it, macroTestStepContext)]
+
+		// then
+		actuallyFoundMacros.head.assertSame(expectedMacro)
+		actuallyFoundMacros.last.assertSame(expectedMacro)	// findMacroDefinition does not check if a parameter is an AML element, so normal quotes will match, too
+															// TODO a separate validation should check that angle brackets are used for AML element parameters
 	}
 	
 	@Test
@@ -307,6 +378,32 @@ class TclModelUtilTest extends AbstractParserTest {
 	}
 	
 	@Test
+	def void testGetMultipleValidAmlElementsForMacroParameter() {
+		// given
+		DummyFixture.amlModel.parseAml
+		val tmlModel = parseTcl('''
+			package com.example
+			
+			# MyMacroCollection
+			
+			## MyMacro
+			template = "check visibility of" ${field}
+			Component: GreetingApplication
+			- Is <@field> visible?
+		''')
+		val macro = tmlModel.macroCollection.macros.head
+		
+		// when
+		val actualResult = tclModelUtil.getValidElementsFor(macro, tclModelUtil.getAmlElementParameters(macro).assertSingleElement)
+		
+		// then
+		actualResult.assertExists[name.equals('Input')]
+		actualResult.assertExists[name.equals('bar')]
+		actualResult.assertExists[name.equals('Ok')]
+		actualResult.assertSize(3)
+	}
+	
+	@Test
 	def void testGetValidAmlElementsForMacroParameterRecursively() {
 		// given
 		DummyFixture.amlModel.parseAml
@@ -323,7 +420,7 @@ class TclModelUtilTest extends AbstractParserTest {
 			## MySecondMacro
 			template "indirectly enter" ${value} "into" ${field}
 			Macro: MyMacroCollection
-			- enter @value into @field
+			- enter @value into <@field>
 		''')
 		val macro = tmlModel.macroCollection.macros.last
 		
@@ -334,6 +431,69 @@ class TclModelUtilTest extends AbstractParserTest {
 		actualResult.assertSingleElement => [
 			name.assertEquals('Input')
 		]
+	}
+
+	/**
+	 * AML element parameter is used in more than one interaction, but
+	 * inconsistently, i.e. without any intersection of valid elements.
+	 * The overall result of valid elements should therefore be empty.
+	 */
+	@Test
+	def void testGetValidAmlElementsForMacroParameterInconsistentUsages() {
+		// given
+		DummyFixture.amlModel.parseAml
+		val tmlModel = parseTcl( '''
+			package com.example
+			
+			# MyMacroCollection
+			
+			## MyMacro
+			template = "enter" ${value} "into" ${field}
+			Component: GreetingApplication
+			- Type "Hello, World!" into <@field>
+			- Click on <@field>
+		''')
+		val macro = tmlModel.macroCollection.macros.head
+		
+		// when
+		val actualResult = tclModelUtil.getValidElementsFor(macro, tclModelUtil.getAmlElementParameters(macro).assertSingleElement)
+		
+		// then
+		actualResult.assertEmpty
+	}
+	
+	
+	/**
+	 * AML element parameter is used in more than one interaction.
+	 * The sets of valid elements for each usage should be intersected to yield
+	 * the overall result.
+	 */
+	@Test
+	def void testGetValidAmlElementsForMacroParameterOverlappingUsages() {
+		// given
+		DummyFixture.amlModel.parseAml
+		val tmlModel = parseTcl( '''
+			package com.example
+			
+			# MyMacroCollection
+			
+			## MyMacro
+			template = "enter" ${value} "into" ${field}
+			Component: GreetingApplication
+			- Is <@field> visible?
+			- Read value from <@field>
+			- Is <@field> visible?
+
+		''')
+		val macro = tmlModel.macroCollection.macros.head
+		
+		// when
+		val actualResult = tclModelUtil.getValidElementsFor(macro, tclModelUtil.getAmlElementParameters(macro).assertSingleElement)
+		
+		// then
+		actualResult.assertExists[name.equals('Input')]
+		actualResult.assertExists[name.equals('bar')]
+		actualResult.assertSize(2)
 	}
 
 	@Test
@@ -347,6 +507,31 @@ class TclModelUtilTest extends AbstractParserTest {
 
 		// then
 		normalizedTemplate.assertEquals('start with "" and more ""?')
+	}
+	
+	@Test
+	def void testNormalizeAmlParameterInTemplate() {
+		// given
+		DummyFixture.amlModel.parseAml
+		val tmlModel = parseTcl( '''
+			package com.example
+			
+			# MyMacroCollection
+			
+			## MyMacro
+			template = "enter" ${value} "into" ${field}
+			Component: GreetingApplication
+			- Type @value into <@field>
+		''')
+		val macro = tmlModel.macroCollection.macros.head
+		val templateVariables = macro.template.contents.filter(TemplateVariable)
+		
+		// when
+		val normalizedVariables = templateVariables.map[tclModelUtil.normalize(macro, it)]
+
+		// then
+		normalizedVariables.head.assertEquals('""')
+		normalizedVariables.last.assertEquals('<>')
 	}
 
 	@Test

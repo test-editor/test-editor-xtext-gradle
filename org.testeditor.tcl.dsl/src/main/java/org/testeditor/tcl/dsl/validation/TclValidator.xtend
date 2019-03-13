@@ -164,9 +164,7 @@ class TclValidator extends AbstractTclValidator {
 	@Check
 	def void checkMacroCall(TestStep testStep) {
 		if (testStep.hasMacroContext) {
-			val normalizedTeststep = testStep.normalize
-			val macroCollection = testStep.macroContext.macroCollection
-			val macro = macroCollection.macros.findFirst[template.normalize == normalizedTeststep]
+			val macro = testStep.findMacro
 			if (macro === null) {
 				warning("test step could not resolve macro usage", TclPackage.Literals.TEST_STEP__CONTENTS,
 					MISSING_MACRO)
@@ -205,25 +203,17 @@ class TclValidator extends AbstractTclValidator {
 	 */
 	private def dispatch void checkAllReferencedVariablesAreKnown(TestStepContext context, Set<String> knownVariableNames,
 		String errorMessage) {
-		switch context {
-			ComponentTestStepContext: {
-				val completedKnownVariableNames = newHashSet
-				completedKnownVariableNames.addAll(knownVariableNames)
-				context.steps.forEach [ step, index |
-					step.checkAllReferencedVariablesAreKnown(completedKnownVariableNames, errorMessage)
-					val declaredVariables = variableCollector.collectDeclaredVariablesTypeMap(step).keySet
-					val alreadyKnown=declaredVariables.filter[completedKnownVariableNames.contains(it)]
-					if(!alreadyKnown.empty) {
-						error('''The variable(s)='«alreadyKnown.join(',')»' is (are) already known''', step, null, VARIABLE_ASSIGNED_MORE_THAN_ONCE)
-					}
-					completedKnownVariableNames.addAll(declaredVariables) // complete list of known variables with the ones declared in this very step
-				]
+		val completedKnownVariableNames = newHashSet
+		completedKnownVariableNames.addAll(knownVariableNames)
+		context.steps.forEach [ step, index |
+			step.checkAllReferencedVariablesAreKnown(completedKnownVariableNames, errorMessage)
+			val declaredVariables = variableCollector.collectDeclaredVariablesTypeMap(step).keySet
+			val alreadyKnown=declaredVariables.filter[completedKnownVariableNames.contains(it)]
+			if(!alreadyKnown.empty) {
+				error('''The variable(s)='«alreadyKnown.join(',')»' is (are) already known''', step, null, VARIABLE_ASSIGNED_MORE_THAN_ONCE)
 			}
-			MacroTestStepContext:
-				context.steps.forEach[checkAllReferencedVariablesAreKnown(knownVariableNames, errorMessage)]
-			default:
-				throw new RuntimeException('''Unknown TestStepContextType '«context.class.canonicalName»'.''')
-		}
+			completedKnownVariableNames.addAll(declaredVariables) // complete list of known variables with the ones declared in this very step
+		]
 	}
 
 	private def dispatch void checkAllReferencedVariablesAreKnown(AssignmentThroughPath assignment, Set<String> knownVariableNames,
@@ -287,7 +277,7 @@ class TclValidator extends AbstractTclValidator {
 									.filter[__,it|isAmlElementVariable(macro)]
 			amlElementParams.forEach[passedValue, macroParam|
 				switch (passedValue) {
-					StepContentVariable: {
+					StepContentVariable, StepContentElement: {
 						val validElements = macro.getValidElementsFor(macroParam)
 						if (!validElements.exists[name.equals(passedValue.value)]) {
 							error('''"«passedValue.value»" does not match any of the allowed elements («
@@ -303,7 +293,7 @@ class TclValidator extends AbstractTclValidator {
 	
 	@Data private static class UsageWithElements {
 		VariableOccurence usage
-		Iterable<ComponentElement> validElements
+		Set<ComponentElement> validElements
 	}
 	
 	@Check
@@ -373,13 +363,7 @@ class TclValidator extends AbstractTclValidator {
 	@Check
 	def void checkVariableUsage(TestCase testCase) {
 		val initiallyDeclaredVariableNames = testCase.model.envParams.map[name]
-		val declaredVariableNames = newHashSet
-		declaredVariableNames.addAll(initiallyDeclaredVariableNames)
-		testCase.steps.map[contexts].flatten.forEach [
-			checkAllReferencedVariablesAreKnown(declaredVariableNames, ERROR_MESSAGE_FOR_INVALID_VAR_REFERENCE)
-			// add the variables declared by this step to be known for subsequent steps
-			declaredVariableNames.addAll(variableCollector.collectDeclaredVariablesTypeMap(it).keySet)
-		]
+		testCase.steps.flatMap[contexts].checkVariableUsage(initiallyDeclaredVariableNames)
 	}
 	
 	@Check
@@ -391,12 +375,17 @@ class TclValidator extends AbstractTclValidator {
 				emptySet
 			} else {
 				amlModelUtil.getReferenceableVariables(macro.template).map[name]
-			} 
+			}
+			
+		macro.contexts.checkVariableUsage(macroParameterNames)
+	}
+	
+	private def void checkVariableUsage(Iterable<TestStepContext> contexts, Iterable<String> alreadyKnownVariables) {
 		val declaredVariableNames = newHashSet
-		declaredVariableNames.addAll(macroParameterNames)
-		macro.contexts.forEach [
+		declaredVariableNames.addAll(alreadyKnownVariables)
+		contexts.forEach [
 			checkAllReferencedVariablesAreKnown(declaredVariableNames, ERROR_MESSAGE_FOR_INVALID_VAR_REFERENCE)
-			// add the variables declared by this step to be known for subsequent steps within this macro !! 
+			// add the variables declared by this step to be known for subsequent steps
 			declaredVariableNames.addAll(variableCollector.collectDeclaredVariablesTypeMap(it).keySet)
 		]
 	}
