@@ -164,9 +164,7 @@ class TclValidator extends AbstractTclValidator {
 	@Check
 	def void checkMacroCall(TestStep testStep) {
 		if (testStep.hasMacroContext) {
-			val normalizedTeststep = testStep.normalize
-			val macroCollection = testStep.macroContext.macroCollection
-			val macro = macroCollection.macros.findFirst[template.normalize == normalizedTeststep]
+			val macro = testStep.findMacro
 			if (macro === null) {
 				warning("test step could not resolve macro usage", TclPackage.Literals.TEST_STEP__CONTENTS,
 					MISSING_MACRO)
