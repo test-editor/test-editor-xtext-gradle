@@ -92,6 +92,37 @@ class TclModelUtilTest extends AbstractParserTest {
 	}
 	
 	@Test
+	def void testFindMacroDefinitionWithPunctuation() {
+		// given
+		DummyFixture.amlModel.parseAml
+		val tmlModel = parseTcl( '''
+			package com.example
+			
+			# MyMacroCollection
+			
+			## LoginAufJiraTestSeite
+			template = "Browser starten und auf Seite" ${url} "navigieren."
+			Component: GreetingApplication
+			- Start application @url
+			
+			
+			## MacroUse
+			template = "Starten"
+			Macro: MyMacroCollection
+			- Browser starten und auf Seite "http://example.org" navigieren.
+		''')
+		val macroCalled = tmlModel.macroCollection.macros.head
+		val macroCall = tmlModel.macroCollection.macros.last
+		val macroTestStepContext = macroCall.contexts.head as MacroTestStepContext
+
+		// when
+		val macro = tclModelUtil.findMacroDefinition(macroTestStepContext.steps.filter(TestStep).head, macroTestStepContext)
+
+		// then
+		macro.assertSame(macroCalled)
+	}
+	
+	@Test
 	def void testFindMacroDefinitionWithAmlParameter() {
 		// given
 		DummyFixture.amlModel.parseAml

@@ -12,7 +12,14 @@ import org.testeditor.tcl.VariableReference
 import org.testeditor.tsl.StepContentValue
 import org.testeditor.tsl.StepContentVariable
 
-abstract class MacroSignature {
+abstract class MacroSignature { 
+	// Splits on whitespace, as well as punctuation ('.' and '?'). Punctuation
+	// is retained as individual tokens by using lookarounds in the regex.
+	// Tokenizing template texts is necessary because test steps are parsed
+	// differently. Unfortunately, this introduces a tight coupling / code clone
+	// with the TCL grammar.
+	static val TOKENIZE_TEMPLATE_TEXT_REGEX = '\\s+|((?<=[\\.\\?])|(?=[\\.\\?]))'
+	
 	static def MacroSignature signature(TestStep step) {
 		return new CompositeMacroSignature(step.contents.map[
 			switch (it) {
@@ -35,7 +42,7 @@ abstract class MacroSignature {
 						new MacroSignatureValueParameter
 					}
 				]]  as List<? extends MacroSignature>
-				TemplateText: value.split('\\s+').map[new MacroSignatureText(it)]
+				TemplateText: value.split(TOKENIZE_TEMPLATE_TEXT_REGEX).map[new MacroSignatureText(it)]
 			}
 		].flatten)
 	}
