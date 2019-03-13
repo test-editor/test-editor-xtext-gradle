@@ -44,7 +44,7 @@ class TclMacroAmlElementParametersTest extends AbstractParserTest {
 			# SampleTest
 			* Sample Step
 			Macro: MyMacroCollection
-			- send greetings to "NonExistingElement"
+			- send greetings to <NonExistingElement>
 		'''.toString.parseTcl("SampleTest.tcl")
 		
 		// when
@@ -101,6 +101,40 @@ class TclMacroAmlElementParametersTest extends AbstractParserTest {
 		
 		// then
 		validations.assertNotExists[message.startsWith('variable "field" is used inconsistently.') && severity.equals(ERROR)]
+	}
+	
+	@Test
+	def void testUseOfAssignedVariableAsAmlElementParameter() {
+		
+		// given
+		val tmlModel = '''
+			package com.example
+			
+			# MyMacroCollection
+			
+			## SendText
+			template = "send" ${text} "to" ${field}
+			Component: GreetingApplication 
+			- Type @text into <@field>
+			
+			## SendGreetings
+			template = "send greetings"
+			Macro: MyMacroCollection
+			- field = get input field
+			- send "Hello, World!" to <@field>
+			
+			
+			## AmlElementProvider
+			template = "get input field"
+			Component: GreetingApplication
+			- return "Input"
+		'''.toString.parseTcl("MyMacroCollection.tml")
+		
+		// when
+		val validations = validator.validate(tmlModel)
+		
+		// then
+		validations.assertNotExists[message.startsWith('Dereferenced variable must be a required environment variable or a previously assigned variable') && severity.equals(ERROR)]
 	}
 	
 }

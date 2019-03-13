@@ -336,6 +336,7 @@ class TclModelUtil extends TslModelUtil {
 				TestStep: contents.exists[makesUseOfVariablesViaReference(variables)]
 				AssertionTestStep: assertExpression.makesUseOfVariablesViaReference(variables)
 				AssignmentThroughPath: expression.makesUseOfVariablesViaReference(variables)
+				ExpressionReturnTestStep: returnExpression.makesUseOfVariablesViaReference(variables)
 				default: throw new RuntimeException('''Unknown TestStep type='«class.canonicalName»'.''')
 			}
 		]
