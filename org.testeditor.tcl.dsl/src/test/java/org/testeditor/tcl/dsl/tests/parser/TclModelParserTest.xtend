@@ -426,7 +426,7 @@ class TclModelParserTest extends AbstractTclTest {
 		// then
 		model.macroCollection.macros.assertSingleElement.contexts.assertSingleElement.assertInstanceOf(ComponentTestStepContext)
 				.steps.assertSingleElement.assertInstanceOf(ExpressionReturnTestStep)
-				.returnExpression.assertInstanceOf(Comparison).left.assertInstanceOf(JsonNumber).value.assertEquals('42')
+				.returnExpression.assertInstanceOf(JsonNumber).value.assertEquals('42')
 	}
 	
 	@Test

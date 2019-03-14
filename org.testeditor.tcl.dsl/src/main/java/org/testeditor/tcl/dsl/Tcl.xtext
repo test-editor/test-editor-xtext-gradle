@@ -167,8 +167,13 @@ MacroTestStepContext returns TestStepContext:
 	// or ExpressionReturnTestStep (only valid from within a macro definition, which has to be ensured
 	// using a corresponding validation).
 
+
+// Restriction to AtomicValue is not because of technical reasons (parsing Expression here works perfectly fine).
+// The reasoning is that users might be led to expect that they should also be able to directly return a TestStep
+// if other expressions are possible. Parsing TestStep here is problematic, however, due to their nature of basically
+// consisting of "arbitrary" text.
 ExpressionReturnTestStep:
-	'-' 'return' returnExpression=Expression;
+	'-' 'return' returnExpression=/*Expression*/AtomicValue; 
 
 /**
  * keep in mind that an aml validator exists that will check templates to be parsable given the following rule
