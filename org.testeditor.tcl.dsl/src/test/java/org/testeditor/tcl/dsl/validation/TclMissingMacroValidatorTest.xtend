@@ -34,7 +34,7 @@ class TclMissingMacroValidatorTest extends AbstractMockedTclValidatorTest {
 	@Before
 	def void initMocks() {
 		when(tclModelUtil.getMacroContext(any)).thenReturn(macroTestStepContextMock)
-		when(tclModelUtil.hasComponentContext(any)).thenReturn(false)
+		when(tclModelUtil.hasComponentContext(any(TestStep))).thenReturn(false)
 		when(tclModelUtil.hasMacroContext(any)).thenReturn(true)
 		when(tclModelUtil.normalize(any(TestStep))).thenReturn("abc")
 		when(modelUtil.normalize(any(Template))).thenReturn("abc")

@@ -35,7 +35,7 @@ class TclMissingFixtureValidatorTest extends AbstractMockedTclValidatorTest {
 		val jvmTypeMock = JvmType.mock
 
 		when(tclModelUtil.getInteraction(any)).thenReturn(interactionTypeMock)
-		when(tclModelUtil.hasComponentContext(any)).thenReturn(true)
+		when(tclModelUtil.hasComponentContext(any(TestStep))).thenReturn(true)
 		when(interactionTypeMock.defaultMethod.typeReference).thenReturn(typeReferenceMock)
 		when(typeReferenceMock.type).thenReturn(jvmTypeMock) // default is != null => fixture exists 
 		val state = tclValidator.setMessageAcceptor(messageAcceptor)

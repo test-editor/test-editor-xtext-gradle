@@ -37,7 +37,7 @@ class TclMacroMissingFixtureValidatorTest extends AbstractMockedTclValidatorTest
 		val interactionTypeMock = InteractionType.mock(RETURNS_DEEP_STUBS)
 
 		when(tclModelUtil.getInteraction(any)).thenReturn(interactionTypeMock)
-		when(tclModelUtil.hasComponentContext(any)).thenReturn(true)
+		when(tclModelUtil.hasComponentContext(any(TestStep))).thenReturn(true)
 		when(interactionTypeMock.defaultMethod.typeReference).thenReturn(typeReferenceMock)
 		when(typeReferenceMock.type).thenReturn(jvmTypeMock) // default is != null => fixture exists
 	}
