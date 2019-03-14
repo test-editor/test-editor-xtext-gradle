@@ -49,7 +49,7 @@ class TestRunReporterGenerator {
 	def List<Object> buildReporterCall(JvmType type, SemanticUnit unit, Action action, String message, String id, String parentId, Status status,
 		String reporterInstanceVariableName, AbstractTraceRegion traceRegion, List<VariableReference> variables, List<StepContentElement> amlElements, JvmTypeReference stringTypeReference) {
 		val amlElementsList = if (amlElements !== null) {
-			amlElements.filterNull.map[
+			amlElements.filterNull.filter[hasComponentContext].map[
 				val element = componentElement
 				val locator = element.locator.escapeJava
 				val locatorStrategy = element.locatorStrategy?.qualifiedName?.escapeJava

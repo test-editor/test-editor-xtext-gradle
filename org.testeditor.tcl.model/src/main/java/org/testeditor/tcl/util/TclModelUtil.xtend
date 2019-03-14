@@ -248,6 +248,10 @@ class TclModelUtil extends TslModelUtil {
 		}
 		return null
 	}
+	
+	def boolean hasComponentContext(StepContentElement stepContentElement) {
+		return EcoreUtil2.getContainerOfType(stepContentElement, ComponentTestStepContext) !== null
+	}
 
 	def boolean hasComponentContext(TestStep step) {
 		return step.componentContext !== null

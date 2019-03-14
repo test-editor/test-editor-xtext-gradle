@@ -41,6 +41,7 @@ import org.testeditor.tcl.JsonObject
 import org.testeditor.tcl.JsonString
 import org.testeditor.tcl.JsonValue
 import org.testeditor.tcl.NullOrBoolCheck
+import org.testeditor.tcl.StepContentElement
 import org.testeditor.tcl.VariableReference
 import org.testeditor.tcl.VariableReferencePathAccess
 import org.testeditor.tsl.StepContent
@@ -71,7 +72,7 @@ class TclExpressionTypeComputer {
 		val fractionalNumberPattern = Pattern.compile("(\\+|\\-)?[0-9]+(\\.[0-9]+)?")
 		val booleanPattern = Pattern.compile("true|false", Pattern.CASE_INSENSITIVE)
 		switch stepContent {
-			StepContentVariable: {
+			StepContentVariable, StepContentElement: {
 				if((expectedType?:Optional.empty).present) {
 					if (typeReferenceUtil.isString(expectedType.get)) {
 						return expectedType.get
