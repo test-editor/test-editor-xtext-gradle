@@ -13,22 +13,29 @@
 package org.testeditor.tcl.dsl.scoping.integration
 
 import javax.inject.Inject
+import org.eclipse.xtext.scoping.IScopeProvider
 import org.junit.Test
+import org.testeditor.tcl.TclPackage
 import org.testeditor.tcl.dsl.tests.parser.AbstractParserTest
 import org.testeditor.tcl.util.TclModelUtil
 
 class ReferenceTslModelIntegrationTest extends AbstractParserTest {
 	
 	@Inject extension TclModelUtil
+	@Inject extension IScopeProvider scopeProvider
 
 	private def parseTslModel(String packageName) {
+		return packageName.parseTslModel('')
+	}
+	
+	private def parseTslModel(String packageName, String filePath) {
 		val tsl = '''
 			package «packageName»
 			
 			# DummySpec
 			* First step
 		'''
-		val tslModel = parseTsl(tsl, 'DummySpec.tsl').assertNoSyntaxErrors
+		val tslModel = parseTsl(tsl, filePath + 'DummySpec.tsl').assertNoSyntaxErrors
 		return tslModel
 	}
 
@@ -90,6 +97,54 @@ class ReferenceTslModelIntegrationTest extends AbstractParserTest {
 
 		// then
 		specificationStep.assertSame(firstStep)
+	}
+	
+	@Test
+	def void referencesTheSpecInTheSameNamespace() {
+		// given
+		val sameScopeTsl = parseTslModel('same.namespace', 'same/namespace/')
+		val outOfScopeTsl = parseTslModel('different.namespace', 'different/namespace/')
+		
+		val tclModel = '''
+			package same.namespace
+			
+			# DummySpecTest implements DummySpec
+			
+			* First step
+		'''.toString.parseTcl('same/namespace/DummySpecTest.tcl')
+		
+		// when
+		val actualScope = getScope(tclModel.test, TclPackage.eINSTANCE.testCase_Specification).allElements
+		
+		
+		// then
+		tclModel.test.specification.assertNotSame(outOfScopeTsl.specification)
+		tclModel.test.specification.assertSame(sameScopeTsl.specification)
+		actualScope.map[name.toString].join(', ').assertEquals('DummySpec, same.namespace.DummySpec, different.namespace.DummySpec')
+	}
+	
+	@Test
+	def void referencesSpecOutsideNamespaceUsingFullyQualifiedName() {
+		// given
+		val sameScopeTsl = parseTslModel('same.namespace', 'same/namespace/')
+		val outOfScopeTsl = parseTslModel('different.namespace', 'different/namespace/')
+		
+		val tclModel = '''
+			package same.namespace
+			
+			# DummySpecTest implements different.namespace.DummySpec
+			
+			* First step
+		'''.toString.parseTcl('same/namespace/DummySpecTest.tcl')
+
+		// when
+		val actualScope = getScope(tclModel.test, TclPackage.eINSTANCE.testCase_Specification).allElements
+
+		// then
+		tclModel.assertNoErrors
+		tclModel.test.specification.assertSame(outOfScopeTsl.specification)
+		tclModel.test.specification.assertNotSame(sameScopeTsl.specification)
+		actualScope.map[name.toString].join(', ').assertEquals('DummySpec, same.namespace.DummySpec, different.namespace.DummySpec')
 	}
 
 }
