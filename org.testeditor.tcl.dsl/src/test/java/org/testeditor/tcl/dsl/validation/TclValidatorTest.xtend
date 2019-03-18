@@ -332,6 +332,24 @@ class TclValidatorTest extends AbstractParserTest {
 		validations.assertNotExists([message.matches(".*Dereferenced variable must be a required environment variable or a previously assigned variable.*")
 			&& severity == ERROR], tclModel.reportableValidations)
 	}
+	
+	
+	@Test
+	def void testThatTestCaseCanHaveSameNameAsAmlComponent() {
+		// given
+		val tclModel = '''
+			package com.example
+			
+			# MyDialog
+			* Sample Step
+		'''.toString.parseTcl("MyDialog.tcl")
+
+		// when
+		val validations = validator.validate(tclModel)
+
+		// then
+		validations.assertNotExists([message.matches(".*The type MyDialog is already defined in.*") && severity == ERROR], tclModel.reportableValidations)
+	}
 
 	def getTCLWithTwoValueSpaces(String testName, String value1, String value2) {
 		getTCLWithValue(testName, value1) + '''
