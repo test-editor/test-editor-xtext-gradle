@@ -155,17 +155,40 @@ TestStepContext:
 	(ComponentTestStepContext | MacroTestStepContext);
 
 ComponentTestStepContext returns TestStepContext:
+	ComponentTestStepContextDefinition
+	(XL ('-' steps+=(TestStepInComponentContext)))*;
+
+ComponentTestStepContextDefinition returns TestStepContext:
 	{ComponentTestStepContext}
-	('Mask' | 'Component') ':' component=[aml::Component|QualifiedName]
-	(XL steps+=(ExpressionReturnTestStep  | TestStep | TestStepWithAssignment | AssertionTestStep | AssignmentThroughPath))*;
+	('Mask' | 'Component') ':' component=[aml::Component|QualifiedName];
+	
+TestStepInComponentContext returns AbstractTestStep:
+	ExpressionReturnTestStep  | TestStep | TestStepWithAssignment | AssertionTestStep | AssignmentThroughPath;	
 
 MacroTestStepContext returns TestStepContext:
-	{MacroTestStepContext}
-	'Macro' ':' macroCollection=[MacroCollection|QualifiedName]
-	(XL steps+=(ExpressionReturnTestStep | TestStep | TestStepWithAssignment))*; 
+	MacroTestStepContextDefinition
+	(XL ('-' steps+=(TestStepInMacroContext)))*; 
 	// macro calls are either TestSteps, TestStepWithAssignment (for macros that return a result value),
 	// or ExpressionReturnTestStep (only valid from within a macro definition, which has to be ensured
 	// using a corresponding validation).
+	
+MacroTestStepContextDefinition returns TestStepContext:
+	{MacroTestStepContext}
+	'Macro' ':' macroCollection=[MacroCollection|QualifiedName];
+	
+TestStepInMacroContext returns AbstractTestStep:
+	ExpressionReturnTestStep | TestStep | TestStepWithAssignment;
+
+LambdaExpressionContext returns TestStepContext:
+	LambdaExpressionComponentContext | LambdaExpressionMacroContext;
+
+LambdaExpressionComponentContext returns TestStepContext:
+	ComponentTestStepContextDefinition XL
+	(('--' steps+=(TestStepInComponentContext)) XL)*;
+
+LambdaExpressionMacroContext returns TestStepContext:
+	MacroTestStepContextDefinition XL
+	(('--' steps+=(TestStepInMacroContext)) XL)*;
 
 
 // Restriction to AtomicValue is not because of technical reasons (parsing Expression here works perfectly fine).
@@ -173,28 +196,30 @@ MacroTestStepContext returns TestStepContext:
 // if other expressions are possible. Parsing TestStep here is problematic, however, due to their nature of basically
 // consisting of "arbitrary" text.
 ExpressionReturnTestStep:
-	'-' 'return' returnExpression=/*Expression*/AtomicValue; 
+	'return' returnExpression=/*Expression*/AtomicValue; 
 
 /**
  * keep in mind that an aml validator exists that will check templates to be parsable given the following rule
  */
 TestStep:
 	{TestStep}
-	'-' contents+=InnerStepContent+
+	contents+=InnerStepContent+
 		(XL contents+=StepContent contents+=InnerStepContent*)* 
 	(XL? contents+=StepContentPunctuation)?;
 
 AssertionTestStep:
-	'-' 'assert' assertExpression=(NullOrBoolCheck | FullComparison) '.'?;
+	'assert' assertExpression=(NullOrBoolCheck | FullComparison) '.'?;
 
-TestStepWithAssignment:
-	'-' variable=AssignmentVariable XL? '='  
+TestStepWithAssignment returns AbstractTestStep:
+	{TestStepWithAssignment} variable=AssignmentVariable XL? '='  
 		XL? contents+=InnerStepContent+
 			(XL contents+=StepContent contents+=InnerStepContent*)* 
-	contents+=StepContentPunctuation?;
+	(contents+=StepContentPunctuation? |
+		contents+=SecondOrderParameterDelimiter {SecondOrderTestStep.step=current} lambda=LambdaExpressionContext
+	);
 
 AssignmentThroughPath:
-	'-' variableReference=VariableReferencePathAccess XL? '=' 
+	variableReference=VariableReferencePathAccess XL? '=' 
 	    XL? expression=Expression '.'?;
 
 /** expression order: Comparison -> (Addition -> Multiplication ->) Value
@@ -301,6 +326,9 @@ StepContentElementReference hidden():
 StepContentPunctuation hidden():
 	value=('.'|'?')
 ;
+
+SecondOrderParameterDelimiter returns StepContentPunctuation hidden():
+	value=':' XL;
 
 JsonObject:
 	{JsonObject}

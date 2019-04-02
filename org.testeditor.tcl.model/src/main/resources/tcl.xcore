@@ -167,6 +167,11 @@ class TestStepWithAssignment extends TestStep {
 class AssignmentVariable extends Variable {
 }
 
+class SecondOrderTestStep extends AbstractTestStep {
+	contains TestStepWithAssignment step
+	contains TestStepContext lambda
+}
+
 class StepContentElement extends StepContentValue {
 }
 

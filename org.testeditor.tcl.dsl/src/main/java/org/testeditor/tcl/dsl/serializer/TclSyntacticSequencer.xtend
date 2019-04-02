@@ -26,13 +26,13 @@ class TclSyntacticSequencer extends AbstractTclSyntacticSequencer {
 	 * either use the keyword "Mask" or "Component". We emit "Mask" right now, but
 	 * this might change in the future.
 	 */
-	override protected emit_ComponentTestStepContext_ComponentKeyword_1_1_or_MaskKeyword_1_0(EObject semanticObject, ISynNavigable transition, List<INode> nodes) {
+	override protected emit_ComponentTestStepContextDefinition_ComponentKeyword_1_1_or_MaskKeyword_1_0(EObject semanticObject, ISynNavigable transition, List<INode> nodes) {
 		if (nodes === null) {
 			// nodes is null that means the element has been created in memory => we want the "Mask" keyword for now
-			val keyword = grammarAccess.componentTestStepContextAccess.maskKeyword_1_0
+			val keyword = grammarAccess.componentTestStepContextDefinitionAccess.maskKeyword_1_0
 			acceptUnassignedKeyword(keyword, keyword.value, null)
 		} else {
-			super.emit_ComponentTestStepContext_ComponentKeyword_1_1_or_MaskKeyword_1_0(semanticObject, transition, nodes)
+			super.emit_ComponentTestStepContextDefinition_ComponentKeyword_1_1_or_MaskKeyword_1_0(semanticObject, transition, nodes)
 		}
 	}
 

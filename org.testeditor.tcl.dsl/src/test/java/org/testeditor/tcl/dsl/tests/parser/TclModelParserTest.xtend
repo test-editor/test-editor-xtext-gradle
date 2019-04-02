@@ -26,6 +26,7 @@ import org.testeditor.tcl.JsonNumber
 import org.testeditor.tcl.JsonString
 import org.testeditor.tcl.MacroTestStepContext
 import org.testeditor.tcl.NullOrBoolCheck
+import org.testeditor.tcl.SecondOrderTestStep
 import org.testeditor.tcl.StepContentElement
 import org.testeditor.tcl.TclPackage
 import org.testeditor.tcl.TestStep
@@ -576,6 +577,33 @@ class TclModelParserTest extends AbstractTclTest {
 		test.setup.assertNotNull
 		test.cleanup.assertNotNull
 		test.steps.assertSingleElement
+	}
+	
+	@Test
+	def void parseSecondOrderInteraction() {
+		// given
+		val input = '''
+			package com.example
+			
+			# Test
+			* Some test specification step
+			  Component: ParameterizedTesting
+			  - inputs = load inputs from "path/to/file.json"
+			  - entry = each entry in @inputs:
+			    Macro: MyMacro
+			    -- enter @entry.name into <NameField>
+			    -- enter @entry.password into <PasswordField>
+		'''
+		
+		// when
+		val model = parseTcl(input)
+		
+		// then
+		model.assertNoSyntaxErrors
+		model.test.steps.assertSingleElement.contexts.assertSingleElement.steps.get(1).assertInstanceOf(SecondOrderTestStep) => [
+			step.assertInstanceOf(TestStepWithAssignment)
+			lambda.assertInstanceOf(MacroTestStepContext).steps.assertSize(2)
+		]
 	}
 
 }

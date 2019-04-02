@@ -103,7 +103,7 @@ class TclContentProposalProvider extends IdeContentProposalProvider {
 	
 	override protected filterKeyword(Keyword keyword, ContentAssistContext context) {
 		return switch (keyword) {
-			case expressionReturnTestStepAccess.returnKeyword_1: context.allowsReturnKeyword
+			case expressionReturnTestStepAccess.returnKeyword_0: context.allowsReturnKeyword
 			default: super.filterKeyword(keyword, context)
 		}
 	}
