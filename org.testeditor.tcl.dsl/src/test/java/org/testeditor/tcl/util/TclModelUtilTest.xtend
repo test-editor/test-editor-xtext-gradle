@@ -37,7 +37,7 @@ class TclModelUtilTest extends AbstractParserTest {
 	@Test
 	def void testRestoreString() {
 		// given
-		val testStep = parse('-  <hello>     world "ohoh"   @xyz', grammarAccess.testStepRule, TestStep)
+		val testStep = parse(' <hello>     world "ohoh"   @xyz', grammarAccess.testStepRule, TestStep)
 		testStep.contents.get(3).assertInstanceOf(VariableReference)
 
 		// when
@@ -50,10 +50,10 @@ class TclModelUtilTest extends AbstractParserTest {
 	@Test
 	def void restoreStringWithPunctuation() {
 		// given
-		val questionMark = parse('- Hello World?', grammarAccess.testStepRule, TestStep)
-		val questionMarkAndWhitespace = parse('- Hello World  ?', grammarAccess.testStepRule, TestStep)
-		val dot = parse('- Hello World  .', grammarAccess.testStepRule, TestStep)
-		val dotAndWhitespace = parse('- Hello World.', grammarAccess.testStepRule, TestStep)
+		val questionMark = parse('Hello World?', grammarAccess.testStepRule, TestStep)
+		val questionMarkAndWhitespace = parse('Hello World  ?', grammarAccess.testStepRule, TestStep)
+		val dot = parse('Hello World  .', grammarAccess.testStepRule, TestStep)
+		val dotAndWhitespace = parse('Hello World.', grammarAccess.testStepRule, TestStep)
 
 		// when, then
 		tclModelUtil.restoreString(questionMark.contents).assertEquals('Hello World ?')
@@ -538,7 +538,7 @@ class TclModelUtilTest extends AbstractParserTest {
 	def void testNormalizeTestStepWithElementVar() {
 		// given
 		val testStep = parse('''
-		- enter "Hello, World!" into <@field>''', grammarAccess.testStepRule, TestStep)
+		enter "Hello, World!" into <@field>''', grammarAccess.testStepRule, TestStep)
 
 		// when
 		val normalizedTestStep = tclModelUtil.normalize(testStep)
@@ -551,7 +551,7 @@ class TclModelUtilTest extends AbstractParserTest {
 	def void testNormalizeTestStep() {
 		// given
 		val testStep = parse('''
-		- start with "some" and more @other ?''', grammarAccess.testStepRule, TestStep)
+		start with "some" and more @other ?''', grammarAccess.testStepRule, TestStep)
 
 		// when
 		val normalizedTestStep = tclModelUtil.normalize(testStep)
@@ -564,7 +564,7 @@ class TclModelUtilTest extends AbstractParserTest {
 	def void testStepContentToTemplateVariablesMapping() {
 		// given
 		val testStep = parse('''
-		- start with "some" and more @other''', grammarAccess.testStepRule, TestStep)
+		start with "some" and more @other''', grammarAccess.testStepRule, TestStep)
 		val template = parse('''
 		"start with" ${somevar} "and more" ${othervar}''', grammarAccess.templateRule, Template)
 		val someValue = testStep.contents.filter(StepContentVariable).head
