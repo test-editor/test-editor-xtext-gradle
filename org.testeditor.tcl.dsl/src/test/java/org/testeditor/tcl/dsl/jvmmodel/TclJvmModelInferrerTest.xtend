@@ -9,6 +9,7 @@ class TclJvmModelInferrerTest extends AbstractTclGeneratorIntegrationTest {
 	@Before
 	def void parseAmlModel() {
 		parseAml(DummyFixture.amlModel).assertNoSyntaxErrors
+		parseAml(DummyFixture.parameterizedTestAml).assertNoSyntaxErrors
 	}
 
 	@Test
@@ -154,6 +155,44 @@ class TclJvmModelInferrerTest extends AbstractTclGeneratorIntegrationTest {
 				'put("Ok",org.testeditor.dsl.common.testing.DummyLocatorStrategy.ID); ' +
 			'}}.get(field), "Hello, World!");'
 		)
+	}
+	
+	@Test
+	def void testGenerationForLambdaExpressionParameter() {
+		//given
+		'''
+			package com.example
+			
+			# MyMacroCollection
+			
+			## MyMacro
+			template = "enter" ${value} "into" ${field}
+			Component: GreetingApplication
+			- Type @value into <@field>
+		'''.toString.parseTcl("MyMacroCollection.tml").assertNoSyntaxErrors
+		val tclModel = parseTcl('''
+			package com.example
+			
+			# Test
+			* Some test specification step
+			  Component: ParameterizedTesting
+			  - inputs = load inputs from "path/to/file.json"
+			  - entry = each entry in @inputs:
+			    Macro: MyMacroCollection
+			    -- enter @entry into "Input"
+			    -- enter @entry into "Input"
+		''')
+		tclModel.addToResourceSet
+
+		//when
+		val tclModelCode = tclModel.generate
+
+		//then
+		tclModelCode.assertContains('''
+		dummyFixture.forEach(inputs, new java.util.function.Consumer<Object>() {
+		          public void accept(Object entry) {''')
+		tclModelCode.assertContains('macro_MyMacroCollection_MyMacro(entry.toString(), "Input",')
+		tclModelCode.assertContains('macro_MyMacroCollection_MyMacro(entry.toString(), "Input",')
 	}
 	
 }

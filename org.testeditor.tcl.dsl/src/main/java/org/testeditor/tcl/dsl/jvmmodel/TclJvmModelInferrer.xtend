@@ -59,9 +59,11 @@ import org.testeditor.tcl.ComponentTestStepContext
 import org.testeditor.tcl.EnvironmentVariable
 import org.testeditor.tcl.ExpressionReturnTestStep
 import org.testeditor.tcl.JsonValue
+import org.testeditor.tcl.LambdaStepVariable
 import org.testeditor.tcl.Macro
 import org.testeditor.tcl.MacroCollection
 import org.testeditor.tcl.MacroTestStepContext
+import org.testeditor.tcl.SecondOrderTestStep
 import org.testeditor.tcl.SetupAndCleanupProvider
 import org.testeditor.tcl.SpecificationStepImplementation
 import org.testeditor.tcl.StepContentElement
@@ -99,8 +101,8 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 
 	@Inject extension JvmTypesBuilder
 	@Inject extension ModelUtil
-	@Inject extension TclModelUtil
 	@Inject extension TclElementStringifier
+	@Inject extension TclModelUtil
 	@Inject TclAssertCallBuilder assertCallBuilder
 	@Inject IQualifiedNameProvider nameProvider
 	@Inject JvmModelHelper jvmModelHelper
@@ -625,8 +627,8 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 			val fixtureField = interaction.defaultMethod?.typeReference?.type?.fixtureFieldName
 			val operation = interaction.defaultMethod?.operation
 			if (fixtureField !== null && operation !== null) {
-				val variables = EcoreUtil2.getAllContentsOfType(step, VariableReference)
-				val amlElements = EcoreUtil2.getAllContentsOfType(step, StepContentElement)
+				val variables = newLinkedList => [addAll(step.contents.filter(VariableReference))]
+				val amlElements = newLinkedList => [addAll(step.contents.filter(StepContentElement))]
 				val id = generateNewIDVar
 				output.appendReporterCall(SemanticUnit.STEP, Action.ENTER, '''«stepLog»''', id, Status.STARTED, output.traceRegion, variables, amlElements)
 
@@ -643,6 +645,46 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 				output.trace(interaction.defaultMethod) => [
 					val codeLine = '''«fixtureField».«operation.simpleName»(«generateCallParameters(step, interaction)»);'''
 					output.append(codeLine) // please call with string, since tests checks against expected string which fails for passing ''' directly
+				]
+				output.appendReporterCall(SemanticUnit.STEP, Action.LEAVE, stepLog, id, Status.OK, output.traceRegion, variables, amlElements)
+			} else {
+				output.append('''// TODO interaction type '«interaction.name»' does not have a proper method reference''')
+			}
+		} else if (step.componentContext !== null) {
+			logger.debug("interaction not found within context of component '{}' for test step='{}'.", step.componentContext.component.name, stepLog)
+			output.newLine.
+				append('''org.junit.Assert.fail("Template '«stepLog.escapeJava»' cannot be resolved with any known macro/fixture. Please check your «step.locationInfo»");''')
+		} else {
+			logger.debug("interaction not found in unknown context for test step='{}'.", stepLog)
+			output.newLine.
+				append('''org.junit.Assert.fail("Template '«stepLog.escapeJava»' cannot be resolved with any known macro/fixture. Please check your  Macro-, Config- or Testcase-File ");''')
+		}
+	}
+	
+	private def dispatch void toUnitTestCodeLine(SecondOrderTestStep soStep, ITreeAppendable output) {
+		val step = soStep.step
+		val stepLog = step.stringify
+		logger.debug('''generating code line for test '«stepLog»' at «jvmModelHelper.toLocationString(output.traceRegion)».''')
+		val interaction = step.interaction
+
+		if (interaction !== null) {
+			logger.debug("derived interaction with method='{}' for test step='{}'.", interaction.defaultMethod?.operation?.qualifiedName, stepLog)
+			val fixtureField = interaction.defaultMethod?.typeReference?.type?.fixtureFieldName
+			val operation = interaction.defaultMethod?.operation
+			if (fixtureField !== null && operation !== null) {
+				val variables = newLinkedList => [addAll(step.contents.filter(VariableReference))]
+				val amlElements = newLinkedList => [addAll(step.contents.filter(StepContentElement))]
+				val id = generateNewIDVar
+				output.appendReporterCall(SemanticUnit.STEP, Action.ENTER, '''«stepLog»''', id, Status.STARTED, output.traceRegion, variables, amlElements)
+
+				output.addCoercionChecksWhereApplicable(step, interaction)
+				output.newLine
+				variables += tclFactory.createVariableReference => [variable = step.variable]
+
+				output.trace(interaction.defaultMethod) => [
+					output.append('''«fixtureField».«operation.simpleName»(''')
+					output.appendCallParameters(step, interaction)
+					output.append(');')
 				]
 				output.appendReporterCall(SemanticUnit.STEP, Action.LEAVE, stepLog, id, Status.OK, output.traceRegion, variables, amlElements)
 			} else {
@@ -726,6 +768,40 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 	private def String generateCallParameters(TestStep step, TemplateContainer templateContainer) {
 		val stepContentsWithTypes = getVariablesWithTypesInOrder(step, templateContainer)
 		stepContentsWithTypes.map[toParameterString(key, value, templateContainer, true)].flatten.join(', ')
+	}
+	
+	private def void appendCallParameters(ITreeAppendable output, TestStep step, TemplateContainer templateContainer) {
+		val stepContentsWithTypes = getVariablesWithTypesInOrder(step, templateContainer)
+		val stepContentWithTypeIterator = stepContentsWithTypes.iterator
+		if (stepContentWithTypeIterator.hasNext) {
+			var it = stepContentWithTypeIterator.next
+			output.appendParameterString(key, value, templateContainer, true)
+			while (stepContentWithTypeIterator.hasNext) {
+				it = stepContentWithTypeIterator.next
+				output.append(', ')
+				output.appendParameterString(key, value, templateContainer, true)
+			}
+		}
+	}
+	
+	private def void appendParameterString(ITreeAppendable output, StepContent stepContent, Optional<JvmTypeReference> expectedType,
+		TemplateContainer templateContainer, boolean withCoercion) {
+		if (stepContent instanceof LambdaStepVariable) {
+			// it seems somewhere down the line this gets pretty-printed in a way that is not aware of
+			// Java 8 lambdas, causing the arrow token '->' to be split up into '- >'.
+			// So for now, an ugly, anonymous inner class is generated instead :(
+			output.append('''
+				new java.util.function.Consumer<Object>() {
+				    public void accept(Object «stepContent.variableName») {
+				''');
+			stepContent.lambda.generateContext(output)
+			output.append('''
+				    }
+				}
+			''')
+		} else {
+			output.append(stepContent.toParameterString(expectedType, templateContainer, withCoercion).join(', '))
+		}
 	}
 
 	private def List<Pair<StepContent, Optional<JvmTypeReference>>> getVariablesWithTypesInOrder(TestStep step, TemplateContainer templateContainer) {
