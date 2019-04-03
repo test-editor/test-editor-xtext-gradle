@@ -17,6 +17,9 @@ import java.util.List
 import org.testeditor.fixture.core.FixtureException
 import org.testeditor.fixture.core.MaskingString
 import org.testeditor.fixture.core.interaction.FixtureMethod
+import java.util.function.Consumer
+import com.google.gson.JsonElement
+import com.google.gson.JsonPrimitive
 
 class DummyFixture {
 
@@ -113,6 +116,25 @@ class DummyFixture {
 	@FixtureMethod
 	def void typeConfidentialInformationInto(String locator, DummyLocatorStrategy locatorStrategy, MaskingString maskingString) {
 		// do nothing
+	}
+	
+	@FixtureMethod
+	def <T> T forEach(Iterable<T> iterable, Consumer<T> closure) throws FixtureException {
+		iterable.forEach[closure.accept(it)]
+		return null
+	}
+
+	@FixtureMethod
+	def Iterable<JsonElement> load(String filename) throws FixtureException {
+		return #[
+			new JsonObject => [
+				add('name', new JsonPrimitive('adent'))
+				add('password', new JsonPrimitive('dontpanic'))
+			], new JsonObject => [
+				add('name', new JsonPrimitive('fprefect'))
+				add('password', new JsonPrimitive('towel'))
+			]
+		]
 	}
 
 	static def String getAmlModel() '''
@@ -283,6 +305,29 @@ class DummyFixture {
 		template = "Read" ${field}
 		Component: GreetingApplication
 		- Read value from <@field>
+	'''
+	
+	static def String getParameterizedTestAml() '''
+		«val dummyFixture = DummyFixture.simpleName»
+		package com.example
+		
+		import «DummyFixture.name»
+		
+		component type ParameterizedTestingType {
+			interactions = forEach, load
+		}
+		
+		interaction type forEach {
+			template = "each entry in" ${iterable} ":" ${closure}
+			method = «dummyFixture».forEach(iterable, closure)
+		}
+		
+		interaction type load {
+			template = "load inputs from" ${file}
+			method = «dummyFixture».load(file)
+		}
+		
+		component ParameterizedTesting is ParameterizedTestingType {}
 	'''
 
 }
