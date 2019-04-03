@@ -17,13 +17,13 @@ import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.JsonPrimitive
 import java.math.BigDecimal
+import java.util.function.Consumer
 import javax.inject.Inject
 import javax.inject.Singleton
 import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.emf.ecore.resource.ResourceSet
 import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtext.common.types.JvmEnumerationType
-import org.eclipse.xtext.common.types.JvmPrimitiveType
 import org.eclipse.xtext.common.types.JvmTypeReference
 import org.eclipse.xtext.xbase.jvmmodel.JvmTypeReferenceBuilder
 import org.eclipse.xtext.xbase.typesystem.conformance.TypeConformanceComputationArgument
@@ -215,6 +215,10 @@ class JvmTypeReferenceUtil {
 		return Object.buildFrom
 	}
 	
+	def JvmTypeReference consumerJvmTypeReference() {
+		return Consumer.buildFrom
+	}
+	
 	def boolean isObject(JvmTypeReference reference) {
 		return objectJvmTypeReference.isAssignableFrom(reference)
 	}
@@ -233,6 +237,10 @@ class JvmTypeReferenceUtil {
 	
 	def boolean isANumber(JvmTypeReference reference) {
 		return numberJvmTypeReference.isAssignableFrom(reference) // including boxing
+	}
+	
+	def boolean isConsumer(JvmTypeReference reference) {
+		return Consumer.name.equals(reference?.qualifiedName)
 	}
 	
 	def Iterable<String> getEnumValues(JvmTypeReference reference) {
