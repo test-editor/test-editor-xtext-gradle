@@ -62,6 +62,9 @@ import org.testeditor.tsl.StepContentVariable
 import org.testeditor.tsl.util.TslModelUtil
 
 import static extension org.testeditor.tcl.util.MacroSignature.*
+import org.testeditor.tcl.LambdaStepVariable
+import org.eclipse.emf.ecore.util.EcoreUtil
+import org.testeditor.tcl.TestStepWithAssignment
 
 @Singleton
 class TclModelUtil extends TslModelUtil {
@@ -472,6 +475,10 @@ class TclModelUtil extends TslModelUtil {
 	def boolean isAmlElementVariable(TemplateVariable variable, Macro macro) {
 		return	variable.isUsedAsElementInComponentInteractionCall(macro) || 
 				variable.isUsedAsElementInMacroCall(macro)
+	}
+	
+	def String variableName(LambdaStepVariable lambda) {
+		return (lambda.eContainer as TestStepWithAssignment).variable.name
 	}
 
 	private def boolean isUsedAsElementInComponentInteractionCall(TemplateVariable variable, Macro macro) {

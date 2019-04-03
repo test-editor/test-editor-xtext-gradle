@@ -215,8 +215,11 @@ TestStepWithAssignment returns AbstractTestStep:
 		XL? contents+=InnerStepContent+
 			(XL contents+=StepContent contents+=InnerStepContent*)* 
 	(contents+=StepContentPunctuation? |
-		contents+=SecondOrderParameterDelimiter {SecondOrderTestStep.step=current} lambda=LambdaExpressionContext
+		contents+=SecondOrderParameterDelimiter contents+=LambdaStepVariable {SecondOrderTestStep.step=current}
 	);
+
+LambdaStepVariable: 
+	lambda=LambdaExpressionContext;
 
 AssignmentThroughPath:
 	variableReference=VariableReferencePathAccess XL? '=' 
@@ -327,7 +330,7 @@ StepContentPunctuation hidden():
 	value=('.'|'?')
 ;
 
-SecondOrderParameterDelimiter returns StepContentPunctuation hidden():
+SecondOrderParameterDelimiter hidden():
 	value=':' XL;
 
 JsonObject:

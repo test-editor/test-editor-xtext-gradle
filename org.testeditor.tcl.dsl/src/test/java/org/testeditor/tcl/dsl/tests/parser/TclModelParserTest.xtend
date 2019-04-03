@@ -24,6 +24,7 @@ import org.testeditor.tcl.ComponentTestStepContext
 import org.testeditor.tcl.ExpressionReturnTestStep
 import org.testeditor.tcl.JsonNumber
 import org.testeditor.tcl.JsonString
+import org.testeditor.tcl.LambdaStepVariable
 import org.testeditor.tcl.MacroTestStepContext
 import org.testeditor.tcl.NullOrBoolCheck
 import org.testeditor.tcl.SecondOrderTestStep
@@ -38,6 +39,7 @@ import org.testeditor.tcl.util.TclModelUtil
 import org.testeditor.tsl.StepContentVariable
 
 import static extension org.eclipse.xtext.nodemodel.util.NodeModelUtils.*
+import org.testeditor.tsl.StepContentText
 
 class TclModelParserTest extends AbstractTclTest {
 	
@@ -601,8 +603,12 @@ class TclModelParserTest extends AbstractTclTest {
 		// then
 		model.assertNoSyntaxErrors
 		model.test.steps.assertSingleElement.contexts.assertSingleElement.steps.get(1).assertInstanceOf(SecondOrderTestStep) => [
-			step.assertInstanceOf(TestStepWithAssignment)
-			lambda.assertInstanceOf(MacroTestStepContext).steps.assertSize(2)
+			step.assertInstanceOf(TestStepWithAssignment).contents.reject[it instanceof StepContentText] => [
+				assertSize(2)
+				last.assertInstanceOf(LambdaStepVariable).
+				lambda.assertInstanceOf(MacroTestStepContext).steps.assertSize(2)
+			]
+			
 		]
 	}
 
