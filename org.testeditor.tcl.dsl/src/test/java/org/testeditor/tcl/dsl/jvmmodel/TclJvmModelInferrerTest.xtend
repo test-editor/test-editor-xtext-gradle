@@ -189,10 +189,9 @@ class TclJvmModelInferrerTest extends AbstractTclGeneratorIntegrationTest {
 
 		//then
 		tclModelCode.assertContains('''
-		dummyFixture.forEach(inputs, new java.util.function.Consumer<Object>() {
-		          public void accept(Object entry) {''')
-		tclModelCode.assertContains('macro_MyMacroCollection_MyMacro(entry.toString(), "Input",')
-		tclModelCode.assertContains('macro_MyMacroCollection_MyMacro(entry.toString(), "Input",')
+		dummyFixture.forEach(inputs, new java.util.function.Consumer<com.google.gson.JsonElement>() {
+		          public void accept(com.google.gson.JsonElement entry) {''')
+		tclModelCode.assertContains('macro_MyMacroCollection_MyMacro(entry.getAsJsonPrimitive().getAsString(), "Input",')
 	}
 	
 }

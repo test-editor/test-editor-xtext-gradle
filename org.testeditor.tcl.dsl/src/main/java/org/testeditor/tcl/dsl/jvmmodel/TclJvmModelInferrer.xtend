@@ -683,7 +683,7 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 
 				output.trace(interaction.defaultMethod) => [
 					output.append('''«fixtureField».«operation.simpleName»(''')
-					output.appendCallParameters(step, interaction)
+					output.appendCallParameters(step, interaction, operation.returnType)
 					output.append(');')
 				]
 				output.appendReporterCall(SemanticUnit.STEP, Action.LEAVE, stepLog, id, Status.OK, output.traceRegion, variables, amlElements)
@@ -770,29 +770,29 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 		stepContentsWithTypes.map[toParameterString(key, value, templateContainer, true)].flatten.join(', ')
 	}
 	
-	private def void appendCallParameters(ITreeAppendable output, TestStep step, TemplateContainer templateContainer) {
+	private def void appendCallParameters(ITreeAppendable output, TestStepWithAssignment step, TemplateContainer templateContainer, JvmTypeReference lambdaParamType) {
 		val stepContentsWithTypes = getVariablesWithTypesInOrder(step, templateContainer)
 		val stepContentWithTypeIterator = stepContentsWithTypes.iterator
 		if (stepContentWithTypeIterator.hasNext) {
 			var it = stepContentWithTypeIterator.next
-			output.appendParameterString(key, value, templateContainer, true)
+			output.appendParameterString(key, value, templateContainer, true, lambdaParamType)
 			while (stepContentWithTypeIterator.hasNext) {
 				it = stepContentWithTypeIterator.next
 				output.append(', ')
-				output.appendParameterString(key, value, templateContainer, true)
+				output.appendParameterString(key, value, templateContainer, true, lambdaParamType)
 			}
 		}
 	}
 	
 	private def void appendParameterString(ITreeAppendable output, StepContent stepContent, Optional<JvmTypeReference> expectedType,
-		TemplateContainer templateContainer, boolean withCoercion) {
+		TemplateContainer templateContainer, boolean withCoercion, JvmTypeReference lambdaParamType) {
 		if (stepContent instanceof LambdaStepVariable) {
 			// it seems somewhere down the line this gets pretty-printed in a way that is not aware of
 			// Java 8 lambdas, causing the arrow token '->' to be split up into '- >'.
 			// So for now, an ugly, anonymous inner class is generated instead :(
 			output.append('''
-				new java.util.function.Consumer<Object>() {
-				    public void accept(Object «stepContent.variableName») {
+				new java.util.function.Consumer<«lambdaParamType.identifier»>() {
+				    public void accept(«lambdaParamType.identifier» «stepContent.variableName») {
 				''');
 			stepContent.lambda.generateContext(output)
 			output.append('''

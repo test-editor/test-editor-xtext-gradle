@@ -119,7 +119,7 @@ class DummyFixture {
 	}
 	
 	@FixtureMethod
-	def <T> T forEach(Iterable<T> iterable, Consumer<T> closure) throws FixtureException {
+	def JsonElement forEach(Iterable<JsonElement> iterable, Consumer<JsonElement> closure) throws FixtureException {
 		iterable.forEach[closure.accept(it)]
 		return null
 	}
