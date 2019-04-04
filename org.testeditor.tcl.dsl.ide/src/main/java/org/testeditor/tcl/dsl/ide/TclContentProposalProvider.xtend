@@ -63,7 +63,8 @@ class TclContentProposalProvider extends IdeContentProposalProvider {
 			}
 		]
 		switch (ruleCall.rule) {
-			case testStepRule:
+			case dashPrefixedTestStepInComponentContextRule,
+			case dashPrefixedTestStepInMacroContextRule:
 				makeTestStepProposals(contextTrimmedPrefix.toContext, acceptor)
 			case innerStepContentRule,
 			case stepContentElementRule:

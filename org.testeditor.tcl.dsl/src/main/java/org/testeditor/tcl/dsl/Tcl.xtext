@@ -136,46 +136,44 @@ MacroCollection:
 Macro:
 	('##' name=ID XL?)?
 	'template' XL? '=' XL? template=Template
-	(XL contexts+=TestStepContext)*
-;
+	(XL contexts+=TestStepContext)*;
 
 Template returns aml::Template:
-	contents+=TemplateText (XL? contents+=TemplateVariable (XL? contents+=TemplateText)?)*
-;
+	contents+=TemplateText (XL? contents+=TemplateVariable (XL? contents+=TemplateText)?)*;
 
 TemplateText returns aml::TemplateText:
-	value=STRING
-;
+	value=STRING;
 
 TemplateVariable returns aml::TemplateVariable:
-	name=TEMPLATE_VARIABLE_DEF
-;
+	name=TEMPLATE_VARIABLE_DEF;
 
 TestStepContext:
 	(ComponentTestStepContext | MacroTestStepContext);
 
 ComponentTestStepContext returns TestStepContext:
-	ComponentTestStepContextDefinition
-	(XL ('-' steps+=(TestStepInComponentContext)))*;
-
-ComponentTestStepContextDefinition returns TestStepContext:
 	{ComponentTestStepContext}
-	('Mask' | 'Component') ':' component=[aml::Component|QualifiedName];
-	
+	('Mask' | 'Component') ':'
+	component=[aml::Component|QualifiedName]
+	(XL steps+=DashPrefixedTestStepInComponentContext)*;
+
+// content proposal relies on these
+DashPrefixedTestStepInComponentContext returns AbstractTestStep: '-' TestStepInComponentContext;
+DashPrefixedTestStepInMacroContext returns AbstractTestStep: '-' TestStepInMacroContext;
+DoubleDashPrefixedTestStepInComponentContext returns AbstractTestStep: '--' TestStepInComponentContext;
+DoubleDashPrefixedTestStepInMacroContext returns AbstractTestStep: '--' TestStepInMacroContext;
+
 TestStepInComponentContext returns AbstractTestStep:
 	ExpressionReturnTestStep  | TestStep | TestStepWithAssignment | AssertionTestStep | AssignmentThroughPath;	
 
 MacroTestStepContext returns TestStepContext:
-	MacroTestStepContextDefinition
-	(XL ('-' steps+=(TestStepInMacroContext)))*; 
+	{MacroTestStepContext}
+	'Macro' ':'
+	macroCollection=[MacroCollection|QualifiedName]
+	(XL steps+=DashPrefixedTestStepInMacroContext)*; 
 	// macro calls are either TestSteps, TestStepWithAssignment (for macros that return a result value),
 	// or ExpressionReturnTestStep (only valid from within a macro definition, which has to be ensured
 	// using a corresponding validation).
-	
-MacroTestStepContextDefinition returns TestStepContext:
-	{MacroTestStepContext}
-	'Macro' ':' macroCollection=[MacroCollection|QualifiedName];
-	
+
 TestStepInMacroContext returns AbstractTestStep:
 	ExpressionReturnTestStep | TestStep | TestStepWithAssignment;
 
@@ -183,12 +181,16 @@ LambdaExpressionContext returns TestStepContext:
 	LambdaExpressionComponentContext | LambdaExpressionMacroContext;
 
 LambdaExpressionComponentContext returns TestStepContext:
-	ComponentTestStepContextDefinition XL
-	(('--' steps+=(TestStepInComponentContext)) XL)*;
+	{ComponentTestStepContext}
+	('Mask' | 'Component') ':'
+	component=[aml::Component|QualifiedName] XL
+	(steps+=DoubleDashPrefixedTestStepInComponentContext XL)*;
 
 LambdaExpressionMacroContext returns TestStepContext:
-	MacroTestStepContextDefinition XL
-	(('--' steps+=(TestStepInMacroContext)) XL)*;
+	{MacroTestStepContext}
+	'Macro' ':'
+	macroCollection=[MacroCollection|QualifiedName] XL
+	(steps+=DoubleDashPrefixedTestStepInMacroContext XL)*;
 
 
 // Restriction to AtomicValue is not because of technical reasons (parsing Expression here works perfectly fine).
