@@ -237,6 +237,9 @@ class AmlValidator extends AbstractAmlValidator {
 	@Check
 	def void checkTemplateHoldsValidCharacters(Template template) {
 		template.contents => [
+			val lastContent = it.last
+			val lastIndex = size - 1
+
 			// all text elements must not be empty (checked here to allow index-based error marking)
 			val templateTextsThatAreEmpty = indexed.filterValue(TemplateText).filter[value.value.trim.empty]
 			templateTextsThatAreEmpty.forEach [
@@ -244,16 +247,28 @@ class AmlValidator extends AbstractAmlValidator {
 					INVALID_CHAR_IN_TEMPLATE)
 			]
 			// all but the last text element must match the VALID_TEMPLATE_WORD
-			val invalidTemplateTextsWithoutLastElement = indexed.butLast.filterValue(TemplateText).filter [
-				!value.value.matches(VALID_TEMPLATE_WORDS)
-			]
+			val invalidTemplateTextsWithoutLastElement = newLinkedList
+			invalidTemplateTextsWithoutLastElement.addAll(
+				indexed.butLast.filterValue(TemplateText).filter [
+					!value.value.matches(VALID_TEMPLATE_WORDS)
+				]
+			)
+			// exception: if the last element is not a text element but a variable instead,
+			// the element before that is allowed to be a single colon (':'), indicating that
+			// the last parameter is a macro or component context (body of a lambda expression)
+			if (size > 1 && !(lastContent instanceof TemplateText)) {
+				val secondToLast = get(size - 2)
+				if (secondToLast instanceof TemplateText) {
+					if (':'.equals(secondToLast.value)) {
+						invalidTemplateTextsWithoutLastElement.removeIf[value === secondToLast]
+					}
+				}
+			}
 			invalidTemplateTextsWithoutLastElement.forEach [
 				error('Illegal characters in template. Please use ids only (e.g. do not make use of punctuation and the like)',
 					value.eContainer, value.eContainingFeature, key, INVALID_CHAR_IN_TEMPLATE)
 			]
 			// (only) the last template content (if it is a text) may end with a punctuation mark '.' | '?'
-			val lastContent = it.last
-			val lastIndex = size - 1
 			if (lastContent instanceof TemplateText) {
 				if (!lastContent.value.matches(VALID_LAST_TEMPLATE_WORDS)) {
 					error('Illegal characters in last element of template. Please use ids only (e.g. use punctuation like . or ? only at the very end)',
@@ -263,4 +278,3 @@ class AmlValidator extends AbstractAmlValidator {
 		]
 	}
 }
-			

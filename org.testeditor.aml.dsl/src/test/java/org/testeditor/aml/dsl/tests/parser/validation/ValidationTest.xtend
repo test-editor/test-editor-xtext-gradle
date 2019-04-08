@@ -385,5 +385,22 @@ class ValidationTest extends AbstractParserTest {
 		// then
 		amlModel.assertNoErrors
 	}
+	
+	@Test
+	def void testValidTemplateWithLambdaParameter() {
+		// given
+		val input = '''
+			package com.example
+			
+			interaction type abc {
+				template = "each element in" ${testDataList} ":" ${lambda}
+			}
+		'''
+		// when
+		val amlModel = input.parseAml
+
+		// then
+		amlModel.assertNoErrors
+	}
 
 }
