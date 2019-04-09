@@ -679,7 +679,6 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 
 				output.addCoercionChecksWhereApplicable(step, interaction)
 				output.newLine
-				variables += tclFactory.createVariableReference => [variable = step.variable]
 
 				output.trace(interaction.defaultMethod) => [
 					output.append('''«fixtureField».«operation.simpleName»(''')

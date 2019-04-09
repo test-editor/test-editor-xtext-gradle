@@ -192,6 +192,9 @@ class TclJvmModelInferrerTest extends AbstractTclGeneratorIntegrationTest {
 		dummyFixture.forEach(inputs, new java.util.function.Consumer<com.google.gson.JsonElement>() {
 		          public void accept(com.google.gson.JsonElement entry) {''')
 		tclModelCode.assertContains('macro_MyMacroCollection_MyMacro(entry.getAsJsonPrimitive().getAsString(), "Input",')
+		tclModelCode.assertContains('private void macro_MyMacroCollection_MyMacro(final String value, final String field, final String id)')
+		// must not reference lambda parameter when leaving step, because its already outside of its scope:
+		assertFalse(tclModelCode.contains('reporter.leave(TestRunReporter.SemanticUnit.STEP, "entry = each entry in @inputs : \\\"\\\" [com.google.gson.JsonElement]", IDvar3, TestRunReporter.Status.OK, variables("inputs", inputs.toString(), "entry", entry.getAsJsonPrimitive().getAsString(), "@", "Test.tcl:7-11"));'))
 	}
 	
 }
