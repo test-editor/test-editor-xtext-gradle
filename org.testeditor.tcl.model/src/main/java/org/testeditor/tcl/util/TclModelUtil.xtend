@@ -41,9 +41,11 @@ import org.testeditor.tcl.EnvironmentVariable
 import org.testeditor.tcl.Expression
 import org.testeditor.tcl.ExpressionReturnTestStep
 import org.testeditor.tcl.KeyPathElement
+import org.testeditor.tcl.LambdaStepVariable
 import org.testeditor.tcl.Macro
 import org.testeditor.tcl.MacroCollection
 import org.testeditor.tcl.MacroTestStepContext
+import org.testeditor.tcl.SecondOrderTestStep
 import org.testeditor.tcl.SpecificationStepImplementation
 import org.testeditor.tcl.StepContentElement
 import org.testeditor.tcl.StepContentElementReference
@@ -52,6 +54,7 @@ import org.testeditor.tcl.TestCase
 import org.testeditor.tcl.TestConfiguration
 import org.testeditor.tcl.TestStep
 import org.testeditor.tcl.TestStepContext
+import org.testeditor.tcl.TestStepWithAssignment
 import org.testeditor.tcl.VariableReference
 import org.testeditor.tcl.VariableReferencePathAccess
 import org.testeditor.tsl.SpecificationStep
@@ -62,9 +65,6 @@ import org.testeditor.tsl.StepContentVariable
 import org.testeditor.tsl.util.TslModelUtil
 
 import static extension org.testeditor.tcl.util.MacroSignature.*
-import org.testeditor.tcl.LambdaStepVariable
-import org.eclipse.emf.ecore.util.EcoreUtil
-import org.testeditor.tcl.TestStepWithAssignment
 
 @Singleton
 class TclModelUtil extends TslModelUtil {
@@ -268,8 +268,16 @@ class TclModelUtil extends TslModelUtil {
 		}
 	}
 
-	def ComponentTestStepContext getComponentContext(TestStep step) {
-		return EcoreUtil2.getContainerOfType(step, ComponentTestStepContext)
+	def ComponentTestStepContext getComponentContext(AbstractTestStep step) {
+		val container = step?.eContainer
+		if (container !== null) {
+			return if (container instanceof ComponentTestStepContext) {
+				container
+			} else if (container instanceof SecondOrderTestStep) {
+				container.componentContext
+			}
+		}
+		return null
 	}
 
 	def boolean hasMacroContext(AbstractTestStep step) {

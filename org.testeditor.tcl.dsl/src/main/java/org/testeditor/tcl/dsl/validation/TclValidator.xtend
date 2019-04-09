@@ -43,6 +43,7 @@ import org.testeditor.tcl.ExpressionReturnTestStep
 import org.testeditor.tcl.Macro
 import org.testeditor.tcl.MacroCollection
 import org.testeditor.tcl.MacroTestStepContext
+import org.testeditor.tcl.SecondOrderTestStep
 import org.testeditor.tcl.SetupAndCleanupProvider
 import org.testeditor.tcl.SpecificationStepImplementation
 import org.testeditor.tcl.StepContainer
@@ -258,7 +259,12 @@ class TclValidator extends AbstractTclValidator {
 		erroneousContents.forEach [
 			error(errorMessage, step.returnExpression.eContainer, step.returnExpression.eContainingFeature, INVALID_VAR_DEREF)
 		]	
-		}
+	}
+
+	private def dispatch void checkAllReferencedVariablesAreKnown(SecondOrderTestStep it, Set<String> knownVariableNames,
+		String errorMessage) {
+		step.checkAllReferencedVariablesAreKnown(knownVariableNames, errorMessage)
+	}
 
 	@Check
 	def void checkValueInValueSpace(StepContentVariable stepContentVariable) {
@@ -527,6 +533,16 @@ class TclValidator extends AbstractTclValidator {
 		Map<String, JvmTypeReference> declaredVariablesTypeMap, TestStepContext context,
 		Set<String> excludedVariableNames) {
 		step.returnExpression.eAllContents.filter(VariableReference).filter [
+			!excludedVariableNames.contains(variable.name)
+		].forEach [
+			checkVariableReferenceIsUsedWellTyped(declaredVariablesTypeMap, context, 0)
+		]
+	}
+	
+	private def dispatch void checkReferencedVariablesAreUsedWellTypedExcluding(SecondOrderTestStep it,
+		Map<String, JvmTypeReference> declaredVariablesTypeMap, TestStepContext context,
+		Set<String> excludedVariableNames) {
+		step.eAllContents.filter(VariableReference).filter [
 			!excludedVariableNames.contains(variable.name)
 		].forEach [
 			checkVariableReferenceIsUsedWellTyped(declaredVariablesTypeMap, context, 0)

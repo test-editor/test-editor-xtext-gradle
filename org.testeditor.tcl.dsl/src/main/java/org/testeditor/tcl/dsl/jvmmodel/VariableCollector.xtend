@@ -21,6 +21,7 @@ import org.testeditor.dsl.common.util.CollectionUtils
 import org.testeditor.tcl.AssertionTestStep
 import org.testeditor.tcl.AssignmentThroughPath
 import org.testeditor.tcl.ExpressionReturnTestStep
+import org.testeditor.tcl.SecondOrderTestStep
 import org.testeditor.tcl.StepContainer
 import org.testeditor.tcl.TestStep
 import org.testeditor.tcl.TestStepContext
@@ -78,6 +79,11 @@ class VariableCollector {
 	
 	def dispatch Map<String, JvmTypeReference> collectDeclaredVariablesTypeMap(ExpressionReturnTestStep testStep) {
 		// Return test steps cannot contain variable declarations
+		return emptyMap
+	}
+	
+	def dispatch Map<String, JvmTypeReference> collectDeclaredVariablesTypeMap(SecondOrderTestStep testStep) {
+		// Second order test steps declare a variable scoped for the contained lambda, only
 		return emptyMap
 	}
 	
