@@ -2,8 +2,10 @@ package org.testeditor.tcl.dsl.jvmmodel.macro
 
 import java.util.Set
 import javax.inject.Inject
+import org.testeditor.tcl.LambdaStepVariable
 import org.testeditor.tcl.Macro
 import org.testeditor.tcl.MacroTestStepContext
+import org.testeditor.tcl.SecondOrderTestStep
 import org.testeditor.tcl.SetupAndCleanupProvider
 import org.testeditor.tcl.StepContainer
 import org.testeditor.tcl.TestCase
@@ -36,7 +38,8 @@ class MacroHelper {
 	}
 
 	private def void collectUsedMacros(StepContainer stepContainer, Set<Macro> result) {
-		val macroContexts = stepContainer.contexts.filter(MacroTestStepContext)
+		val macroContexts = stepContainer.contexts.filter(MacroTestStepContext) + 
+							stepContainer.lambdaContexts.filter(MacroTestStepContext)
 		for (context : macroContexts) {
 			val macros = context.steps.filter(TestStep).map[findMacroDefinition(context)].filterNull
 			for (macro : macros) {
@@ -44,6 +47,14 @@ class MacroHelper {
 				collectUsedMacros(macro, result)
 			}
 		}
+	}
+	
+	private def getLambdaContexts(StepContainer it) {
+		return contexts.flatMap[steps].filter(SecondOrderTestStep).map[lambdaContext]
+	}
+	
+	private def getLambdaContext(SecondOrderTestStep it) {
+		return step.contents.filter(LambdaStepVariable).last?.lambda
 	}
 
 }
