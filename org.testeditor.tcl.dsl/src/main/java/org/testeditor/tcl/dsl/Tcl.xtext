@@ -85,7 +85,11 @@ TestCase:
 TestConfiguration:
 	{TestConfiguration}
 	('config'|'testframe') name=ID?
-	((XL data+=TestData)? & (XL setup+=TestSetup)? & (XL cleanup+=TestCleanup)?);
+	// test data specification in a separate test frame file is currently disallowed, as it is considered intransparent
+	// (it is not obvious from where the variables are coming from, and that the test will, in fact, be parameterized)
+	// when enabling this, a validation should also be added that ensures there is only one data block -- either in
+	// the test case, or the test frame.
+	(/*(XL data+=TestData)? &*/ (XL setup+=TestSetup)? & (XL cleanup+=TestCleanup)?);
 
 TestData:
 	{TestData}

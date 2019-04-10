@@ -368,7 +368,7 @@ class TclValidator extends AbstractTclValidator {
 
 	@Check
 	def void checkVariableUsage(TestCase testCase) {
-		val initiallyDeclaredVariableNames = testCase.model.envParams.map[name]
+		val initiallyDeclaredVariableNames = testCase.model.envParams.map[name] + (testCase.data?.head?.parameters?.map[name] ?: #[])
 		testCase.steps.flatMap[contexts].checkVariableUsage(initiallyDeclaredVariableNames)
 	}
 	
