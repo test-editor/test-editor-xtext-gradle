@@ -793,7 +793,10 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 				new java.util.function.Consumer<«lambdaParamType.identifier»>() {
 				    public void accept(«lambdaParamType.identifier» «stepContent.variableName») {
 				''');
-			stepContent.lambda.generateContext(output)
+			output.wrapTestWithAssertionErrorHandler(#[stepContent.lambda]) [
+				stepContent.lambda.generateContext(output)
+			]
+			
 			output.append('''
 				    }
 				}
