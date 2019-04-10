@@ -92,7 +92,8 @@ class TclValidator extends AbstractTclValidator {
 	public static val INVALID_PARAMETER_TYPE = "invalidParameterType"
 	public static val INVALID_ORDER_TYPE = "invalidOrderType"
 	public static val INVALID_RETURN = "invalidReturn"
-	
+
+	public static val MULTIPLE_DATA_SECTIONS = "multipleDataSections"
 	public static val MULTIPLE_SETUP_SECTIONS = "multipleSetupSections"
 	public static val MULTIPLE_CLEANUP_SECTIONS = "multipleCleanupSections"
 
@@ -128,7 +129,12 @@ class TclValidator extends AbstractTclValidator {
 	}
 	
 	@Check
-	def checkSetupCleanupSections(SetupAndCleanupProvider setupCleanupProvider) {
+	def void checkSetupCleanupSections(SetupAndCleanupProvider setupCleanupProvider) {
+		setupCleanupProvider.data=> [
+			if (length > 1) {
+				forEach[error('Only one data section is allowed here.', eContainer, eContainingFeature, MULTIPLE_DATA_SECTIONS)]
+			}
+		]
 		setupCleanupProvider.setup => [
 			if (length > 1) {
 				forEach[error('Only one setup section is allowed here.', eContainer, eContainingFeature, MULTIPLE_SETUP_SECTIONS)]
