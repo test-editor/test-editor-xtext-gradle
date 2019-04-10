@@ -156,5 +156,29 @@ class TclJvmModelInferrerTest extends AbstractTclGeneratorIntegrationTest {
 		)
 	}
 	
+	@Test
+	def void testParameterizedTestCase() {
+		// given
+		val tclModel = '''
+			package com.example
+			
+			# MyTest
+			
+			Data: firstName, lastName, age
+				Component: ParameterizedTesting
+				- data = load data from "testData"
+			
+			* test something
+		'''.toString.parseTcl('MyTest.tcl').assertNoSyntaxErrors
+		
+		// when
+		val tclModelCode = tclModel.generate
+		
+		// then
+		tclModelCode.assertContains('import org.junit.runner.RunWith;')
+		tclModelCode.assertContains('import org.junit.runners.Parameterized;')
+		tclModelCode.assertContains('@RunWith(Parameterized.class)')
+	}
+	
 }
 		

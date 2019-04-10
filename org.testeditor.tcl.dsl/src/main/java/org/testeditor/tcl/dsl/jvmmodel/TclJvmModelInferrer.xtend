@@ -20,6 +20,7 @@ import javax.inject.Inject
 import org.eclipse.emf.common.util.EList
 import org.eclipse.emf.ecore.resource.ResourceSet
 import org.eclipse.xtext.EcoreUtil2
+import org.eclipse.xtext.common.types.JvmAnnotationReference
 import org.eclipse.xtext.common.types.JvmConstructor
 import org.eclipse.xtext.common.types.JvmDeclaredType
 import org.eclipse.xtext.common.types.JvmField
@@ -29,6 +30,7 @@ import org.eclipse.xtext.common.types.JvmOperation
 import org.eclipse.xtext.common.types.JvmType
 import org.eclipse.xtext.common.types.JvmTypeReference
 import org.eclipse.xtext.common.types.JvmVisibility
+import org.eclipse.xtext.common.types.TypesFactory
 import org.eclipse.xtext.generator.trace.AbstractTraceRegion
 import org.eclipse.xtext.naming.IQualifiedNameProvider
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils
@@ -37,6 +39,8 @@ import org.eclipse.xtext.xbase.compiler.output.ITreeAppendable
 import org.eclipse.xtext.xbase.jvmmodel.AbstractModelInferrer
 import org.eclipse.xtext.xbase.jvmmodel.IJvmDeclaredTypeAcceptor
 import org.eclipse.xtext.xbase.jvmmodel.JvmTypesBuilder
+import org.junit.runner.RunWith
+import org.junit.runners.Parameterized
 import org.slf4j.LoggerFactory
 import org.testeditor.aml.ComponentElement
 import org.testeditor.aml.InteractionType
@@ -114,6 +118,7 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 	@Inject TclCoercionComputer coercionComputer
 	@Inject JvmTypeReferenceUtil typeReferenceUtil
 	@Inject TclFactoryImpl tclFactory
+    @Inject TypesFactory typesFactory;
 
 	def dispatch void infer(TclModel model, IJvmDeclaredTypeAcceptor acceptor, boolean isPreIndexingPhase) {
 		variableIdRunningNumber = 0
@@ -163,6 +168,11 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 			} else {
 				'Config'
 			}
+			
+			// Create parameterized test if relevant
+			if (!element.data.nullOrEmpty) {
+				annotations += element.createParameterizedRunnerAnnotation
+			}
 
 			// Create constructor, if initialization of instantiated types with reporter is necessary
 			val typesToInitWithReporter = getAllInstantiatedTypesImplementingTestRunReportable(element, generatedClass)
@@ -180,6 +190,14 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 
 			// subclass specific operations
 			infer(element)
+		]
+	}
+	
+	def JvmAnnotationReference createParameterizedRunnerAnnotation(SetupAndCleanupProvider element) {
+		return annotationRef(RunWith) => [
+			explicitValues += typesFactory.createJvmTypeAnnotationValue => [
+				values += typeRef(Parameterized)
+			]
 		]
 	}
 
