@@ -45,6 +45,7 @@ class TclModel {
  * that only one section per setup and cleanup is allowed!
  */
 abstract class SetupAndCleanupProvider extends NamedElement {
+	contains TestData[0..*] data
 	contains TestSetup[0..*] setup
 	contains TestCleanup[0..*] cleanup
 }
@@ -65,8 +66,14 @@ class SpecificationStepImplementation extends SpecificationStep, StepContainer {
 	String nl // allows formatting to access this information in the model
 }
 
+class TestParameter extends Variable {}
+
 class EnvironmentVariable extends Variable {
 	boolean nonConfidential = "false"
+}
+
+class TestData extends StepContainer {
+	contains TestParameter[0..*] parameters
 }
 
 /*
