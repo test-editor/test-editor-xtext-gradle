@@ -26,6 +26,7 @@ import org.eclipse.xtext.common.types.JvmDeclaredType
 import org.eclipse.xtext.common.types.JvmField
 import org.eclipse.xtext.common.types.JvmFormalParameter
 import org.eclipse.xtext.common.types.JvmGenericType
+import org.eclipse.xtext.common.types.JvmMember
 import org.eclipse.xtext.common.types.JvmOperation
 import org.eclipse.xtext.common.types.JvmType
 import org.eclipse.xtext.common.types.JvmTypeReference
@@ -41,6 +42,7 @@ import org.eclipse.xtext.xbase.jvmmodel.IJvmDeclaredTypeAcceptor
 import org.eclipse.xtext.xbase.jvmmodel.JvmTypesBuilder
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
+import org.junit.runners.Parameterized.Parameter
 import org.slf4j.LoggerFactory
 import org.testeditor.aml.ComponentElement
 import org.testeditor.aml.InteractionType
@@ -73,6 +75,7 @@ import org.testeditor.tcl.StepContentElementReference
 import org.testeditor.tcl.TclModel
 import org.testeditor.tcl.TestCase
 import org.testeditor.tcl.TestConfiguration
+import org.testeditor.tcl.TestParameter
 import org.testeditor.tcl.TestStep
 import org.testeditor.tcl.TestStepContext
 import org.testeditor.tcl.TestStepWithAssignment
@@ -171,7 +174,8 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 			
 			// Create parameterized test if relevant
 			if (!element.data.nullOrEmpty) {
-				annotations += element.createParameterizedRunnerAnnotation
+				annotations += createParameterizedRunnerAnnotation
+				members += element.data.head.parameters.map[createTestParameter]
 			}
 
 			// Create constructor, if initialization of instantiated types with reporter is necessary
@@ -193,7 +197,17 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 		]
 	}
 	
-	def JvmAnnotationReference createParameterizedRunnerAnnotation(SetupAndCleanupProvider element) {
+	def JvmMember createTestParameter(TestParameter parameter) {
+		return parameter.toField(parameter.name, typeRef(Object)) => [
+			visibility = JvmVisibility.PUBLIC
+			// inner types seem to cause problems, but the "string with $"-notation works. See e.g. 
+			// * https://stackoverflow.com/questions/53030336/referencing-a-containing-class-from-an-inner-class-with-xtext-xbase-and-the-jvm
+			// * https://www.eclipse.org/forums/index.php/t/1086762/
+			annotations += annotationRef('org.junit.runners.Parameterized$Parameter')
+		]
+	}
+	
+	def JvmAnnotationReference createParameterizedRunnerAnnotation() {
 		return annotationRef(RunWith) => [
 			explicitValues += typesFactory.createJvmTypeAnnotationValue => [
 				values += typeRef(Parameterized)

@@ -5,7 +5,7 @@ import org.junit.Test
 import org.testeditor.dsl.common.testing.DummyFixture
 
 class TclJvmModelInferrerTest extends AbstractTclGeneratorIntegrationTest {
-
+	
 	@Before
 	def void parseAmlModel() {
 		parseAml(DummyFixture.amlModel).assertNoSyntaxErrors
@@ -178,6 +178,15 @@ class TclJvmModelInferrerTest extends AbstractTclGeneratorIntegrationTest {
 		tclModelCode.assertContains('import org.junit.runner.RunWith;')
 		tclModelCode.assertContains('import org.junit.runners.Parameterized;')
 		tclModelCode.assertContains('@RunWith(Parameterized.class)')
+		tclModelCode.assertContains('''
+			@Parameterized.Parameter
+			  public Object firstName;''')
+		tclModelCode.assertContains('''
+			@Parameterized.Parameter
+			  public Object firstName;''')
+		tclModelCode.assertContains('''
+			@Parameterized.Parameter
+			  public Object age;''')
 	}
 	
 }
