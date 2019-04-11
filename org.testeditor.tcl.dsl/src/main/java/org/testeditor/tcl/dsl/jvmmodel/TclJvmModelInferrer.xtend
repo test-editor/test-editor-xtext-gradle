@@ -122,6 +122,18 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 	@Inject JvmTypeReferenceUtil typeReferenceUtil
 	@Inject TclFactoryImpl tclFactory
     @Inject TypesFactory typesFactory;
+    
+	
+	// switches code generation into static mode:
+	// when true, no non-static field references or method invocations should be generated
+	var staticContext = false;
+	
+	def void staticContext(()=> void it) {
+		staticContext = true
+		apply
+		staticContext = false
+	}
+	
 
 	def dispatch void infer(TclModel model, IJvmDeclaredTypeAcceptor acceptor, boolean isPreIndexingPhase) {
 		variableIdRunningNumber = 0
@@ -204,14 +216,16 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 			visibility = JvmVisibility.PUBLIC
 			annotations += annotationRef('org.junit.runners.Parameterized$Parameters')
 			body = [ output |
-				data.contexts.flatMap[testStepFixtureTypes].toSet.forEach[
-					output.append(it)
-					output.append(''' «simpleName.toFirstLower» = new «simpleName»();''')
+				staticContext [		
+					data.contexts.flatMap[testStepFixtureTypes].toSet.forEach[
+						output.append(it)
+						output.append(''' «simpleName.toFirstLower» = new «simpleName»();''')
+					]
+					data.contexts.forEach[generateContext(output.trace(it))]
+					output.append('\nreturn data;')
+					]
 				]
-				data.contexts.forEach[generateContext(output.trace(it))]
-				output.append('\nreturn data;')
 			]
-		]
 	}
 	
 	def JvmMember createTestParameter(TestParameter parameter) {
@@ -892,14 +906,17 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 
 	private def void appendReporterCall(ITreeAppendable output, SemanticUnit unit, Action action, String message, String id, Status status,
 		AbstractTraceRegion traceRegion, List<VariableReference> variables, List<StepContentElement> amlElements) {
-		testRunReporterGenerator.buildReporterCall(_typeReferenceBuilder?.typeRef(SemanticUnit)?.type, unit, action, message, id, idPrefix, status, reporterFieldName, traceRegion, variables, amlElements,
-			typeReferenceUtil.stringJvmTypeReference).forEach [
-			switch (it) {
-				JvmType: output.append(it)
-				String: output.append(it)
-				default: throw new RuntimeException('''Cannot append class = '«it?.class»'. ''')
-			}
-		]
+		if (!staticContext) {
+			testRunReporterGenerator.buildReporterCall(_typeReferenceBuilder?.typeRef(SemanticUnit)?.type, unit, action, message, id, 
+				idPrefix, status, reporterFieldName, traceRegion, variables, amlElements, typeReferenceUtil.stringJvmTypeReference)
+				.forEach [
+					switch (it) {
+						JvmType: output.append(it)
+						String: output.append(it)
+						default: throw new RuntimeException('''Cannot append class = '«it?.class»'. ''')
+					}
+				]
+		}
 	}
 
 	private def void appendReporterEnterCall(ITreeAppendable output, SemanticUnit unit, String message, String id, Status status, AbstractTraceRegion traceRegion) {
