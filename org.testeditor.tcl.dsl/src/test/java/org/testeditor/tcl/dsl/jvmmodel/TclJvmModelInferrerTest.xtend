@@ -160,6 +160,7 @@ class TclJvmModelInferrerTest extends AbstractTclGeneratorIntegrationTest {
 	def void testParameterizedTestCase() {
 		// given
 		DummyFixture.parameterizedTestAml.parseAml
+		DummyFixture.amlModel.parseAml
 		val tclModel = '''
 			package com.example
 			
@@ -170,6 +171,8 @@ class TclJvmModelInferrerTest extends AbstractTclGeneratorIntegrationTest {
 				- data = load data from "testData"
 			
 			* test something
+			Component: GreetingApplication
+			- Type @firstName into <Input>
 		'''.toString.parseTcl('MyTest.tcl').assertNoSyntaxErrors
 		
 		// when
