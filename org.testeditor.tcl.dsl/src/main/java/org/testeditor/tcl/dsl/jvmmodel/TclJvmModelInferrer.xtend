@@ -216,16 +216,20 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 			visibility = JvmVisibility.PUBLIC
 			annotations += annotationRef('org.junit.runners.Parameterized$Parameters')
 			body = [ output |
-				staticContext [		
-					data.contexts.flatMap[testStepFixtureTypes].toSet.forEach[
-						output.append(it)
-						output.append(''' «simpleName.toFirstLower» = new «simpleName»();''')
+				staticContext [
+					output.wrapWithExceptionHandler(data.contexts) [
+						output.newLine
+						data.contexts.flatMap[testStepFixtureTypes].toSet.forEach[
+							output.append(it)
+							output.append(''' «simpleName.toFirstLower» = new «simpleName»();''')
+						]
+						data.contexts.forEach[generateContext(output.trace(it))]
+						output.append('\nreturn data;')
 					]
-					data.contexts.forEach[generateContext(output.trace(it))]
-					output.append('\nreturn data;')
-					]
+					output.newLine.append('return null;')
 				]
 			]
+		]
 	}
 	
 	def JvmMember createTestParameter(TestParameter parameter) {
@@ -500,19 +504,23 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 		output.decreaseIndentation
 		output.newLine
 		if (contexts.throwsFixtureException) {
-			output.append('''
-				} catch («FixtureException.name» e) {
-				  «reporterFieldName».fixtureExit(e);
-				  finishedTestWith(''').appendTestRunReporterType.append('''.Status.ABORTED);
-  org.junit.Assert.fail(e.getMessage());
-			''')
+			output.append('''} catch («FixtureException.name» e) {''')
+			if (!staticContext) {
+				output.newLine.append('''
+					«reporterFieldName».fixtureExit(e);
+					finishedTestWith(''').appendTestRunReporterType.append('''.Status.ABORTED);''')
+			}
+			output.newLine.append('''  org.junit.Assert.fail(e.getMessage());''')
 		}
-		output.append('''
-		} catch (Exception e) {
-		  «reporterFieldName».exceptionExit(e);
-		  finishedTestWith(''').appendTestRunReporterType.append('''.Status.ABORTED);
-  org.junit.Assert.fail(e.getMessage());
-}''')
+		output.newLine.append('''} catch (Exception e) {''')
+		if (!staticContext) {
+			output.newLine.append('''
+				«reporterFieldName».exceptionExit(e);
+				finishedTestWith(''').appendTestRunReporterType.append('''.Status.ABORTED);''')
+		}
+		output.newLine.append('''
+		  org.junit.Assert.fail(e.getMessage());
+		}''')
 	}
 
 	def void generateMethodBody(Macro macro, ITreeAppendable output, EList<JvmFormalParameter> parameters, JvmTypeReference returnType) {

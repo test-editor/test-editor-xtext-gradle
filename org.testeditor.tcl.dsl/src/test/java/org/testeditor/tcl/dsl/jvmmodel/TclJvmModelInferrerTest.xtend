@@ -186,9 +186,16 @@ class TclJvmModelInferrerTest extends AbstractTclGeneratorIntegrationTest {
 		tclModelCode.assertContains('''
 			@Parameterized.Parameters
 			  public static Iterable<Object[]> data() {
-			    DummyFixture dummyFixture = new DummyFixture();
-			    java.lang.Iterable<com.google.gson.JsonElement> data = dummyFixture.load("testData");
-			    return data;
+			    try {
+			      DummyFixture dummyFixture = new DummyFixture();
+			      java.lang.Iterable<com.google.gson.JsonElement> data = dummyFixture.load("testData");
+			      return data;
+			    } catch (org.testeditor.fixture.core.FixtureException e) {
+			      org.junit.Assert.fail(e.getMessage());
+			    } catch (Exception e) {
+			      org.junit.Assert.fail(e.getMessage());
+			    }
+			    return null;
 			  }''')
 		
 		tclModelCode.assertContains('''
