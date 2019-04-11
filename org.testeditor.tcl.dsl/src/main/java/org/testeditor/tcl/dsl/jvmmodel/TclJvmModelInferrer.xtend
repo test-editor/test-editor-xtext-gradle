@@ -188,7 +188,7 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 			if (!element.data.nullOrEmpty) {
 				annotations += createParameterizedRunnerAnnotation
 				members += element.data.head.createDataMethod
-				members += element.data.head.parameters.map[createTestParameter]
+				members += element.data.head.parameters.indexed.map[createTestParameter]
 			}
 
 			// Create constructor, if initialization of instantiated types with reporter is necessary
@@ -232,13 +232,17 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 		]
 	}
 	
-	def JvmMember createTestParameter(TestParameter parameter) {
-		return parameter.toField(parameter.name, typeRef(Object)) => [
+	def JvmMember createTestParameter(Pair<Integer, TestParameter> parameter) {
+		return parameter.value.toField(parameter.value.name, typeRef(Object)) => [
 			visibility = JvmVisibility.PUBLIC
 			// inner types seem to cause problems, but the "string with $"-notation works. See e.g. 
 			// * https://stackoverflow.com/questions/53030336/referencing-a-containing-class-from-an-inner-class-with-xtext-xbase-and-the-jvm
 			// * https://www.eclipse.org/forums/index.php/t/1086762/
-			annotations += annotationRef('org.junit.runners.Parameterized$Parameter')
+			annotations += annotationRef('org.junit.runners.Parameterized$Parameter') => [
+				explicitValues += typesFactory.createJvmIntAnnotationValue => [
+					values += parameter.key
+				]
+			]
 		]
 	}
 	

@@ -199,13 +199,13 @@ class TclJvmModelInferrerTest extends AbstractTclGeneratorIntegrationTest {
 			  }''')
 		
 		tclModelCode.assertContains('''
-			@Parameterized.Parameter
+			@Parameterized.Parameter(0)
 			  public Object firstName;''')
 		tclModelCode.assertContains('''
-			@Parameterized.Parameter
-			  public Object firstName;''')
+			@Parameterized.Parameter(1)
+			  public Object lastName;''')
 		tclModelCode.assertContains('''
-			@Parameterized.Parameter
+			@Parameterized.Parameter(2)
 			  public Object age;''')
 	}
 	
