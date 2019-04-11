@@ -159,6 +159,7 @@ class TclJvmModelInferrerTest extends AbstractTclGeneratorIntegrationTest {
 	@Test
 	def void testParameterizedTestCase() {
 		// given
+		DummyFixture.parameterizedTestAml.parseAml
 		val tclModel = '''
 			package com.example
 			
@@ -178,6 +179,19 @@ class TclJvmModelInferrerTest extends AbstractTclGeneratorIntegrationTest {
 		tclModelCode.assertContains('import org.junit.runner.RunWith;')
 		tclModelCode.assertContains('import org.junit.runners.Parameterized;')
 		tclModelCode.assertContains('@RunWith(Parameterized.class)')
+		
+		tclModelCode.assertContains('''
+			@Parameterized.Parameters
+			  public static Iterable<Object[]> data() {
+			    DummyFixture dummyFixture = new DummyFixture();
+			    String IDvar0=nextSubId("ID-1"); reporter.enter(TestRunReporter.SemanticUnit.COMPONENT, "ParameterizedTesting", IDvar0, TestRunReporter.Status.STARTED, variables("@", "MyTest.tcl:6-7"));
+			    String IDvar1=nextSubId("ID-1"); reporter.enter(TestRunReporter.SemanticUnit.STEP, "data = load data from \"testData\" [java.lang.Iterable<com.google.gson.JsonElement>]", IDvar1, TestRunReporter.Status.STARTED, variables("@", "MyTest.tcl:7"));
+			    java.lang.Iterable<com.google.gson.JsonElement> data = dummyFixture.load("testData");
+			    reporter.leave(TestRunReporter.SemanticUnit.STEP, "data = load data from \"testData\" [java.lang.Iterable<com.google.gson.JsonElement>]", IDvar1, TestRunReporter.Status.OK, variables("data", data.toString(), "@", "MyTest.tcl:7"));
+			    reporter.leave(TestRunReporter.SemanticUnit.COMPONENT, "ParameterizedTesting", IDvar0, TestRunReporter.Status.OK, variables("@", "MyTest.tcl:6-7"));
+			    return data;
+			  }''')
+		
 		tclModelCode.assertContains('''
 			@Parameterized.Parameter
 			  public Object firstName;''')

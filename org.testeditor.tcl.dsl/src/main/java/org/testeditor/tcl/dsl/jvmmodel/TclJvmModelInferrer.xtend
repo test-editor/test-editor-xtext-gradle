@@ -42,7 +42,6 @@ import org.eclipse.xtext.xbase.jvmmodel.IJvmDeclaredTypeAcceptor
 import org.eclipse.xtext.xbase.jvmmodel.JvmTypesBuilder
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
-import org.junit.runners.Parameterized.Parameter
 import org.slf4j.LoggerFactory
 import org.testeditor.aml.ComponentElement
 import org.testeditor.aml.InteractionType
@@ -75,6 +74,7 @@ import org.testeditor.tcl.StepContentElementReference
 import org.testeditor.tcl.TclModel
 import org.testeditor.tcl.TestCase
 import org.testeditor.tcl.TestConfiguration
+import org.testeditor.tcl.TestData
 import org.testeditor.tcl.TestParameter
 import org.testeditor.tcl.TestStep
 import org.testeditor.tcl.TestStepContext
@@ -175,6 +175,7 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 			// Create parameterized test if relevant
 			if (!element.data.nullOrEmpty) {
 				annotations += createParameterizedRunnerAnnotation
+				members += element.data.head.createDataMethod
 				members += element.data.head.parameters.map[createTestParameter]
 			}
 
@@ -194,6 +195,22 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 
 			// subclass specific operations
 			infer(element)
+		]
+	}
+	
+	def JvmOperation createDataMethod(TestData data) {
+		return data.toMethod('data', typeRef(Iterable, typeRef('java.lang.Object[]')))[
+			static = true
+			visibility = JvmVisibility.PUBLIC
+			annotations += annotationRef('org.junit.runners.Parameterized$Parameters')
+			body = [ output |
+				data.contexts.flatMap[testStepFixtureTypes].toSet.forEach[
+					output.append(it)
+					output.append(''' «simpleName.toFirstLower» = new «simpleName»();''')
+				]
+				data.contexts.forEach[generateContext(output.trace(it))]
+				output.append('\nreturn data;')
+			]
 		]
 	}
 	
