@@ -93,9 +93,12 @@ TestConfiguration:
 
 TestData:
 	{TestData}
-	'Data' ':' parameters+=TestParameter (',' parameters+=TestParameter)*
-	(XL contexts+=TestStepContext)*
-;
+	'Data' ':' (parameters+=TestParameter (',' parameters+=TestParameter)*)?
+	context=TestDataComponentContext;
+
+TestDataComponentContext returns ComponentTestStepContext: 
+	XL 'Component' ':' component=[aml::Component|QualifiedName]	 
+	XL steps+=TestStepWithAssignment;
 
 TestSetup:
 	{TestSetup}

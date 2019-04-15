@@ -72,8 +72,9 @@ class EnvironmentVariable extends Variable {
 	boolean nonConfidential = "false"
 }
 
-class TestData extends StepContainer {
+class TestData {
 	contains TestParameter[0..*] parameters
+	contains ComponentTestStepContext context 
 }
 
 /*
