@@ -506,21 +506,20 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 		strategy.apply(output)
 
 		output.decreaseIndentation
-		output.newLine
 		if (contexts.throwsFixtureException) {
-			output.append('''} catch («FixtureException.name» e) {''')
+			output.newLine.append('''} catch («FixtureException.name» e) {''')
 			if (!staticContext) {
 				output.newLine.append('''
-					«reporterFieldName».fixtureExit(e);
-					finishedTestWith(''').appendTestRunReporterType.append('''.Status.ABORTED);''')
+					«'  '»«reporterFieldName».fixtureExit(e);
+					«'  '»finishedTestWith(''').appendTestRunReporterType.append('''.Status.ABORTED);''')
 			}
 			output.newLine.append('''  org.junit.Assert.fail(e.getMessage());''')
 		}
 		output.newLine.append('''} catch (Exception e) {''')
 		if (!staticContext) {
 			output.newLine.append('''
-				«reporterFieldName».exceptionExit(e);
-				finishedTestWith(''').appendTestRunReporterType.append('''.Status.ABORTED);''')
+				«'  '»«reporterFieldName».exceptionExit(e);
+				«'  '»finishedTestWith(''').appendTestRunReporterType.append('''.Status.ABORTED);''')
 		}
 		output.newLine.append('''
 		  org.junit.Assert.fail(e.getMessage());
