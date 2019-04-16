@@ -589,6 +589,8 @@ class TclModelParserTest extends AbstractTclTest {
 			# Test
 			
 			Data: firstName, lastName, age
+			Component: MyComponent
+			- data = load my data
 			
 			* step1
 		'''
@@ -618,6 +620,8 @@ class TclModelParserTest extends AbstractTclTest {
 			* step1
 			
 			Data: firstName, lastName, age
+			Component: MyComponent
+			- data = load my data
 		'''
 
 		// when
@@ -707,14 +711,15 @@ class TclModelParserTest extends AbstractTclTest {
 			
 			Data: firstName, lastName, age
 				Macro: MyMacroCollection
-				- data = some macro
 		'''
 
 		// when
 		val tclModel = parseTcl(input)
 
 		// then
-		tclModel.syntaxErrors.map[message].assertExistsEqual('asdf')
+		tclModel.syntaxErrors.assertSingleElement.message.assertEquals('''
+		The data block cannot have a macro test step context.
+		E.g. replace the macro context with a component context like "Component: MyComponent".'''.toString)
 	}
 	
 	@Test
@@ -730,7 +735,7 @@ class TclModelParserTest extends AbstractTclTest {
 		'''
 
 		// when
-		val tclModel = parseTcl(input)
+		val tclModel = input.parseTcl('Test.tcl')
 
 		// then
 		tclModel.syntaxErrors.map[message].assertExistsEqual('''
@@ -758,7 +763,7 @@ class TclModelParserTest extends AbstractTclTest {
 		val tclModel = parseTcl(input)
 
 		// then
-		tclModel.syntaxErrors.map[message].assertExistsEqual('asdf')
+		tclModel.syntaxErrors.map[message].assertExistsEqual('The data block cannot have more than one test step context.')
 	}
 	
 	@Test
@@ -776,7 +781,10 @@ class TclModelParserTest extends AbstractTclTest {
 		val tclModel = parseTcl(input)
 
 		// then
-		tclModel.syntaxErrors.map[message].assertExistsEqual('asdf')
+		tclModel.syntaxErrors.map[message].assertExistsEqual('''
+			The data block must have a component test step context.
+			E.g. add "Component: MyComponent" after the data block line.
+		''')
 	}
 	
 	@Test
@@ -797,7 +805,7 @@ class TclModelParserTest extends AbstractTclTest {
 		val tclModel = parseTcl(input)
 
 		// then
-		tclModel.syntaxErrors.map[message].assertExistsEqual('asdf')
+		tclModel.syntaxErrors.map[message].assertExistsEqual('The data block cannot have more than one test step.')
 	}
 	
 	@Test
@@ -817,7 +825,9 @@ class TclModelParserTest extends AbstractTclTest {
 		val tclModel = parseTcl(input)
 
 		// then
-		tclModel.syntaxErrors.map[message].assertExistsEqual("missing '=' at 'test'")
+		tclModel.syntaxErrors.map[message].assertExistsEqual('''
+		The data initialization step must be an assignment.
+		E.g. prefix the step with "- myVar = ".''')
 	}
 	
 	private def <T extends EObject> syntaxErrors(T it) {
