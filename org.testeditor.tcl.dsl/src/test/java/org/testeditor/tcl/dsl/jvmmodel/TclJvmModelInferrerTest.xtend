@@ -5,7 +5,7 @@ import org.junit.Test
 import org.testeditor.dsl.common.testing.DummyFixture
 
 class TclJvmModelInferrerTest extends AbstractTclGeneratorIntegrationTest {
-
+	
 	@Before
 	def void parseAmlModel() {
 		parseAml(DummyFixture.amlModel).assertNoSyntaxErrors
@@ -154,6 +154,59 @@ class TclJvmModelInferrerTest extends AbstractTclGeneratorIntegrationTest {
 				'put("Ok",org.testeditor.dsl.common.testing.DummyLocatorStrategy.ID); ' +
 			'}}.get(field), "Hello, World!");'
 		)
+	}
+	
+	@Test
+	def void testParameterizedTestCase() {
+		// given
+		DummyFixture.parameterizedTestAml.parseAml
+		DummyFixture.amlModel.parseAml
+		val tclModel = '''
+			package com.example
+			
+			# MyTest
+			
+			Data: firstName, lastName, age
+				Component: ParameterizedTesting
+				- data = load data from "testData"
+			
+			* test something
+			Component: GreetingApplication
+			- Type @firstName into <Input>
+		'''.toString.parseTcl('MyTest.tcl').assertNoSyntaxErrors
+		
+		// when
+		val tclModelCode = tclModel.generate
+		
+		// then
+		tclModelCode.assertContains('import org.junit.runner.RunWith;')
+		tclModelCode.assertContains('import org.junit.runners.Parameterized;')
+		tclModelCode.assertContains('@RunWith(Parameterized.class)')
+		
+		tclModelCode.assertContains('''
+			@Parameterized.Parameters
+			  public static Iterable<Object[]> data() {
+			    try {
+			      DummyFixture dummyFixture = new DummyFixture();
+			      java.lang.Iterable<com.google.gson.JsonElement> data = dummyFixture.load("testData");
+			      return data;
+			    } catch (org.testeditor.fixture.core.FixtureException e) {
+			      org.junit.Assert.fail(e.getMessage());
+			    } catch (Exception e) {
+			      org.junit.Assert.fail(e.getMessage());
+			    }
+			    return null;
+			  }''')
+		
+		tclModelCode.assertContains('''
+			@Parameterized.Parameter(0)
+			  public Object firstName;''')
+		tclModelCode.assertContains('''
+			@Parameterized.Parameter(1)
+			  public Object lastName;''')
+		tclModelCode.assertContains('''
+			@Parameterized.Parameter(2)
+			  public Object age;''')
 	}
 	
 }

@@ -20,15 +20,18 @@ import javax.inject.Inject
 import org.eclipse.emf.common.util.EList
 import org.eclipse.emf.ecore.resource.ResourceSet
 import org.eclipse.xtext.EcoreUtil2
+import org.eclipse.xtext.common.types.JvmAnnotationReference
 import org.eclipse.xtext.common.types.JvmConstructor
 import org.eclipse.xtext.common.types.JvmDeclaredType
 import org.eclipse.xtext.common.types.JvmField
 import org.eclipse.xtext.common.types.JvmFormalParameter
 import org.eclipse.xtext.common.types.JvmGenericType
+import org.eclipse.xtext.common.types.JvmMember
 import org.eclipse.xtext.common.types.JvmOperation
 import org.eclipse.xtext.common.types.JvmType
 import org.eclipse.xtext.common.types.JvmTypeReference
 import org.eclipse.xtext.common.types.JvmVisibility
+import org.eclipse.xtext.common.types.TypesFactory
 import org.eclipse.xtext.generator.trace.AbstractTraceRegion
 import org.eclipse.xtext.naming.IQualifiedNameProvider
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils
@@ -37,6 +40,8 @@ import org.eclipse.xtext.xbase.compiler.output.ITreeAppendable
 import org.eclipse.xtext.xbase.jvmmodel.AbstractModelInferrer
 import org.eclipse.xtext.xbase.jvmmodel.IJvmDeclaredTypeAcceptor
 import org.eclipse.xtext.xbase.jvmmodel.JvmTypesBuilder
+import org.junit.runner.RunWith
+import org.junit.runners.Parameterized
 import org.slf4j.LoggerFactory
 import org.testeditor.aml.ComponentElement
 import org.testeditor.aml.InteractionType
@@ -69,6 +74,8 @@ import org.testeditor.tcl.StepContentElementReference
 import org.testeditor.tcl.TclModel
 import org.testeditor.tcl.TestCase
 import org.testeditor.tcl.TestConfiguration
+import org.testeditor.tcl.TestData
+import org.testeditor.tcl.TestParameter
 import org.testeditor.tcl.TestStep
 import org.testeditor.tcl.TestStepContext
 import org.testeditor.tcl.TestStepWithAssignment
@@ -114,6 +121,19 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 	@Inject TclCoercionComputer coercionComputer
 	@Inject JvmTypeReferenceUtil typeReferenceUtil
 	@Inject TclFactoryImpl tclFactory
+    @Inject TypesFactory typesFactory;
+    
+	
+	// switches code generation into static mode:
+	// when true, no non-static field references or method invocations should be generated
+	var staticContext = false;
+	
+	def void staticContext(()=> void it) {
+		staticContext = true
+		apply
+		staticContext = false
+	}
+	
 
 	def dispatch void infer(TclModel model, IJvmDeclaredTypeAcceptor acceptor, boolean isPreIndexingPhase) {
 		variableIdRunningNumber = 0
@@ -163,6 +183,13 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 			} else {
 				'Config'
 			}
+			
+			// Create parameterized test if relevant
+			if (!element.data.nullOrEmpty) {
+				annotations += createParameterizedRunnerAnnotation
+				members += element.data.head.createDataMethod
+				members += element.data.head.parameters.indexed.map[createTestParameter]
+			}
 
 			// Create constructor, if initialization of instantiated types with reporter is necessary
 			val typesToInitWithReporter = getAllInstantiatedTypesImplementingTestRunReportable(element, generatedClass)
@@ -180,6 +207,50 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 
 			// subclass specific operations
 			infer(element)
+		]
+	}
+	
+	def JvmOperation createDataMethod(TestData data) {
+		return data.toMethod('data', typeRef(Iterable, typeRef('java.lang.Object[]')))[
+			static = true
+			visibility = JvmVisibility.PUBLIC
+			annotations += annotationRef('org.junit.runners.Parameterized$Parameters')
+			body = [ output |
+				staticContext [
+					output.wrapWithExceptionHandler(data.contexts) [
+						output.newLine
+						data.contexts.flatMap[testStepFixtureTypes].toSet.forEach[
+							output.append(it)
+							output.append(''' «simpleName.toFirstLower» = new «simpleName»();''')
+						]
+						data.contexts.forEach[generateContext(output.trace(it))]
+						output.append('\nreturn data;')
+					]
+					output.newLine.append('return null;')
+				]
+			]
+		]
+	}
+	
+	def JvmMember createTestParameter(Pair<Integer, TestParameter> parameter) {
+		return parameter.value.toField(parameter.value.name, typeRef(Object)) => [
+			visibility = JvmVisibility.PUBLIC
+			// inner types seem to cause problems, but the "string with $"-notation works. See e.g. 
+			// * https://stackoverflow.com/questions/53030336/referencing-a-containing-class-from-an-inner-class-with-xtext-xbase-and-the-jvm
+			// * https://www.eclipse.org/forums/index.php/t/1086762/
+			annotations += annotationRef('org.junit.runners.Parameterized$Parameter') => [
+				explicitValues += typesFactory.createJvmIntAnnotationValue => [
+					values += parameter.key
+				]
+			]
+		]
+	}
+	
+	def JvmAnnotationReference createParameterizedRunnerAnnotation() {
+		return annotationRef(RunWith) => [
+			explicitValues += typesFactory.createJvmTypeAnnotationValue => [
+				values += typeRef(Parameterized)
+			]
 		]
 	}
 
@@ -435,21 +506,24 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 		strategy.apply(output)
 
 		output.decreaseIndentation
-		output.newLine
 		if (contexts.throwsFixtureException) {
-			output.append('''
-				} catch («FixtureException.name» e) {
-				  «reporterFieldName».fixtureExit(e);
-				  finishedTestWith(''').appendTestRunReporterType.append('''.Status.ABORTED);
-  org.junit.Assert.fail(e.getMessage());
-			''')
+			output.newLine.append('''} catch («FixtureException.name» e) {''')
+			if (!staticContext) {
+				output.newLine.append('''
+					«'  '»«reporterFieldName».fixtureExit(e);
+					«'  '»finishedTestWith(''').appendTestRunReporterType.append('''.Status.ABORTED);''')
+			}
+			output.newLine.append('''  org.junit.Assert.fail(e.getMessage());''')
 		}
-		output.append('''
-		} catch (Exception e) {
-		  «reporterFieldName».exceptionExit(e);
-		  finishedTestWith(''').appendTestRunReporterType.append('''.Status.ABORTED);
-  org.junit.Assert.fail(e.getMessage());
-}''')
+		output.newLine.append('''} catch (Exception e) {''')
+		if (!staticContext) {
+			output.newLine.append('''
+				«'  '»«reporterFieldName».exceptionExit(e);
+				«'  '»finishedTestWith(''').appendTestRunReporterType.append('''.Status.ABORTED);''')
+		}
+		output.newLine.append('''
+		  org.junit.Assert.fail(e.getMessage());
+		}''')
 	}
 
 	def void generateMethodBody(Macro macro, ITreeAppendable output, EList<JvmFormalParameter> parameters, JvmTypeReference returnType) {
@@ -843,14 +917,17 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 
 	private def void appendReporterCall(ITreeAppendable output, SemanticUnit unit, Action action, String message, String id, Status status,
 		AbstractTraceRegion traceRegion, List<VariableReference> variables, List<StepContentElement> amlElements) {
-		testRunReporterGenerator.buildReporterCall(_typeReferenceBuilder?.typeRef(SemanticUnit)?.type, unit, action, message, id, idPrefix, status, reporterFieldName, traceRegion, variables, amlElements,
-			typeReferenceUtil.stringJvmTypeReference).forEach [
-			switch (it) {
-				JvmType: output.append(it)
-				String: output.append(it)
-				default: throw new RuntimeException('''Cannot append class = '«it?.class»'. ''')
-			}
-		]
+		if (!staticContext) {
+			testRunReporterGenerator.buildReporterCall(_typeReferenceBuilder?.typeRef(SemanticUnit)?.type, unit, action, message, id, 
+				idPrefix, status, reporterFieldName, traceRegion, variables, amlElements, typeReferenceUtil.stringJvmTypeReference)
+				.forEach [
+					switch (it) {
+						JvmType: output.append(it)
+						String: output.append(it)
+						default: throw new RuntimeException('''Cannot append class = '«it?.class»'. ''')
+					}
+				]
+		}
 	}
 
 	private def void appendReporterEnterCall(ITreeAppendable output, SemanticUnit unit, String message, String id, Status status, AbstractTraceRegion traceRegion) {

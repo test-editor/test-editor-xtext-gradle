@@ -133,6 +133,28 @@ class TclVarUsageValidatorTest extends AbstractParserTestWithDummyComponent {
 		// then
 		tclModel.assertNoErrors
 	}
+	
+	@Test
+	def void testDataParameterUsage() {
+		// given, when
+		val dataBlock = testData('param1', 'param2')
+		val tclModel = tclModel => [
+			test = testCase => [
+				data += dataBlock
+				steps += specificationStep => [
+					contexts += componentTestStepContext(dummyComponent) => [
+						// variable access is valid: declared first, usage within same test case
+						steps += testStep("start").withReferenceToVariable(dataBlock.parameters.head)
+						steps += testStep("start").withReferenceToVariable(dataBlock.parameters.last)
+					]
+				]
+			]
+		]
+		tclModel.addToResourceSet('Test.tcl')
+		
+		// then
+		tclModel.assertNoErrors
+	}
 
 	@Test
 	def void testVarUsageFromOtherContextSameMacro() {

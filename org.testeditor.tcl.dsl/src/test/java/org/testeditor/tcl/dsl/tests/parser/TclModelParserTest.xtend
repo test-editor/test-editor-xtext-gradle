@@ -577,5 +577,93 @@ class TclModelParserTest extends AbstractTclTest {
 		test.cleanup.assertNotNull
 		test.steps.assertSingleElement
 	}
+	
+	@Test
+	def void parseDataBeforeSpecificationSteps() {
+		// given
+		val input = '''
+			package com.example
+			
+			# Test
+			
+			Data: firstName, lastName, age
+			
+			* step1
+		'''
+
+		// when
+		val test = parseTcl(input).test
+
+		// then
+		test.assertNoSyntaxErrors
+		test.data.assertSingleElement => [
+			parameters.assertSize(3)
+			parameters.assertExists[name.equals('firstName')]
+			parameters.assertExists[name.equals('lastName')]
+			parameters.assertExists[name.equals('age')]
+		]
+		test.steps.assertSingleElement
+	}
+
+	@Test
+	def void parseDataAfterSpecificationSteps() {
+		// given
+		val input = '''
+			package com.example
+			
+			# Test
+			
+			* step1
+			
+			Data: firstName, lastName, age
+		'''
+
+		// when
+		val test = parseTcl(input).test
+
+		// then
+		test.assertNoSyntaxErrors
+		test.data.assertSingleElement => [
+			parameters.assertSize(3)
+			parameters.assertExists[name.equals('firstName')]
+			parameters.assertExists[name.equals('lastName')]
+			parameters.assertExists[name.equals('age')]
+		]
+		test.steps.assertSingleElement
+	}
+	
+	@Test
+	def void parseDataWithInitializationContext() {
+		// given
+		val input = '''
+			package com.example
+			
+			# Test
+			
+			Data: firstName, lastName, age
+				Component: MyDataInitializationComponent
+				- init test data
+		'''
+
+		// when
+		val test = parseTcl(input).test
+
+		// then
+		test.assertNoSyntaxErrors
+		test.data.assertSingleElement => [
+			parameters.assertSize(3)
+			parameters.assertExists[name.equals('firstName')]
+			parameters.assertExists[name.equals('lastName')]
+			parameters.assertExists[name.equals('age')]
+			contexts.assertSingleElement => [
+				assertInstanceOf(ComponentTestStepContext) => [
+					component.assertNotNull
+					steps.assertSingleElement.assertInstanceOf(TestStep) => [
+						contents.restoreString.assertEquals('init test data')
+					]
+				]
+			]
+		]
+	}
 
 }

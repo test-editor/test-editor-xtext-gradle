@@ -43,6 +43,7 @@ import org.testeditor.tcl.SpecificationStepImplementation
 import org.testeditor.tcl.TclModel
 import org.testeditor.tcl.TestCase
 import org.testeditor.tcl.TestConfiguration
+import org.testeditor.tcl.TestData
 import org.testeditor.tcl.TestStep
 import org.testeditor.tcl.TestStepWithAssignment
 import org.testeditor.tcl.VariableReference
@@ -195,6 +196,12 @@ class TclModelGenerator {
 		return tclFactory.createTestStepWithAssignment => [
 			withText(texts)
 			variable = tclFactory.createAssignmentVariable => [name = variableName]
+		]
+	}
+	
+	def TestData testData(String ... parameterNames) {
+		return tclFactory.createTestData => [
+			parameterNames.forEach[ parameterName | parameters += tclFactory.createTestParameter => [ name = parameterName ] ]
 		]
 	}
 

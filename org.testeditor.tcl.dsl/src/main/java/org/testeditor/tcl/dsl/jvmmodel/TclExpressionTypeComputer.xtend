@@ -42,6 +42,7 @@ import org.testeditor.tcl.JsonString
 import org.testeditor.tcl.JsonValue
 import org.testeditor.tcl.NullOrBoolCheck
 import org.testeditor.tcl.StepContentElement
+import org.testeditor.tcl.TestParameter
 import org.testeditor.tcl.VariableReference
 import org.testeditor.tcl.VariableReferencePathAccess
 import org.testeditor.tsl.StepContent
@@ -140,6 +141,7 @@ class TclExpressionTypeComputer {
 			}
 			TemplateVariable: typeComputer.getVariablesWithTypes(
 				EcoreUtil2.getContainerOfType(variable, TemplateContainer)).get(variable).get
+			TestParameter: typeReferenceUtil.objectJvmTypeReference
 			default: throw new RuntimeException('''Variable of type='«variable.class.canonicalName»' is unknown''')
 		}
 		if (result === null) {

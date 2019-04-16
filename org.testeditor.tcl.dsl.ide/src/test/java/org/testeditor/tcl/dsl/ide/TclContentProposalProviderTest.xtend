@@ -40,6 +40,7 @@ class TclContentProposalProviderTest extends AbstractContentAssistTest {
 	]
 	val returnKeyowrd = #[ 'return' ]
 	val testSurroundKeywords = #[
+		'Data',
 		'Cleanup',
 		'Setup'
 	]
