@@ -12,24 +12,111 @@
  *******************************************************************************/
 package org.testeditor.tcl.dsl.validation
 
+import java.util.List
 import javax.inject.Inject
 import org.eclipse.xtext.testing.validation.ValidationTestHelper
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.junit.runners.Parameterized
+import org.junit.runners.Parameterized.Parameter
+import org.junit.runners.Parameterized.Parameters
+import org.testeditor.dsl.common.testing.DummyFixture
 import org.testeditor.tcl.TclModel
 import org.testeditor.tcl.dsl.tests.parser.AbstractParserTest
 
 import static org.testeditor.tcl.TclPackage.Literals.*
-import java.util.List
 
+@RunWith(Parameterized)
 class TclSetupCleanupValidatorTest extends AbstractParserTest {
+	
+	@Parameters(name = "{index}: {0} -> {1}")
+	def static Iterable<Object[]> data() {
+		return #[
+			// [dataPre, setupPre, cleanupPre, cleanupPost, setupPost, dataPost], [data error, setup error, cleanup error]
+			#[ #[false, false, false, false, false, false], #[false, false, false]],
+			#[ #[false, true,  false, false, false, false], #[false, false, false]],
+			#[ #[false, false, true,  false, false, false], #[false, false, false]],
+			#[ #[false, true,  true,  false, false, false], #[false, false, false]],
+			#[ #[false, false, false, true,  false, false], #[false, false, false]],
+			#[ #[false, true,  false, true,  false, false], #[false, false, false]],
+			#[ #[false, false, true,  true,  false, false], #[false, false, true ]],
+			#[ #[false, true,  true,  true,  false, false], #[false, false, true ]],
+			#[ #[false, false, false, false, true,  false], #[false, false, false]],
+			#[ #[false, true,  false, false, true,  false], #[false, true,  false]],
+			#[ #[false, false, true,  false, true,  false], #[false, false, false]],
+			#[ #[false, true,  true,  false, true,  false], #[false, true,  false]],
+			#[ #[false, false, false, true,  true,  false], #[false, false, false]],
+			#[ #[false, true,  false, true,  true,  false], #[false, true,  false]],
+			#[ #[false, false, true,  true,  true,  false], #[false, false, true ]],
+			#[ #[false, true,  true,  true,  true,  false], #[false, true,  true ]],
+			
+			#[ #[false, false, false, false, false, true ], #[false, false, false]],
+			#[ #[false, true,  false, false, false, true ], #[false, false, false]],
+			#[ #[false, false, true,  false, false, true ], #[false, false, false]],
+			#[ #[false, true,  true,  false, false, true ], #[false, false, false]],
+			#[ #[false, false, false, true,  false, true ], #[false, false, false]],
+			#[ #[false, true,  false, true,  false, true ], #[false, false, false]],
+			#[ #[false, false, true,  true,  false, true ], #[false, false, true ]],
+			#[ #[false, true,  true,  true,  false, true ], #[false, false, true ]],
+			#[ #[false, false, false, false, true,  true ], #[false, false, false]],
+			#[ #[false, true,  false, false, true,  true ], #[false, true,  false]],
+			#[ #[false, false, true,  false, true,  true ], #[false, false, false]],
+			#[ #[false, true,  true,  false, true,  true ], #[false, true,  false]],
+			#[ #[false, false, false, true,  true,  true ], #[false, false, false]],
+			#[ #[false, true,  false, true,  true,  true ], #[false, true,  false]],
+			#[ #[false, false, true,  true,  true,  true ], #[false, false, true ]],
+			#[ #[false, true,  true,  true,  true,  true ], #[false, true,  true ]],
+			
+			#[ #[true,  false, false, false, false, false], #[false, false, false]],
+			#[ #[true,  true,  false, false, false, false], #[false, false, false]],
+			#[ #[true,  false, true,  false, false, false], #[false, false, false]],
+			#[ #[true,  true,  true,  false, false, false], #[false, false, false]],
+			#[ #[true,  false, false, true,  false, false], #[false, false, false]],
+			#[ #[true,  true,  false, true,  false, false], #[false, false, false]],
+			#[ #[true,  false, true,  true,  false, false], #[false, false, true ]],
+			#[ #[true,  true,  true,  true,  false, false], #[false, false, true ]],
+			#[ #[true,  false, false, false, true,  false], #[false, false, false]],
+			#[ #[true,  true,  false, false, true,  false], #[false, true,  false]],
+			#[ #[true,  false, true,  false, true,  false], #[false, false, false]],
+			#[ #[true,  true,  true,  false, true,  false], #[false, true,  false]],
+			#[ #[true,  false, false, true,  true,  false], #[false, false, false]],
+			#[ #[true,  true,  false, true,  true,  false], #[false, true,  false]],
+			#[ #[true,  false, true,  true,  true,  false], #[false, false, true ]],
+			#[ #[true,  true,  true,  true,  true,  false], #[false, true,  true ]],
+			
+			#[ #[true,  false, false, false, false, true ], #[true, false, false]],
+			#[ #[true,  true,  false, false, false, true ], #[true, false, false]],
+			#[ #[true,  false, true,  false, false, true ], #[true, false, false]],
+			#[ #[true,  true,  true,  false, false, true ], #[true, false, false]],
+			#[ #[true,  false, false, true,  false, true ], #[true, false, false]],
+			#[ #[true,  true,  false, true,  false, true ], #[true, false, false]],
+			#[ #[true,  false, true,  true,  false, true ], #[true, false, true ]],
+			#[ #[true,  true,  true,  true,  false, true ], #[true, false, true ]],
+			#[ #[true,  false, false, false, true,  true ], #[true, false, false]],
+			#[ #[true,  true,  false, false, true,  true ], #[true, true,  false]],
+			#[ #[true,  false, true,  false, true,  true ], #[true, false, false]],
+			#[ #[true,  true,  true,  false, true,  true ], #[true, true,  false]],
+			#[ #[true,  false, false, true,  true,  true ], #[true, false, false]],
+			#[ #[true,  true,  false, true,  true,  true ], #[true, true,  false]],
+			#[ #[true,  false, true,  true,  true,  true ], #[true, false, true ]],
+			#[ #[true,  true,  true,  true,  true,  true ], #[true, true,  true ]]
+		]
+	}
+	
+	@Parameter(0)
+	public List<Boolean> setupCleanupConfig
+	
+	@Parameter(1)
+	public List<Boolean> expectedErrors
 
 	@Inject
 	ValidationTestHelper validator
 
 	def TclModel tclWithSetupAndCleanupSections(List<Boolean> setupCleanupConfig) {
+		DummyFixture.amlModel.parseAml
 		var dummyComponent = '''
-			Component: Some
-			- some
+			Component: GreetingApplication
+			- myVar = Read value from <Input>
 		'''
 		return '''
 			package com.example
@@ -62,119 +149,45 @@ class TclSetupCleanupValidatorTest extends AbstractParserTest {
 				Data: d, e, f
 				  «dummyComponent»
 			«ENDIF»
-		'''.toString.parseTcl
+		'''.toString.parseTcl('Test.tcl')
 	}
 
 	@Test
 	def void validateSetupCleanupSectionCombination() {
-		// given
-		val setupCleanupSectionToExpectedErrorsMap = #{
-			// [dataPre, setupPre, cleanupPre, cleanupPost, setupPost, dataPost] -> [data error, setup error, cleanup error]
-			#[false, false, false, false, false, false] -> #[false, false, false],
-			#[false, true,  false, false, false, false] -> #[false, false, false],
-			#[false, false, true,  false, false, false] -> #[false, false, false],
-			#[false, true,  true,  false, false, false] -> #[false, false, false],
-			#[false, false, false, true,  false, false] -> #[false, false, false],
-			#[false, true,  false, true,  false, false] -> #[false, false, false],
-			#[false, false, true,  true,  false, false] -> #[false, false, true ],
-			#[false, true,  true,  true,  false, false] -> #[false, false, true ],
-			#[false, false, false, false, true,  false] -> #[false, false, false],
-			#[false, true,  false, false, true,  false] -> #[false, true,  false],
-			#[false, false, true,  false, true,  false] -> #[false, false, false],
-			#[false, true,  true,  false, true,  false] -> #[false, true,  false],
-			#[false, false, false, true,  true,  false] -> #[false, false, false],
-			#[false, true,  false, true,  true,  false] -> #[false, true,  false],
-			#[false, false, true,  true,  true,  false] -> #[false, false, true ],
-			#[false, true,  true,  true,  true,  false] -> #[false, true,  true ],
-			
-			#[false, false, false, false, false, true ] -> #[false, false, false],
-			#[false, true,  false, false, false, true ] -> #[false, false, false],
-			#[false, false, true,  false, false, true ] -> #[false, false, false],
-			#[false, true,  true,  false, false, true ] -> #[false, false, false],
-			#[false, false, false, true,  false, true ] -> #[false, false, false],
-			#[false, true,  false, true,  false, true ] -> #[false, false, false],
-			#[false, false, true,  true,  false, true ] -> #[false, false, true ],
-			#[false, true,  true,  true,  false, true ] -> #[false, false, true ],
-			#[false, false, false, false, true,  true ] -> #[false, false, false],
-			#[false, true,  false, false, true,  true ] -> #[false, true,  false],
-			#[false, false, true,  false, true,  true ] -> #[false, false, false],
-			#[false, true,  true,  false, true,  true ] -> #[false, true,  false],
-			#[false, false, false, true,  true,  true ] -> #[false, false, false],
-			#[false, true,  false, true,  true,  true ] -> #[false, true,  false],
-			#[false, false, true,  true,  true,  true ] -> #[false, false, true ],
-			#[false, true,  true,  true,  true,  true ] -> #[false, true,  true ],
-			
-			#[true,  false, false, false, false, false] -> #[false, false, false],
-			#[true,  true,  false, false, false, false] -> #[false, false, false],
-			#[true,  false, true,  false, false, false] -> #[false, false, false],
-			#[true,  true,  true,  false, false, false] -> #[false, false, false],
-			#[true,  false, false, true,  false, false] -> #[false, false, false],
-			#[true,  true,  false, true,  false, false] -> #[false, false, false],
-			#[true,  false, true,  true,  false, false] -> #[false, false, true ],
-			#[true,  true,  true,  true,  false, false] -> #[false, false, true ],
-			#[true,  false, false, false, true,  false] -> #[false, false, false],
-			#[true,  true,  false, false, true,  false] -> #[false, true,  false],
-			#[true,  false, true,  false, true,  false] -> #[false, false, false],
-			#[true,  true,  true,  false, true,  false] -> #[false, true,  false],
-			#[true,  false, false, true,  true,  false] -> #[false, false, false],
-			#[true,  true,  false, true,  true,  false] -> #[false, true,  false],
-			#[true,  false, true,  true,  true,  false] -> #[false, false, true ],
-			#[true,  true,  true,  true,  true,  false] -> #[false, true,  true ],
-			
-			#[true,  false, false, false, false, true ] -> #[true, false, false],
-			#[true,  true,  false, false, false, true ] -> #[true, false, false],
-			#[true,  false, true,  false, false, true ] -> #[true, false, false],
-			#[true,  true,  true,  false, false, true ] -> #[true, false, false],
-			#[true,  false, false, true,  false, true ] -> #[true, false, false],
-			#[true,  true,  false, true,  false, true ] -> #[true, false, false],
-			#[true,  false, true,  true,  false, true ] -> #[true, false, true ],
-			#[true,  true,  true,  true,  false, true ] -> #[true, false, true ],
-			#[true,  false, false, false, true,  true ] -> #[true, false, false],
-			#[true,  true,  false, false, true,  true ] -> #[true, true,  false],
-			#[true,  false, true,  false, true,  true ] -> #[true, false, false],
-			#[true,  true,  true,  false, true,  true ] -> #[true, true,  false],
-			#[true,  false, false, true,  true,  true ] -> #[true, false, false],
-			#[true,  true,  false, true,  true,  true ] -> #[true, true,  false],
-			#[true,  false, true,  true,  true,  true ] -> #[true, false, true ],
-			#[true,  true,  true,  true,  true,  true ] -> #[true, true,  true ]
-		}
+		// given: setupCleanupConfig, expectedErrors
+		// when
+		val model = tclWithSetupAndCleanupSections(setupCleanupConfig)
 
-		setupCleanupSectionToExpectedErrorsMap.forEach [ setupCleanupConfig, expectedErrors |
-			// when
-			val model = tclWithSetupAndCleanupSections(setupCleanupConfig)
-
-			// then
-			try {
-				val dataSectionError = expectedErrors.get(0)				
- 				if (!dataSectionError) {
-					validator.assertNoErrors(model, SETUP_AND_CLEANUP_PROVIDER, TclValidator.MULTIPLE_DATA_SECTIONS)
-				} else {
-					validator.assertError(model, SETUP_AND_CLEANUP_PROVIDER, TclValidator.MULTIPLE_DATA_SECTIONS)
-				}
-				
-				val setupSectionError = expectedErrors.get(1)				
- 				if (!setupSectionError) {
-					validator.assertNoErrors(model, SETUP_AND_CLEANUP_PROVIDER, TclValidator.MULTIPLE_SETUP_SECTIONS)
-				} else {
-					validator.assertError(model, SETUP_AND_CLEANUP_PROVIDER, TclValidator.MULTIPLE_SETUP_SECTIONS)
-				}
-				
-				val cleanupSectionError = expectedErrors.get(2)
-				if (!cleanupSectionError) {
-					validator.assertNoErrors(model, SETUP_AND_CLEANUP_PROVIDER, TclValidator.MULTIPLE_CLEANUP_SECTIONS)
-				} else {
-					validator.assertError(model, SETUP_AND_CLEANUP_PROVIDER, TclValidator.MULTIPLE_CLEANUP_SECTIONS)
-				}
-			} catch (AssertionError assertionError) {
-				// in case of errors, this is very helpful!
-				throw new AssertionError('''
-					Data-Setup-Cleanup combination check failed, check the following combination: 
-					dataPre, setupPre, cleanupPre, cleanupPost, setupPost, dataPost: «setupCleanupConfig»
-					expected errors: «expectedErrors»
-				''', assertionError)
+		// then
+		try {
+			val dataSectionError = expectedErrors.get(0)				
+			if (!dataSectionError) {
+				validator.assertNoErrors(model, SETUP_AND_CLEANUP_PROVIDER, TclValidator.MULTIPLE_DATA_SECTIONS)
+			} else {
+				validator.assertError(model, SETUP_AND_CLEANUP_PROVIDER, TclValidator.MULTIPLE_DATA_SECTIONS)
 			}
-		]
-
+			
+			val setupSectionError = expectedErrors.get(1)				
+			if (!setupSectionError) {
+				validator.assertNoErrors(model, SETUP_AND_CLEANUP_PROVIDER, TclValidator.MULTIPLE_SETUP_SECTIONS)
+			} else {
+				validator.assertError(model, SETUP_AND_CLEANUP_PROVIDER, TclValidator.MULTIPLE_SETUP_SECTIONS)
+			}
+			
+			val cleanupSectionError = expectedErrors.get(2)
+			if (!cleanupSectionError) {
+				validator.assertNoErrors(model, SETUP_AND_CLEANUP_PROVIDER, TclValidator.MULTIPLE_CLEANUP_SECTIONS)
+			} else {
+				validator.assertError(model, SETUP_AND_CLEANUP_PROVIDER, TclValidator.MULTIPLE_CLEANUP_SECTIONS)
+			}
+		} catch (AssertionError assertionError) {
+			// in case of errors, this is very helpful!
+			throw new AssertionError('''
+				Data-Setup-Cleanup combination check failed, check the following combination: 
+				dataPre, setupPre, cleanupPre, cleanupPost, setupPost, dataPost: «setupCleanupConfig»
+				expected errors: «expectedErrors»
+			''', assertionError)
+		}
 	}
 
 }
