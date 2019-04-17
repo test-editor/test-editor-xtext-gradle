@@ -77,13 +77,13 @@ import org.testeditor.tcl.TclModel
 import org.testeditor.tcl.TestCase
 import org.testeditor.tcl.TestConfiguration
 import org.testeditor.tcl.TestData
-import org.testeditor.tcl.TestParameter
 import org.testeditor.tcl.TestStep
 import org.testeditor.tcl.TestStepContext
 import org.testeditor.tcl.TestStepWithAssignment
 import org.testeditor.tcl.VariableReference
 import org.testeditor.tcl.VariableReferencePathAccess
 import org.testeditor.tcl.dsl.jvmmodel.macro.MacroHelper
+import org.testeditor.tcl.dsl.jvmmodel.testdata.TestParameterInferrer
 import org.testeditor.tcl.dsl.messages.TclElementStringifier
 import org.testeditor.tcl.impl.TclFactoryImpl
 import org.testeditor.tcl.util.TclModelUtil
@@ -110,6 +110,7 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 	@Inject extension ModelUtil
 	@Inject extension TclModelUtil
 	@Inject extension TclElementStringifier
+	@Inject extension TestParameterInferrer
 	@Inject TclAssertCallBuilder assertCallBuilder
 	@Inject IQualifiedNameProvider nameProvider
 	@Inject JvmModelHelper jvmModelHelper
@@ -190,10 +191,11 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 			if (!element.data.nullOrEmpty) {
 				val data = element.data.head
 				val mainTestParameter = data.testParameterVariable
+				val mainTestParameterType = data.testParameterType
 				annotations += createParameterizedRunnerAnnotation
 				members += data.createDataMethod
-				members += mainTestParameter.createTestParameter(data.testParameterType)
-				members += data.parameters.map[createDerivedTestParameter(mainTestParameter)]
+				members += mainTestParameter.createTestParameter(mainTestParameterType)
+				members += data.parameters.map[createDerivedTestParameter(mainTestParameter, mainTestParameterType, _typeReferenceBuilder)]
 			}
 
 			// Create constructor, if initialization of instantiated types with reporter is necessary
@@ -256,14 +258,7 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 			annotations += annotationRef('org.junit.runners.Parameterized$Parameter')
 		]
 	}
-	
-	def JvmMember createDerivedTestParameter(TestParameter parameter, AssignmentVariable mainParameter) {
-		return parameter.toField(parameter.name, typeRef(Object)) => [
-			visibility = JvmVisibility.PUBLIC
-			initializer = '''«mainParameter.name».getAsJsonObject().get("«parameter.name»")'''
-		]
-	}
-	
+
 	def JvmAnnotationReference createParameterizedRunnerAnnotation() {
 		return annotationRef(RunWith) => [
 			explicitValues += typesFactory.createJvmTypeAnnotationValue => [
