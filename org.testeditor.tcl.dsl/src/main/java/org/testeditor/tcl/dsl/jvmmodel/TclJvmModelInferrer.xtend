@@ -60,6 +60,7 @@ import org.testeditor.fixture.core.TestRunReporter.Status
 import org.testeditor.tcl.AbstractTestStep
 import org.testeditor.tcl.AssertionTestStep
 import org.testeditor.tcl.AssignmentThroughPath
+import org.testeditor.tcl.AssignmentVariable
 import org.testeditor.tcl.ComponentTestStepContext
 import org.testeditor.tcl.EnvironmentVariable
 import org.testeditor.tcl.ExpressionReturnTestStep
@@ -186,9 +187,11 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 			
 			// Create parameterized test if relevant
 			if (!element.data.nullOrEmpty) {
+				val mainTestParameter = element.data.head.testParameterVariable
 				annotations += createParameterizedRunnerAnnotation
 				members += element.data.head.createDataMethod
-				members += element.data.head.parameters.indexed.map[createTestParameter]
+				members += mainTestParameter.createTestParameter
+				members += element.data.head.parameters.map[createDerivedTestParameter(mainTestParameter)]
 			}
 
 			// Create constructor, if initialization of instantiated types with reporter is necessary
@@ -211,7 +214,7 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 	}
 	
 	def JvmOperation createDataMethod(TestData data) {
-		return data.toMethod('data', typeRef(Iterable, typeRef('java.lang.Object[]')))[
+		return data.toMethod('data', typeRef(Iterable, wildcardExtends(typeRef('java.lang.Object'))))[
 			static = true
 			visibility = JvmVisibility.PUBLIC
 			annotations += annotationRef('org.junit.runners.Parameterized$Parameters')
@@ -224,7 +227,7 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 							output.append(''' «simpleName.toFirstLower» = new «simpleName»();''')
 						]
 						data.context.generateContext(output.trace(data.context))
-						output.append('\nreturn data;')
+						output.newLine.append('''return «data.testParameterVariable.name»;''')
 					]
 					output.newLine.append('return null;')
 				]
@@ -232,17 +235,24 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 		]
 	}
 	
-	def JvmMember createTestParameter(Pair<Integer, TestParameter> parameter) {
-		return parameter.value.toField(parameter.value.name, typeRef(Object)) => [
+	private def testParameterVariable(TestData data) {
+		return (data.context.steps.head as TestStepWithAssignment).variable
+	}
+	
+	def JvmMember createTestParameter(AssignmentVariable mainParameter) {
+		return mainParameter.toField(mainParameter.name, typeRef(Object)) => [
 			visibility = JvmVisibility.PUBLIC
 			// inner types seem to cause problems, but the "string with $"-notation works. See e.g. 
 			// * https://stackoverflow.com/questions/53030336/referencing-a-containing-class-from-an-inner-class-with-xtext-xbase-and-the-jvm
 			// * https://www.eclipse.org/forums/index.php/t/1086762/
-			annotations += annotationRef('org.junit.runners.Parameterized$Parameter') => [
-				explicitValues += typesFactory.createJvmIntAnnotationValue => [
-					values += parameter.key
-				]
-			]
+			annotations += annotationRef('org.junit.runners.Parameterized$Parameter')
+		]
+	}
+	
+	def JvmMember createDerivedTestParameter(TestParameter parameter, AssignmentVariable mainParameter) {
+		return parameter.toField(parameter.name, typeRef(Object)) => [
+			visibility = JvmVisibility.PUBLIC
+			initializer = '''«mainParameter.name».getAsJsonObject().get("«parameter.name»")'''
 		]
 	}
 	
