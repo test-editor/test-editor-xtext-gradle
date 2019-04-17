@@ -13,6 +13,8 @@
 package org.testeditor.tcl.dsl.tests.parser
 
 import javax.inject.Inject
+import org.eclipse.emf.ecore.EObject
+import org.eclipse.xtext.resource.XtextResource
 import org.junit.Test
 import org.testeditor.aml.TemplateText
 import org.testeditor.aml.TemplateVariable
@@ -587,6 +589,8 @@ class TclModelParserTest extends AbstractTclTest {
 			# Test
 			
 			Data: firstName, lastName, age
+			Component: MyComponent
+			- data = load my data
 			
 			* step1
 		'''
@@ -616,6 +620,8 @@ class TclModelParserTest extends AbstractTclTest {
 			* step1
 			
 			Data: firstName, lastName, age
+			Component: MyComponent
+			- data = load my data
 		'''
 
 		// when
@@ -642,7 +648,7 @@ class TclModelParserTest extends AbstractTclTest {
 			
 			Data: firstName, lastName, age
 				Component: MyDataInitializationComponent
-				- init test data
+				- myTestData = init test data
 		'''
 
 		// when
@@ -655,7 +661,36 @@ class TclModelParserTest extends AbstractTclTest {
 			parameters.assertExists[name.equals('firstName')]
 			parameters.assertExists[name.equals('lastName')]
 			parameters.assertExists[name.equals('age')]
-			contexts.assertSingleElement => [
+			context.assertInstanceOf(ComponentTestStepContext) => [
+				component.assertNotNull
+				steps.assertSingleElement.assertInstanceOf(TestStep) => [
+					contents.restoreString.assertEquals('init test data')
+				]
+			]
+		]
+	}
+	
+	@Test
+	def void parseDataWithoutTestParameters() {
+		// given
+		val input = '''
+			package com.example
+			
+			# Test
+			
+			Data:
+				Component: MyDataInitializationComponent
+				- myTestData = init test data
+		'''
+
+		// when
+		val test = parseTcl(input).test
+
+		// then
+		test.assertNoSyntaxErrors
+		test.data.assertSingleElement => [
+			parameters.assertEmpty
+			context => [
 				assertInstanceOf(ComponentTestStepContext) => [
 					component.assertNotNull
 					steps.assertSingleElement.assertInstanceOf(TestStep) => [
@@ -664,6 +699,146 @@ class TclModelParserTest extends AbstractTclTest {
 				]
 			]
 		]
+	}
+
+	@Test
+	def void doesNotParseDataWithMacroContext() {
+		// given
+		val input = '''
+			package com.example
+			
+			# Test
+			
+			Data: firstName, lastName, age
+				Macro: MyMacroCollection
+		'''
+
+		// when
+		val tclModel = parseTcl(input)
+
+		// then
+		tclModel.syntaxErrors.assertSingleElement.message.assertEquals('''
+		The data block cannot have a macro test step context.
+		E.g. replace the macro context with a component context like "Component: MyComponent".'''.toString)
+	}
+	
+	@Test
+	def void doesNotParseTestStepContextWithoutSpecificationStep() {
+		// given
+		val input = '''
+			package com.example
+			
+			# Test
+			
+			Component: MyDataInitializationComponent
+			- myTestData = init test data
+		'''
+
+		// when
+		val tclModel = input.parseTcl('Test.tcl')
+
+		// then
+		tclModel.syntaxErrors.map[message].assertExistsEqual('''
+			Insert a test description before the actual test context.
+			E.g. "* This test will check that the answer will be 42"
+		''')
+	}
+	
+	@Test
+	def void doesNotParseDataWithMultipleContexts() {
+		// given
+		val input = '''
+			package com.example
+			
+			# Test
+			
+			Data: firstName, lastName, age
+				Component: MyDataInitializationComponent
+				- myTestData = init test data
+				Component: MyOtherComponent
+				- anotherStep
+		'''
+
+		// when
+		val tclModel = parseTcl(input)
+
+		// then
+		tclModel.syntaxErrors.map[message].assertExistsEqual('The data block cannot have more than one test step context.')
+	}
+	
+	@Test
+	def void doesNotParseDataWithNoContext() {
+		// given
+		val input = '''
+			package com.example
+			
+			# Test
+			
+			Data: firstName, lastName, age
+		'''
+
+		// when
+		val tclModel = parseTcl(input)
+
+		// then
+		tclModel.syntaxErrors.map[message].assertExistsEqual('''
+			The data block must have a component test step context.
+			E.g. add "Component: MyComponent" after the data block line.
+		''')
+	}
+	
+	@Test
+	def void doesNotParseDataWithMultipleTestSteps() {
+		// given
+		val input = '''
+			package com.example
+			
+			# Test
+			
+			Data: firstName, lastName, age
+				Component: MyDataInitializationComponent
+				- myTestData = init test data
+				- someOtherData = do something else
+		'''
+
+		// when
+		val tclModel = parseTcl(input)
+
+		// then
+		tclModel.syntaxErrors.map[message].assertExistsEqual('The data block cannot have more than one test step.')
+	}
+	
+	@Test
+	def void doesNotParseDataWitTestStepWithoutAssignment() {
+		// given
+		val input = '''
+			package com.example
+			
+			# Test
+			
+			Data: firstName, lastName, age
+				Component: MyDataInitializationComponent
+				- init test data but not assigning it to anything
+		'''
+
+		// when
+		val tclModel = parseTcl(input)
+
+		// then
+		tclModel.syntaxErrors.map[message].assertExistsEqual('''
+		The data initialization step must be an assignment.
+		E.g. prefix the step with "- myVar = ".''')
+	}
+	
+	private def <T extends EObject> syntaxErrors(T it) {
+		return (eResource as XtextResource).parseResult.syntaxErrors.map[syntaxErrorMessage]
+	}
+	
+	private def <T> void assertExistsEqual(Iterable<T> collection, T element) {
+		collection.assertExists(
+			[it === null && element === null || it !== null && equals(element)],
+			'''Expected to find element equal to "«element»" in «collection».'''
+		)
 	}
 
 }

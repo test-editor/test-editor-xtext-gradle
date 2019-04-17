@@ -217,13 +217,13 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 			annotations += annotationRef('org.junit.runners.Parameterized$Parameters')
 			body = [ output |
 				staticContext [
-					output.wrapWithExceptionHandler(data.contexts) [
+					output.wrapWithExceptionHandler(#[data.context]) [
 						output.newLine
-						data.contexts.flatMap[testStepFixtureTypes].toSet.forEach[
+						data.context.testStepFixtureTypes.forEach[
 							output.append(it)
 							output.append(''' «simpleName.toFirstLower» = new «simpleName»();''')
 						]
-						data.contexts.forEach[generateContext(output.trace(it))]
+						data.context.generateContext(output.trace(data.context))
 						output.append('\nreturn data;')
 					]
 					output.newLine.append('return null;')
