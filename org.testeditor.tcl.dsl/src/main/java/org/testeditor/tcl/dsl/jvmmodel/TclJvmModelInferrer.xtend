@@ -28,6 +28,7 @@ import org.eclipse.xtext.common.types.JvmFormalParameter
 import org.eclipse.xtext.common.types.JvmGenericType
 import org.eclipse.xtext.common.types.JvmMember
 import org.eclipse.xtext.common.types.JvmOperation
+import org.eclipse.xtext.common.types.JvmParameterizedTypeReference
 import org.eclipse.xtext.common.types.JvmType
 import org.eclipse.xtext.common.types.JvmTypeReference
 import org.eclipse.xtext.common.types.JvmVisibility
@@ -187,11 +188,12 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 			
 			// Create parameterized test if relevant
 			if (!element.data.nullOrEmpty) {
-				val mainTestParameter = element.data.head.testParameterVariable
+				val data = element.data.head
+				val mainTestParameter = data.testParameterVariable
 				annotations += createParameterizedRunnerAnnotation
-				members += element.data.head.createDataMethod
-				members += mainTestParameter.createTestParameter
-				members += element.data.head.parameters.map[createDerivedTestParameter(mainTestParameter)]
+				members += data.createDataMethod
+				members += mainTestParameter.createTestParameter(data.testParameterType)
+				members += data.parameters.map[createDerivedTestParameter(mainTestParameter)]
 			}
 
 			// Create constructor, if initialization of instantiated types with reporter is necessary
@@ -239,8 +241,14 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 		return (data.context.steps.head as TestStepWithAssignment).variable
 	}
 	
-	def JvmMember createTestParameter(AssignmentVariable mainParameter) {
-		return mainParameter.toField(mainParameter.name, typeRef(Object)) => [
+	private def testParameterType(TestData data) {
+		val dataInitStep = data.context.steps.head as TestStepWithAssignment
+		val returnType = dataInitStep.interaction.defaultMethod.operation.returnType as JvmParameterizedTypeReference
+		return returnType.arguments.head
+	}
+	
+	def JvmMember createTestParameter(AssignmentVariable mainParameter, JvmTypeReference type) {
+		return mainParameter.toField(mainParameter.name, type) => [
 			visibility = JvmVisibility.PUBLIC
 			// inner types seem to cause problems, but the "string with $"-notation works. See e.g. 
 			// * https://stackoverflow.com/questions/53030336/referencing-a-containing-class-from-an-inner-class-with-xtext-xbase-and-the-jvm

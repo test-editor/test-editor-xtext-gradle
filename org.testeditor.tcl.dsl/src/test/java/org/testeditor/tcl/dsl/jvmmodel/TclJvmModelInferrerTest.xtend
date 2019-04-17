@@ -203,7 +203,7 @@ class TclJvmModelInferrerTest extends AbstractTclGeneratorIntegrationTest {
 		
 		tclModelCode.assertContains('''
 			@Parameterized.Parameter
-			  public Object parameters;''')
+			  public JsonElement parameters;''')
 		tclModelCode.assertContains('''
 			public Object firstName = parameters.getAsJsonObject().get("firstName");''')
 		tclModelCode.assertContains('''
