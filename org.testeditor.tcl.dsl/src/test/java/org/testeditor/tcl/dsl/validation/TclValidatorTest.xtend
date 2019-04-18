@@ -19,6 +19,7 @@ import org.eclipse.xtext.validation.Issue
 import org.eclipse.xtext.xbase.lib.Functions.Function1
 import org.junit.Before
 import org.junit.Test
+import org.testeditor.dsl.common.testing.DummyFixture
 import org.testeditor.tcl.TclModel
 import org.testeditor.tcl.dsl.tests.parser.AbstractParserTest
 import org.testeditor.tcl.util.ExampleAmlModel
@@ -301,6 +302,35 @@ class TclValidatorTest extends AbstractParserTest {
 		// then
 		validations.assertNotExists([message.matches(".*No ComponentElement found.*") && severity == ERROR], tclModel.reportableValidations)
 		validations.assertNotExists([message.matches(".*test step could not resolve macro usage.*") && severity == WARNING], tclModel.reportableValidations)
+	}
+	
+	@Test
+	def void testCanDereferenceTestParameter() {
+		// given
+		DummyFixture.amlModel.parseAml
+		DummyFixture.parameterizedTestAml.parseAml
+
+		val tclModel = '''
+			package com.example
+			
+			# SampleTest
+			
+			Data:
+				Component: ParameterizedTesting
+				- parameters = load data from "testData"
+			
+			* test something
+			Component: GreetingApplication
+			- Type @parameters.firstName into <Input>
+
+		'''.toString.parseTcl("SampleTest.tcl")
+
+		// when
+		val validations = validator.validate(tclModel)
+
+		// then
+		validations.assertNotExists([message.matches(".*Dereferenced variable must be a required environment variable or a previously assigned variable.*")
+			&& severity == ERROR], tclModel.reportableValidations)
 	}
 
 	def getTCLWithTwoValueSpaces(String testName, String value1, String value2) {
