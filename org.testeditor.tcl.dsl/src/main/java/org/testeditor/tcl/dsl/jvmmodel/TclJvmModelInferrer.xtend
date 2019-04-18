@@ -252,17 +252,7 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 			]
 		]
 	}
-	
-	private def testParameterVariable(TestData data) {
-		return (data.context.steps.head as TestStepWithAssignment).variable
-	}
-	
-	private def testParameterType(TestData data) {
-		val dataInitStep = data.context.steps.head as TestStepWithAssignment
-		val returnType = dataInitStep.interaction.defaultMethod.operation.returnType as JvmParameterizedTypeReference
-		return returnType.arguments.head
-	}
-	
+
 	def JvmMember createTestParameter(AssignmentVariable mainParameter, JvmTypeReference type) {
 		return mainParameter.toField(mainParameter.name, type) => [
 			visibility = JvmVisibility.PRIVATE

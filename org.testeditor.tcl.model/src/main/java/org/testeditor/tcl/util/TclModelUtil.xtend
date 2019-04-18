@@ -20,6 +20,8 @@ import javax.inject.Singleton
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtend.lib.annotations.Data
 import org.eclipse.xtext.EcoreUtil2
+import org.eclipse.xtext.common.types.JvmParameterizedTypeReference
+import org.eclipse.xtext.common.types.JvmTypeReference
 import org.eclipse.xtext.util.OnChangeEvictingCache
 import org.testeditor.aml.ComponentElement
 import org.testeditor.aml.InteractionType
@@ -28,6 +30,7 @@ import org.testeditor.aml.Template
 import org.testeditor.aml.TemplateContainer
 import org.testeditor.aml.TemplateContent
 import org.testeditor.aml.TemplateVariable
+import org.testeditor.aml.Variable
 import org.testeditor.dsl.common.util.CollectionUtils
 import org.testeditor.fixture.core.FixtureException
 import org.testeditor.tcl.AbstractTestStep
@@ -35,6 +38,7 @@ import org.testeditor.tcl.AccessPathElement
 import org.testeditor.tcl.ArrayPathElement
 import org.testeditor.tcl.AssertionTestStep
 import org.testeditor.tcl.AssignmentThroughPath
+import org.testeditor.tcl.AssignmentVariable
 import org.testeditor.tcl.Comparison
 import org.testeditor.tcl.ComponentTestStepContext
 import org.testeditor.tcl.EnvironmentVariable
@@ -50,8 +54,10 @@ import org.testeditor.tcl.StepContentElementReference
 import org.testeditor.tcl.TclModel
 import org.testeditor.tcl.TestCase
 import org.testeditor.tcl.TestConfiguration
+import org.testeditor.tcl.TestData
 import org.testeditor.tcl.TestStep
 import org.testeditor.tcl.TestStepContext
+import org.testeditor.tcl.TestStepWithAssignment
 import org.testeditor.tcl.VariableReference
 import org.testeditor.tcl.VariableReferencePathAccess
 import org.testeditor.tsl.SpecificationStep
@@ -472,6 +478,20 @@ class TclModelUtil extends TslModelUtil {
 	def boolean isAmlElementVariable(TemplateVariable variable, Macro macro) {
 		return	variable.isUsedAsElementInComponentInteractionCall(macro) || 
 				variable.isUsedAsElementInMacroCall(macro)
+	}
+	
+	def AssignmentVariable testParameterVariable(TestData data) {
+		return (data.context.steps.head as TestStepWithAssignment).variable
+	}
+	
+	def JvmTypeReference testParameterType(TestData data) {
+		val dataInitStep = data.context.steps.head as TestStepWithAssignment
+		val returnType = dataInitStep.interaction.defaultMethod.operation.returnType as JvmParameterizedTypeReference
+		return returnType.arguments.head
+	}
+	
+	def Iterable<Variable> testParameters(TestData it) {
+		return if (it !== null) { #[testParameterVariable] + parameters } else { #[] }
 	}
 
 	private def boolean isUsedAsElementInComponentInteractionCall(TemplateVariable variable, Macro macro) {
