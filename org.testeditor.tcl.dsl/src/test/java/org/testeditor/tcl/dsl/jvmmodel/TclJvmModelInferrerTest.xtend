@@ -200,16 +200,20 @@ class TclJvmModelInferrerTest extends AbstractTclGeneratorIntegrationTest {
 			    }
 			    return null;
 			  }''')
-		
+
 		tclModelCode.assertContains('''
-			@Parameterized.Parameter
-			  public JsonElement parameters;''')
-		tclModelCode.assertContains('''
-			public Object firstName = parameters.getAsJsonObject().get("firstName");''')
-		tclModelCode.assertContains('''
-			public Object lastName = parameters.getAsJsonObject().get("lastName");''')
-		tclModelCode.assertContains('''
-			public Object age = parameters.getAsJsonObject().get("age");''')
+			public MyTest(final JsonElement parameters) {
+			    this.parameters = parameters;
+			    firstName = parameters.getAsJsonObject().get("firstName");
+			    lastName = parameters.getAsJsonObject().get("lastName");
+			    age = parameters.getAsJsonObject().get("age");
+			    
+			  }''')
+
+		tclModelCode.assertContains('''private JsonElement parameters;''')
+		tclModelCode.assertContains('''private Object firstName;''')
+		tclModelCode.assertContains('''private Object lastName;''')
+		tclModelCode.assertContains('''private Object age;''')
 	}
 	
 }

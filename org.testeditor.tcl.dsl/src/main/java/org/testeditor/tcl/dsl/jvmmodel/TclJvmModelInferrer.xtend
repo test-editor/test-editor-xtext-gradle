@@ -21,7 +21,6 @@ import org.eclipse.emf.common.util.EList
 import org.eclipse.emf.ecore.resource.ResourceSet
 import org.eclipse.xtext.EcoreUtil2
 import org.eclipse.xtext.common.types.JvmAnnotationReference
-import org.eclipse.xtext.common.types.JvmConstructor
 import org.eclipse.xtext.common.types.JvmDeclaredType
 import org.eclipse.xtext.common.types.JvmField
 import org.eclipse.xtext.common.types.JvmFormalParameter
@@ -187,6 +186,9 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 				'Config'
 			}
 			
+			val List<(ITreeAppendable)=>void> constructorBody = newLinkedList
+			val List<JvmFormalParameter> constructorArguments = newLinkedList
+			
 			// Create parameterized test if relevant
 			if (!element.data.nullOrEmpty) {
 				val data = element.data.head
@@ -196,12 +198,24 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 				members += data.createDataMethod
 				members += mainTestParameter.createTestParameter(mainTestParameterType)
 				members += data.parameters.map[createDerivedTestParameter(mainTestParameter, mainTestParameterType, _typeReferenceBuilder)]
+				constructorArguments += mainTestParameter.toParameter(mainTestParameter.name, mainTestParameterType)
+				constructorBody += [ITreeAppendable it| append('''this.«mainTestParameter.name» = «mainTestParameter.name»;''').newLine]
+				constructorBody += data.parameters.map[initializeTestParameters(mainTestParameter, mainTestParameterType, _typeReferenceBuilder)]
 			}
 
-			// Create constructor, if initialization of instantiated types with reporter is necessary
+			// if initialization of instantiated types with reporter is necessary, add to constructor body
 			val typesToInitWithReporter = getAllInstantiatedTypesImplementingTestRunReportable(element, generatedClass)
 			if (!typesToInitWithReporter.empty) {
-				members += element.createConstructor(typesToInitWithReporter)
+				constructorBody += initTypesWithReporter(typesToInitWithReporter) 
+			}
+			
+			if (!constructorBody.nullOrEmpty) {
+				members += element.toConstructor[
+					body = [output|
+						constructorBody.forEach[apply(output)]
+					]
+					parameters += constructorArguments
+				]
 			}
 			// Create @Before method if relevant
 			if (!element.setup.empty) {
@@ -251,11 +265,11 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 	
 	def JvmMember createTestParameter(AssignmentVariable mainParameter, JvmTypeReference type) {
 		return mainParameter.toField(mainParameter.name, type) => [
-			visibility = JvmVisibility.PUBLIC
+			visibility = JvmVisibility.PRIVATE
 			// inner types seem to cause problems, but the "string with $"-notation works. See e.g. 
 			// * https://stackoverflow.com/questions/53030336/referencing-a-containing-class-from-an-inner-class-with-xtext-xbase-and-the-jvm
 			// * https://www.eclipse.org/forums/index.php/t/1086762/
-			annotations += annotationRef('org.junit.runners.Parameterized$Parameter')
+//			annotations += annotationRef('org.junit.runners.Parameterized$Parameter')
 		]
 	}
 
@@ -294,12 +308,10 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 		.filter[implementsInterface(TestRunReportable)]
 	}
 
-	def JvmConstructor createConstructor(SetupAndCleanupProvider element, Iterable<JvmDeclaredType> typesToInitWithReporter) {
-		return toConstructor(element) [
-			body = [
-				typesToInitWithReporter.forEach [ fixtureType |
-					append('((').append(typeRef(TestRunReportable).type).append(''')«fixtureType.fixtureFieldName»).initWithReporter(«reporterFieldName»);''')
-				]
+	def (ITreeAppendable)=>void initTypesWithReporter(Iterable<JvmDeclaredType> typesToInitWithReporter) {
+		return [
+			typesToInitWithReporter.forEach [ fixtureType |
+				append('((').append(typeRef(TestRunReportable).type).append(''')«fixtureType.fixtureFieldName»).initWithReporter(«reporterFieldName»);''')
 			]
 		]
 	}
