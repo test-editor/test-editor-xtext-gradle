@@ -27,7 +27,6 @@ import org.eclipse.xtext.common.types.JvmFormalParameter
 import org.eclipse.xtext.common.types.JvmGenericType
 import org.eclipse.xtext.common.types.JvmMember
 import org.eclipse.xtext.common.types.JvmOperation
-import org.eclipse.xtext.common.types.JvmParameterizedTypeReference
 import org.eclipse.xtext.common.types.JvmType
 import org.eclipse.xtext.common.types.JvmTypeReference
 import org.eclipse.xtext.common.types.JvmVisibility
@@ -57,6 +56,7 @@ import org.testeditor.fixture.core.TestRunReporter
 import org.testeditor.fixture.core.TestRunReporter.Action
 import org.testeditor.fixture.core.TestRunReporter.SemanticUnit
 import org.testeditor.fixture.core.TestRunReporter.Status
+import org.testeditor.fixture.core.parameterized.TestEditorParametersRunnerFactory
 import org.testeditor.tcl.AbstractTestStep
 import org.testeditor.tcl.AssertionTestStep
 import org.testeditor.tcl.AssignmentThroughPath
@@ -195,10 +195,16 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 				val mainTestParameter = data.testParameterVariable
 				val mainTestParameterType = data.testParameterType
 				annotations += createParameterizedRunnerAnnotation
+				annotations += createUseParametersRunnerFactoryAnnotation
 				members += data.createDataMethod
 				members += mainTestParameter.createTestParameter(mainTestParameterType)
 				members += data.parameters.map[createDerivedTestParameter(mainTestParameter, mainTestParameterType, _typeReferenceBuilder)]
 				constructorArguments += mainTestParameter.toParameter(mainTestParameter.name, mainTestParameterType)
+				constructorArguments += typesFactory.createJvmFormalParameter => [
+					name = 'testName'
+					parameterType = typeRef(String)
+				]
+				constructorBody += [ITreeAppendable it| append('''super(testName);''').newLine];
 				constructorBody += [ITreeAppendable it| append('''this.«mainTestParameter.name» = «mainTestParameter.name»;''').newLine]
 				constructorBody += data.parameters.map[initializeTestParameters(mainTestParameter, mainTestParameterType, _typeReferenceBuilder)]
 			}
@@ -267,6 +273,14 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 		return annotationRef(RunWith) => [
 			explicitValues += typesFactory.createJvmTypeAnnotationValue => [
 				values += typeRef(Parameterized)
+			]
+		]
+	}
+	
+	def JvmAnnotationReference createUseParametersRunnerFactoryAnnotation() {
+		return annotationRef('org.junit.runners.Parameterized$UseParametersRunnerFactory') => [
+			explicitValues += typesFactory.createJvmTypeAnnotationValue => [
+				values += typeRef(TestEditorParametersRunnerFactory)
 			]
 		]
 	}
