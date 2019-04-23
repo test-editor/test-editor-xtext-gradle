@@ -21,13 +21,13 @@ import org.eclipse.emf.common.util.EList
 import org.eclipse.emf.ecore.resource.ResourceSet
 import org.eclipse.xtext.EcoreUtil2
 import org.eclipse.xtext.common.types.JvmAnnotationReference
-import org.eclipse.xtext.common.types.JvmConstructor
 import org.eclipse.xtext.common.types.JvmDeclaredType
 import org.eclipse.xtext.common.types.JvmField
 import org.eclipse.xtext.common.types.JvmFormalParameter
 import org.eclipse.xtext.common.types.JvmGenericType
 import org.eclipse.xtext.common.types.JvmMember
 import org.eclipse.xtext.common.types.JvmOperation
+import org.eclipse.xtext.common.types.JvmParameterizedTypeReference
 import org.eclipse.xtext.common.types.JvmType
 import org.eclipse.xtext.common.types.JvmTypeReference
 import org.eclipse.xtext.common.types.JvmVisibility
@@ -60,6 +60,7 @@ import org.testeditor.fixture.core.TestRunReporter.Status
 import org.testeditor.tcl.AbstractTestStep
 import org.testeditor.tcl.AssertionTestStep
 import org.testeditor.tcl.AssignmentThroughPath
+import org.testeditor.tcl.AssignmentVariable
 import org.testeditor.tcl.ComponentTestStepContext
 import org.testeditor.tcl.EnvironmentVariable
 import org.testeditor.tcl.ExpressionReturnTestStep
@@ -75,13 +76,13 @@ import org.testeditor.tcl.TclModel
 import org.testeditor.tcl.TestCase
 import org.testeditor.tcl.TestConfiguration
 import org.testeditor.tcl.TestData
-import org.testeditor.tcl.TestParameter
 import org.testeditor.tcl.TestStep
 import org.testeditor.tcl.TestStepContext
 import org.testeditor.tcl.TestStepWithAssignment
 import org.testeditor.tcl.VariableReference
 import org.testeditor.tcl.VariableReferencePathAccess
 import org.testeditor.tcl.dsl.jvmmodel.macro.MacroHelper
+import org.testeditor.tcl.dsl.jvmmodel.testdata.TestParameterInferrer
 import org.testeditor.tcl.dsl.messages.TclElementStringifier
 import org.testeditor.tcl.impl.TclFactoryImpl
 import org.testeditor.tcl.util.TclModelUtil
@@ -108,6 +109,7 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 	@Inject extension ModelUtil
 	@Inject extension TclModelUtil
 	@Inject extension TclElementStringifier
+	@Inject extension TestParameterInferrer
 	@Inject TclAssertCallBuilder assertCallBuilder
 	@Inject IQualifiedNameProvider nameProvider
 	@Inject JvmModelHelper jvmModelHelper
@@ -184,17 +186,36 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 				'Config'
 			}
 			
+			val List<(ITreeAppendable)=>void> constructorBody = newLinkedList
+			val List<JvmFormalParameter> constructorArguments = newLinkedList
+			
 			// Create parameterized test if relevant
 			if (!element.data.nullOrEmpty) {
+				val data = element.data.head
+				val mainTestParameter = data.testParameterVariable
+				val mainTestParameterType = data.testParameterType
 				annotations += createParameterizedRunnerAnnotation
-				members += element.data.head.createDataMethod
-				members += element.data.head.parameters.indexed.map[createTestParameter]
+				members += data.createDataMethod
+				members += mainTestParameter.createTestParameter(mainTestParameterType)
+				members += data.parameters.map[createDerivedTestParameter(mainTestParameter, mainTestParameterType, _typeReferenceBuilder)]
+				constructorArguments += mainTestParameter.toParameter(mainTestParameter.name, mainTestParameterType)
+				constructorBody += [ITreeAppendable it| append('''this.«mainTestParameter.name» = «mainTestParameter.name»;''').newLine]
+				constructorBody += data.parameters.map[initializeTestParameters(mainTestParameter, mainTestParameterType, _typeReferenceBuilder)]
 			}
 
-			// Create constructor, if initialization of instantiated types with reporter is necessary
+			// if initialization of instantiated types with reporter is necessary, add to constructor body
 			val typesToInitWithReporter = getAllInstantiatedTypesImplementingTestRunReportable(element, generatedClass)
 			if (!typesToInitWithReporter.empty) {
-				members += element.createConstructor(typesToInitWithReporter)
+				constructorBody += initTypesWithReporter(typesToInitWithReporter) 
+			}
+			
+			if (!constructorBody.nullOrEmpty) {
+				members += element.toConstructor[
+					body = [output|
+						constructorBody.forEach[apply(output)]
+					]
+					parameters += constructorArguments
+				]
 			}
 			// Create @Before method if relevant
 			if (!element.setup.empty) {
@@ -211,7 +232,7 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 	}
 	
 	def JvmOperation createDataMethod(TestData data) {
-		return data.toMethod('data', typeRef(Iterable, typeRef('java.lang.Object[]')))[
+		return data.toMethod('data', typeRef(Iterable, wildcardExtends(typeRef('java.lang.Object'))))[
 			static = true
 			visibility = JvmVisibility.PUBLIC
 			annotations += annotationRef('org.junit.runners.Parameterized$Parameters')
@@ -224,28 +245,24 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 							output.append(''' «simpleName.toFirstLower» = new «simpleName»();''')
 						]
 						data.context.generateContext(output.trace(data.context))
-						output.append('\nreturn data;')
+						output.newLine.append('''return «data.testParameterVariable.name»;''')
 					]
 					output.newLine.append('return null;')
 				]
 			]
 		]
 	}
-	
-	def JvmMember createTestParameter(Pair<Integer, TestParameter> parameter) {
-		return parameter.value.toField(parameter.value.name, typeRef(Object)) => [
-			visibility = JvmVisibility.PUBLIC
+
+	def JvmMember createTestParameter(AssignmentVariable mainParameter, JvmTypeReference type) {
+		return mainParameter.toField(mainParameter.name, type) => [
+			visibility = JvmVisibility.PRIVATE
 			// inner types seem to cause problems, but the "string with $"-notation works. See e.g. 
 			// * https://stackoverflow.com/questions/53030336/referencing-a-containing-class-from-an-inner-class-with-xtext-xbase-and-the-jvm
 			// * https://www.eclipse.org/forums/index.php/t/1086762/
-			annotations += annotationRef('org.junit.runners.Parameterized$Parameter') => [
-				explicitValues += typesFactory.createJvmIntAnnotationValue => [
-					values += parameter.key
-				]
-			]
+//			annotations += annotationRef('org.junit.runners.Parameterized$Parameter')
 		]
 	}
-	
+
 	def JvmAnnotationReference createParameterizedRunnerAnnotation() {
 		return annotationRef(RunWith) => [
 			explicitValues += typesFactory.createJvmTypeAnnotationValue => [
@@ -281,12 +298,10 @@ class TclJvmModelInferrer extends AbstractModelInferrer {
 		.filter[implementsInterface(TestRunReportable)]
 	}
 
-	def JvmConstructor createConstructor(SetupAndCleanupProvider element, Iterable<JvmDeclaredType> typesToInitWithReporter) {
-		return toConstructor(element) [
-			body = [
-				typesToInitWithReporter.forEach [ fixtureType |
-					append('((').append(typeRef(TestRunReportable).type).append(''')«fixtureType.fixtureFieldName»).initWithReporter(«reporterFieldName»);''')
-				]
+	def (ITreeAppendable)=>void initTypesWithReporter(Iterable<JvmDeclaredType> typesToInitWithReporter) {
+		return [
+			typesToInitWithReporter.forEach [ fixtureType |
+				append('((').append(typeRef(TestRunReportable).type).append(''')«fixtureType.fixtureFieldName»).initWithReporter(«reporterFieldName»);''')
 			]
 		]
 	}

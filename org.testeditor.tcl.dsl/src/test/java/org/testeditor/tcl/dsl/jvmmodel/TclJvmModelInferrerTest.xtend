@@ -168,7 +168,7 @@ class TclJvmModelInferrerTest extends AbstractTclGeneratorIntegrationTest {
 			
 			Data: firstName, lastName, age
 				Component: ParameterizedTesting
-				- data = load data from "testData"
+				- parameters = load data from "testData"
 			
 			* test something
 			Component: GreetingApplication
@@ -183,13 +183,16 @@ class TclJvmModelInferrerTest extends AbstractTclGeneratorIntegrationTest {
 		tclModelCode.assertContains('import org.junit.runners.Parameterized;')
 		tclModelCode.assertContains('@RunWith(Parameterized.class)')
 		
+		// note: the documentation (https://github.com/junit-team/junit4/wiki/parameterized-tests=
+		//       specifies the return type of the data method to be "Iterable<? extends Object>",
+		//       but <? extends Object> is synonymous to just <?>, which is what Xtext will generate.
 		tclModelCode.assertContains('''
 			@Parameterized.Parameters
-			  public static Iterable<Object[]> data() {
+			  public static Iterable<?> data() {
 			    try {
 			      DummyFixture dummyFixture = new DummyFixture();
-			      java.lang.Iterable<com.google.gson.JsonElement> data = dummyFixture.load("testData");
-			      return data;
+			      java.lang.Iterable<com.google.gson.JsonElement> parameters = dummyFixture.load("testData");
+			      return parameters;
 			    } catch (org.testeditor.fixture.core.FixtureException e) {
 			      org.junit.Assert.fail(e.getMessage());
 			    } catch (Exception e) {
@@ -197,16 +200,20 @@ class TclJvmModelInferrerTest extends AbstractTclGeneratorIntegrationTest {
 			    }
 			    return null;
 			  }''')
-		
+
 		tclModelCode.assertContains('''
-			@Parameterized.Parameter(0)
-			  public Object firstName;''')
-		tclModelCode.assertContains('''
-			@Parameterized.Parameter(1)
-			  public Object lastName;''')
-		tclModelCode.assertContains('''
-			@Parameterized.Parameter(2)
-			  public Object age;''')
+			public MyTest(final JsonElement parameters) {
+			    this.parameters = parameters;
+			    firstName = parameters.getAsJsonObject().get("firstName");
+			    lastName = parameters.getAsJsonObject().get("lastName");
+			    age = parameters.getAsJsonObject().get("age");
+			    
+			  }''')
+
+		tclModelCode.assertContains('''private JsonElement parameters;''')
+		tclModelCode.assertContains('''private Object firstName;''')
+		tclModelCode.assertContains('''private Object lastName;''')
+		tclModelCode.assertContains('''private Object age;''')
 	}
 	
 }
