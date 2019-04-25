@@ -181,7 +181,9 @@ class TclJvmModelInferrerTest extends AbstractTclGeneratorIntegrationTest {
 		// then
 		tclModelCode.assertContains('import org.junit.runner.RunWith;')
 		tclModelCode.assertContains('import org.junit.runners.Parameterized;')
+		tclModelCode.assertContains('import org.testeditor.fixture.core.parameterized.TestEditorParametersRunnerFactory;')
 		tclModelCode.assertContains('@RunWith(Parameterized.class)')
+		tclModelCode.assertContains('@Parameterized.UseParametersRunnerFactory(TestEditorParametersRunnerFactory.class)')
 		
 		// note: the documentation (https://github.com/junit-team/junit4/wiki/parameterized-tests=
 		//       specifies the return type of the data method to be "Iterable<? extends Object>",
@@ -202,7 +204,8 @@ class TclJvmModelInferrerTest extends AbstractTclGeneratorIntegrationTest {
 			  }''')
 
 		tclModelCode.assertContains('''
-			public MyTest(final JsonElement parameters) {
+			public MyTest(final JsonElement parameters, final String testName) {
+			    super(testName);
 			    this.parameters = parameters;
 			    firstName = parameters.getAsJsonObject().get("firstName");
 			    lastName = parameters.getAsJsonObject().get("lastName");

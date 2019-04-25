@@ -830,6 +830,35 @@ class TclModelParserTest extends AbstractTclTest {
 		E.g. prefix the step with "- myVar = ".''')
 	}
 	
+	@Test
+	def void parsesTestStepWithMultilineString() {
+		// given
+		val input = '''
+			package com.example
+			
+			# Test
+			
+			* spec step
+			Component: MyDataInitializationComponent
+			- myTestData = step with "normal string" and "a string
+			  spanning multiple
+			  lines!"
+		'''
+
+		// when
+		val tclModel = input.parseTcl('Test.tcl')
+
+		// then
+		tclModel.assertNoSyntaxErrors.test
+			.steps.assertSingleElement
+			.contexts.assertSingleElement
+			.steps.assertSingleElement.assertInstanceOf(TestStepWithAssignment)
+			.contents.restoreString.equals('''
+			myTestData = step with "normal string" and "a string
+			  spanning multiple
+			  lines!"''')
+	}
+	
 	private def <T extends EObject> syntaxErrors(T it) {
 		return (eResource as XtextResource).parseResult.syntaxErrors.map[syntaxErrorMessage]
 	}
