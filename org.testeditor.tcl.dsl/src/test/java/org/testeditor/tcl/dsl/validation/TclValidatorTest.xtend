@@ -12,31 +12,15 @@
  *******************************************************************************/
 package org.testeditor.tcl.dsl.validation
 
-import javax.inject.Inject
-import org.eclipse.xtext.resource.XtextResourceSet
-import org.eclipse.xtext.testing.validation.ValidationTestHelper
 import org.eclipse.xtext.validation.Issue
 import org.eclipse.xtext.xbase.lib.Functions.Function1
-import org.junit.Before
 import org.junit.Test
 import org.testeditor.dsl.common.testing.DummyFixture
-import org.testeditor.tcl.TclModel
-import org.testeditor.tcl.dsl.tests.parser.AbstractParserTest
-import org.testeditor.tcl.util.ExampleAmlModel
+import org.testeditor.tcl.dsl.tests.validation.AbstractValidationTest
 
 import static org.eclipse.xtext.diagnostics.Severity.*
 
-class TclValidatorTest extends AbstractParserTest {
-
-	@Inject
-	ValidationTestHelper validator
-	
-	@Inject ExampleAmlModel amlModel
-
-	@Before
-	def void setupResourceSet() {
-		resourceSet = amlModel.model.eResource.resourceSet as XtextResourceSet
-	}
+class TclValidatorTest extends AbstractValidationTest {
 
 	@Test
 	def void validateStringArray() {
@@ -332,24 +316,6 @@ class TclValidatorTest extends AbstractParserTest {
 		validations.assertNotExists([message.matches(".*Dereferenced variable must be a required environment variable or a previously assigned variable.*")
 			&& severity == ERROR], tclModel.reportableValidations)
 	}
-	
-	
-	@Test
-	def void testThatTestCaseCanHaveSameNameAsAmlComponent() {
-		// given
-		val tclModel = '''
-			package com.example
-			
-			# MyDialog
-			* Sample Step
-		'''.toString.parseTcl("MyDialog.tcl")
-
-		// when
-		val validations = validator.validate(tclModel)
-
-		// then
-		validations.assertNotExists([message.matches(".*The type MyDialog is already defined in.*") && severity == ERROR], tclModel.reportableValidations)
-	}
 
 	def getTCLWithTwoValueSpaces(String testName, String value1, String value2) {
 		getTCLWithValue(testName, value1) + '''
@@ -403,9 +369,4 @@ class TclValidatorTest extends AbstractParserTest {
 			}
 		'''
 	}
-
-	private def String reportableValidations(TclModel model) {
-		return '''got: «validator.validate(model).map[toString].join('\n')»'''
-	}
-
 }
