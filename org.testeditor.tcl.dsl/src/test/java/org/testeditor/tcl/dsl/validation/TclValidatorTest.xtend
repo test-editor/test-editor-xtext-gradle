@@ -12,31 +12,15 @@
  *******************************************************************************/
 package org.testeditor.tcl.dsl.validation
 
-import javax.inject.Inject
-import org.eclipse.xtext.resource.XtextResourceSet
-import org.eclipse.xtext.testing.validation.ValidationTestHelper
 import org.eclipse.xtext.validation.Issue
 import org.eclipse.xtext.xbase.lib.Functions.Function1
-import org.junit.Before
 import org.junit.Test
 import org.testeditor.dsl.common.testing.DummyFixture
-import org.testeditor.tcl.TclModel
-import org.testeditor.tcl.dsl.tests.parser.AbstractParserTest
-import org.testeditor.tcl.util.ExampleAmlModel
+import org.testeditor.tcl.dsl.tests.validation.AbstractValidationTest
 
 import static org.eclipse.xtext.diagnostics.Severity.*
 
-class TclValidatorTest extends AbstractParserTest {
-
-	@Inject
-	ValidationTestHelper validator
-	
-	@Inject ExampleAmlModel amlModel
-
-	@Before
-	def void setupResourceSet() {
-		resourceSet = amlModel.model.eResource.resourceSet as XtextResourceSet
-	}
+class TclValidatorTest extends AbstractValidationTest {
 
 	@Test
 	def void validateStringArray() {
@@ -385,9 +369,4 @@ class TclValidatorTest extends AbstractParserTest {
 			}
 		'''
 	}
-
-	private def String reportableValidations(TclModel model) {
-		return '''got: «validator.validate(model).map[toString].join('\n')»'''
-	}
-
 }

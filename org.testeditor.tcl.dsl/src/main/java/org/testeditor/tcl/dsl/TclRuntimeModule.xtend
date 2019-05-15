@@ -23,6 +23,9 @@ import org.testeditor.tcl.dsl.naming.TclQualifiedNameProvider
 import org.testeditor.tcl.dsl.scoping.TclDelegateScopeProvider
 import org.testeditor.tcl.dsl.validation.FileExtensionValidator
 import org.testeditor.tcl.dsl.validation.AdjustedXbaseConfigurableIssueCodes
+import org.eclipse.xtext.service.SingletonBinding
+import org.eclipse.xtext.xbase.validation.UniqueClassNameValidator
+import org.testeditor.tcl.dsl.validation.TestEditorUniqueClassNameValidator
 
 /**
  * Use this class to register components to be used at runtime / without the Equinox extension registry.
@@ -52,6 +55,11 @@ class TclRuntimeModule extends AbstractTclRuntimeModule {
 
 	def void configureAdditionalValidators(Binder binder) {
 		binder.bind(FileExtensionValidator).asEagerSingleton
+	}
+	
+	@SingletonBinding(eager = true)
+	override Class<? extends UniqueClassNameValidator> bindUniqueClassNameValidator() {
+		return TestEditorUniqueClassNameValidator;
 	}
 
 }
