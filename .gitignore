@@ -26,3 +26,4 @@ hs_err*.log
 # testeditor itself
 testeditor.log
 logs/
+.javaTrustStore
