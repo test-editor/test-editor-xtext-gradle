@@ -24,7 +24,7 @@ subprojects {
     apply from: "${rootDir}/gradle/source-layout.gradle"
 
     ext {
-        xtextVersion = '2.15.0'
+        xtextVersion = '2.18.0'
 
         coreFixtureVersion = '4.4.+'
 
@@ -33,6 +33,8 @@ subprojects {
         mwe2LaunchVersion = '2.9.1.201705291010'
         antlrGeneratorVersion = '[2.1.1, 3)'
         antlrRuntime = '3.2'
+        emfEcoreVersion = '2.12.0'
+        emfEcoreCommonVersion = '2.12.0'
         emfEcoreXcore = '1.7.0' // +
         emfEcoreXcoreLib = '1.3.0' // +
         codegenEcoreXtext = '1.4.0' // +
@@ -162,8 +164,8 @@ configure(subprojects.findAll {it.name.endsWith('.model')}) {
         compile "org.eclipse.xtext:org.eclipse.xtext.xbase:${xtextVersion}"
         compile "org.eclipse.emf:org.eclipse.emf.ecore.xcore.lib:${emfEcoreXcoreLib}" // +
 
-        xtextLanguages "org.eclipse.emf:org.eclipse.emf.common:${xtextVersion}"
-        xtextLanguages "org.eclipse.emf:org.eclipse.emf.ecore:${xtextVersion}"
+        xtextLanguages "org.eclipse.emf:org.eclipse.emf.common:${emfEcoreCommonVersion}"
+        xtextLanguages "org.eclipse.emf:org.eclipse.emf.ecore:${emfEcoreVersion}"
         xtextLanguages "org.eclipse.emf:org.eclipse.emf.ecore.xcore:${emfEcoreXcore}"
         xtextLanguages "org.eclipse.emf:org.eclipse.emf.ecore.xcore.lib:${emfEcoreXcoreLib}"
         xtextLanguages "org.eclipse.emf:org.eclipse.emf.codegen:${emfCodegenVersion}"
