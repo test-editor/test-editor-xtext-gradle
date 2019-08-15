@@ -24,7 +24,7 @@ subprojects {
     apply from: "${rootDir}/gradle/source-layout.gradle"
 
     ext {
-        xtextVersion = '2.15.0'
+        xtextVersion = '2.18.0'
 
         coreFixtureVersion = '4.4.+'
 
